@@ -12,7 +12,7 @@ import com.matchpet.backend_user.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.matchpet.backend_user.dto.RefreshTokenRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -90,4 +90,21 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .build();
     }
+
+    @Override
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        String userEmail = jwtService.extractUsernameFromRefreshToken(request.getRefreshToken());
+
+        UserModel user = this.userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // ⚡ Este nuevo access token ahora siempre será único
+        String newAccessToken = jwtService.generateAccessToken(user);
+
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(request.getRefreshToken())
+                .build();
+    }
+
 }

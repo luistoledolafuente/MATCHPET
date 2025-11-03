@@ -3,6 +3,8 @@ package com.matchpet.backend_user.service;
 import com.matchpet.backend_user.dto.AuthResponse;
 import com.matchpet.backend_user.dto.LoginRequest;
 import com.matchpet.backend_user.dto.RegisterRequest;
+import com.matchpet.backend_user.dto.RefreshTokenRequest;
+
 
 /**
  * Este es el "contrato" de nuestro servicio de autenticación.
@@ -22,4 +24,7 @@ public interface AuthService {
      * @return Una respuesta con el token JWT si la autenticación es exitosa.
      */
     AuthResponse login(LoginRequest request);
+
+    AuthResponse refreshToken(RefreshTokenRequest request);
+
 }

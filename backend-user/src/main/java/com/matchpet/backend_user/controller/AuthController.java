@@ -15,8 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.matchpet.backend_user.dto.RefreshTokenRequest; // <-- ¡Añade este!
 import org.springframework.web.bind.annotation.GetMapping; // <-- Añade este
 import java.util.Map; // <-- Añade este
 
@@ -57,6 +56,20 @@ public class AuthController {
     ) {
         // 6. Devolvemos una respuesta HTTP 200 OK con el token
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @Operation(summary = "Renueva un token de acceso (Refresh Token)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token de acceso renovado exitosamente"),
+            @ApiResponse(responseCode = "403", description = "Refresh Token inválido o expirado")
+    })
+    // ¡Ojo! Este endpoint es PÚBLICO (porque está en /api/auth/**)
+    // No usamos @SecurityRequirement porque el "auth" es el token en el body
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+        return ResponseEntity.ok(authService.refreshToken(request));
     }
 
     @Operation(
