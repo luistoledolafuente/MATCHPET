@@ -12,39 +12,28 @@ import NinaImg from "../assets/images/nina.png";
 import MaxImg from "../assets/images/max.png";
 import RockyImg from "../assets/images/rocky.png";
 
-const fadeIn = {
-  hidden: { opacity: 0, x: -50 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.8 } },
-};
-
-const fadeInRight = {
-  hidden: { opacity: 0, x: 50 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.8 } },
-};
-
 const sections = [
   {
     title: "Misión",
-    text: "Facilitar la adopción responsable y el bienestar animal, conectando mascotas con hogares llenos de amor y cuidado. Queremos que cada animal encuentre su lugar perfecto y que cada familia descubra un compañero leal.",
+    text: "En MatchPet nos dedicamos a facilitar la adopción responsable y el bienestar animal, conectando mascotas con familias que puedan brindarles amor, cuidado y un hogar seguro. Queremos que cada mascota encuentre su lugar perfecto y que cada familia descubra un compañero leal y feliz.",
     image: MisionImg,
   },
   {
     title: "Visión",
-    text: "Ser la plataforma líder que inspire compromiso, cariño y responsabilidad hacia todas las mascotas y sus familias. Aspiramos a que los refugios tengan más apoyo y espacio para cuidar a quienes más lo necesitan.",
+    text: "Aspiramos a ser la plataforma líder en adopción responsable, creando conciencia sobre el bienestar animal y fortaleciendo a los refugios. Buscamos que más animales encuentren hogares amorosos y que las familias estén bien informadas para tomar decisiones responsables.",
     image: VisionImg,
   },
   {
     title: "Valores",
-    text: "Compasión, transparencia y compromiso son la base de cada acción que realizamos. Creemos en educar sobre adopción responsable, en proteger a los animales vulnerables y en construir una comunidad consciente y amorosa.",
+    text: "Compasión, transparencia y compromiso son los pilares de MatchPet. Educamos sobre adopción responsable, apoyamos a refugios y protegemos a animales vulnerables, fomentando una comunidad consciente, empática y solidaria.",
     image: ValoresImg,
   },
   {
     title: "Filosofía",
-    text: "En MatchPet creemos que cada animal merece amor, seguridad y un hogar que lo valore. Nuestra filosofía se basa en conectar corazones, educar a adoptantes y apoyar a refugios para que juntos podamos cambiar vidas, una mascota a la vez.",
+    text: "Creemos que cada mascota merece un hogar lleno de amor, seguridad y respeto. Nuestra filosofía se basa en conectar corazones, educar a adoptantes y brindar apoyo continuo a refugios, transformando vidas y fomentando una cultura de cuidado y responsabilidad hacia los animales.",
     image: FilosofiaImg,
   },
 ];
-
 
 const rescuedPets = [
   { id: 1, name: "Firulais", image: FirulaisImg },
@@ -63,7 +52,8 @@ export default function NosotrosPage() {
     setCenterIndex((prev) => (prev + 1) % rescuedPets.length);
 
   return (
-   <div className="bg-gradient-to-br from-[#D7F0F7] via-[#79B5C0]/60 to-[#407581]/10 min-h-screen px-6 py-12">
+    <div className="bg-gradient-to-br from-[#D7F0F7] via-[#79B5C0]/60 to-[#407581]/10 min-h-screen px-6 py-12">
+      {/* Sección principal */}
       <motion.section
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -74,12 +64,13 @@ export default function NosotrosPage() {
           Nosotros
         </h1>
         <p className="max-w-xl mx-auto text-lg md:text-xl font-light text-[#4B4033cc]">
-          Conectamos corazones y patas, trabajando por el bienestar de cada mascota y apoyando a refugios para que puedan ayudar a más animales.
+          Conectamos corazones y patas, trabajando para que cada mascota encuentre un hogar seguro y lleno de amor. Apoyamos a refugios y educamos a la comunidad sobre la adopción responsable, haciendo que cada adopción sea un acto consciente y lleno de cariño.
         </p>
       </motion.section>
 
+      {/* Sección Misión, Visión, Valores y Filosofía */}
       <section className="flex flex-wrap gap-10 justify-center mb-28">
-        {sections.map((sec, i) => (
+        {sections.map((sec) => (
           <motion.div
             key={sec.title}
             className="w-full sm:w-[45%] bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col md:flex-row-reverse"
@@ -103,6 +94,7 @@ export default function NosotrosPage() {
         ))}
       </section>  
       
+      {/* Sección Mascotas Rescatadas */}
       <section className="max-w-6xl mx-auto my-20">
         <h2 className="text-4xl font-bold text-center text-[#407581] mb-12">
           Mascotas Rescatadas
@@ -148,7 +140,7 @@ export default function NosotrosPage() {
           </button>
         </div>
         <p className="mt-6 text-center text-[#4B4033] text-lg max-w-2xl mx-auto">
-          Estas son algunas de las mascotas que hemos rescatado y ayudado a encontrar un hogar lleno de amor.
+          Estas son algunas de las mascotas que hemos rescatado y ayudado a encontrar hogares llenos de amor gracias a nuestra comunidad de adoptantes y donantes.
         </p>
       </section>
     </div>

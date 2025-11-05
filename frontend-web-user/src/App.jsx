@@ -13,6 +13,11 @@ import NosotrosPage from './pages/NosotrosPage';
 // Importación de Layouts (Plantillas de Diseño)
 import MainLayout from './layouts/MainLayout';
 import DashboardLayout from './layouts/DashboardLayout';
+import Blog from "./Pages/StaticPages/Blog";
+import Ayuda from "./Pages/StaticPages/Ayuda";
+import TerminosServicio from "./Pages/StaticPages/TerminosServicio";
+import PoliticaPrivacidad from "./Pages/StaticPages/PoliticaPrivacidad";
+
 
 // Importación de Componentes de Seguridad
 import ProtectedRoute from './components/ProtectedRoute';
@@ -23,9 +28,12 @@ function App() {
       {/* --- Rutas Públicas --- */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/sobre-nosotros" element={<UnderConstructionPage />} />
+         <Route path="/sobre-nosotros" element={<NosotrosPage />} /> 
         <Route path="/nosotros" element={<NosotrosPage />} />
-        <Route path="/blog" element={<UnderConstructionPage />} />
+         <Route path="/blog" element={<Blog />} />
+         <Route path="/ayuda" element={<Ayuda />} />
+         <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+        <Route path="/terminos-servicio" element={<TerminosServicio />} />
         <Route path="/adoptar" element={<UnderConstructionPage />} />
         <Route path="/donar" element={<UnderConstructionPage />} />
         <Route path="/refugio" element={<UnderConstructionPage />} />

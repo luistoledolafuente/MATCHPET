@@ -34,9 +34,9 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-[#316B7A] mb-4 tracking-wider">NAVEGACIÓN</h4>
 
             <ul className="space-y-3 text-sm text-gray-600">
-              <li><a href="#" className="hover:underline">Sobre nosotros</a></li>
-              <li><a href="#" className="hover:underline">Blog</a></li>
-              <li><a href="#" className="hover:underline">Ayuda</a></li>
+              <li><a href="/nosotros" className="hover:underline">Sobre nosotros</a></li>
+              <li><a href="/blog" className="hover:underline">Blog</a></li>
+              <li><a href="/ayuda" className="hover:underline">Ayuda</a></li>
             </ul>
           </div>
 
@@ -44,8 +44,8 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-[#316B7A] mb-4 tracking-wider">LEGAL</h4>
             <ul className="space-y-3 text-sm text-gray-600">
-              <li><a href="#" className="hover:underline">Política de Privacidad</a></li>
-              <li><a href="#" className="hover:underline">Términos de Servicio</a></li>
+              <li><a href="/politica-privacidad" className="hover:underline">Política de Privacidad</a></li>
+              <li><a href="/terminos-servicio" className="hover:underline">Términos de Servicio</a></li>
             </ul>
           </div>
         </div>
