@@ -7,6 +7,8 @@ import HomePage from './pages/HomePage';
 import DashboardHomePage from './pages/DashboardHomePage';
 import MascotasPage from './pages/MascotasPage';
 import UnderConstructionPage from './pages/UnderConstructionPage';
+import NosotrosPage from './pages/NosotrosPage';
+
 
 // Importación de Layouts (Plantillas de Diseño)
 import MainLayout from './layouts/MainLayout';
@@ -22,7 +24,7 @@ function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/sobre-nosotros" element={<UnderConstructionPage />} />
-        <Route path="/contacto" element={<UnderConstructionPage />} />
+        <Route path="/nosotros" element={<NosotrosPage />} />
         <Route path="/blog" element={<UnderConstructionPage />} />
         <Route path="/adoptar" element={<UnderConstructionPage />} />
         <Route path="/donar" element={<UnderConstructionPage />} />

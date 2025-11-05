@@ -3,151 +3,196 @@ import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 
 export default function RegisterPage() {
-  // Estados para cada campo del formulario
-  const [nombreCompleto, setNombreCompleto] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [telefono, setTelefono] = useState('');
+  const [userType, setUserType] = useState('adoptante'); // 'adoptante' o 'refugio'
+  const [formData, setFormData] = useState({
+    nombreCompleto: '',
+    nombreRefugio: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    telefono: '',
+    personaContacto: '',
+    fechaNacimiento: '',
+    ciudad: '',
+    direccion: '',
+  });
 
-  // Estados para manejar la carga y los errores
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
   const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError('');
     setSuccess('');
     setLoading(true);
 
-    try {
-      // Creamos el objeto con los datos del usuario para enviarlo a la API
-      const userData = { nombreCompleto, email, password, telefono };
-      
-      // Llamamos a la función 'register' de nuestro servicio
-      await authService.register(userData);
-      
-      setSuccess('¡Registro exitoso! Redirigiendo al login...');
-      
-      // Esperamos 2 segundos para que el usuario vea el mensaje y lo redirigimos
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      setLoading(false);
+      return;
+    }
 
+    try {
+      const userData =
+        userType === 'adoptante'
+          ? {
+              nombreCompleto: formData.nombreCompleto,
+              email: formData.email,
+              password: formData.password,
+              telefono: formData.telefono,
+              fechaNacimiento: formData.fechaNacimiento,
+              ciudad: formData.ciudad,
+              direccion: formData.direccion,
+            }
+          : {
+              nombreRefugio: formData.nombreRefugio,
+              email: formData.email,
+              password: formData.password,
+              telefono: formData.telefono,
+              personaContacto: formData.personaContacto,
+              ciudad: formData.ciudad,
+              direccion: formData.direccion,
+            };
+
+      await authService.register(userData);
+
+      setSuccess('¡Registro exitoso! Redirigiendo al inicio de sesión...');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      const errorMessage = err.response?.data || 'Error en el registro. Por favor, intenta de nuevo.';
+      const errorMessage =
+        err.response?.data || 'Error en el registro. Por favor, intenta de nuevo.';
       setError(errorMessage);
-      console.error('Error de registro:', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  // Inputs reutilizables
+const InputField = ({ id, label, placeholder, type = 'text', className = '' }) => (
+  <div className={`flex flex-col min-w-0 ${className}`}>
+    <label htmlFor={id} className="block text-md font-medium text-gray-700">
+      {label}
+    </label>
+    <input
+      id={id}
+      type={type}
+      placeholder={placeholder}
+      required
+      value={formData[id]}
+      onChange={handleChange}
+      className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+    />
+  </div>
+);
+
+
   return (
-    <div className="flex min-h-screen">
-      {/* Columna izquierda - Imagen */}
-      <div className="hidden lg:flex flex-1 bg-primary-100">
-        <div className="w-full h-full bg-cover bg-center bg-no-repeat" style={{
-          backgroundImage: "url('/src/assets/images/pets-register.webp')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}>
-          <div className="w-full h-full bg-black bg-opacity-40 flex items-center justify-center p-12">
-            <div className="text-white text-center">
-              <h2 className="text-4xl font-bold mb-4">Únete a nuestra comunidad</h2>
-              <p className="text-xl">Ayúdanos a conectar más mascotas con familias amorosas</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#FFF7E6] flex items-center justify-center">
+      <div className="flex w-full max-w-4xl rounded-xl overflow-hidden shadow-lg bg-white/90">
+        {/* Imagen */}
+        <div className="hidden lg:flex flex-1">
+          <div
+            className="w-full h-full bg-cover bg-center"
+            style={{ backgroundImage: "url('/src/assets/images/gato_home.png')" }}
+          ></div>
         </div>
-      </div>
 
-      {/* Columna derecha - Formulario */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-800">Crea tu Cuenta</h1>
-            <p className="mt-2 text-gray-500">Únete a la comunidad de MatchPet</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="nombreCompleto" className="block text-sm font-medium text-gray-700">
-                Nombre Completo
-              </label>
-              <input
-                id="nombreCompleto"
-                type="text"
-                required
-                value={nombreCompleto}
-                onChange={(e) => setNombreCompleto(e.target.value)}
-                className="w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Correo Electrónico
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
+        {/* Formulario */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-xl space-y-8">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-[#316B7A]">Crea tu cuenta en MatchPet</h1>
+              <p className="mt-4 text-gray-500 text-1xl">Únete a la comunidad MatchPet</p>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña
-              </label>
-              <input
-                id="password"
+            {/* Tabs */}
+            <div className="flex w-full max-w-md mx-auto rounded-xl overflow-hidden shadow-md bg-[#2B677750] mb-6">
+              {['adoptante', 'refugio'].map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setUserType(type)}
+                  className={`flex-1 py-2 text-center text-md font-semibold transition-all duration-300 ${
+                    userType === type
+                      ? 'bg-white text-[#2B6777]'
+                      : 'text-black hover:bg-white hover:text-[#2B6777]'
+                  } ${type === 'adoptante' ? 'rounded-l-xl' : 'rounded-r-xl'}`}
+                >
+                  {type === 'adoptante' ? 'Adoptante' : 'Refugio'}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {userType === 'adoptante' ? (
+                <>
+                  <InputField id="nombreCompleto" label="Nombre completo" placeholder="Ingrese su nombre completo" />
+                  <InputField id="email" label="Correo Electrónico" placeholder="nombre@gmail.com" type="email" />
+
+                  <div className="flex gap-4">
+                    <InputField id="telefono" label="Teléfono" placeholder="999 999 999" className='flex-1' />
+                    <InputField id="fechaNacimiento" label="Fecha de Nacimiento" placeholder="" type="date" className="flex-1"/>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <InputField id="ciudad" label="Ciudad" placeholder="Ingresa tu ciudad" className="flex-1" />
+                    <InputField id="direccion" label="Dirección" placeholder="Av. Los Pinos 123, Miraflores" className="flex-1" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <InputField id="nombreRefugio" label="Nombre del refugio" placeholder="Ingrese nombre del refugio" />
+                  <InputField id="email" label="Correo Electrónico" placeholder="nombre@gmail.com" type="email" />
+
+                  <div className="flex gap-4">
+                    <InputField id="telefono" label="Teléfono" placeholder="999 999 999" className='flex-1' />
+                    <InputField id="personaContacto" label="Persona de contacto" placeholder="Ejemplo: Ana Mendoza" className='flex-1' />
+
+                  </div>
+
+                  <div className="flex gap-4">
+                    <InputField id="ciudad" label="Ciudad" placeholder="Ingresa tu ciudad" className="flex-1" />
+                    <InputField id="direccion" label="Dirección" placeholder="Av. Los Pinos 123, Miraflores" className="flex-1" />
+                  </div>
+                </>
+              )}
+
+              {/* Contraseña */}
+              <InputField id="password" label="Contraseña" placeholder="Crea una contraseña" type="password" />
+              <InputField
+                id="confirmPassword"
+                label="Confirmar contraseña"
+                placeholder="Repite tu contraseña"
                 type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
-            </div>
 
-            <div>
-              <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">
-                Teléfono
-              </label>
-              <input
-                id="telefono"
-                type="tel"
-                required
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                className="w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
-            </div>
+              {error && <p className="text-red-500">{error}</p>}
+              {success && <p className="text-green-500">{success}</p>}
 
-            {error && <p className="text-sm text-red-600 bg-red-100 p-3 rounded-md text-center">{error}</p>}
-            {success && <p className="text-sm text-green-600 bg-green-100 p-3 rounded-md text-center">{success}</p>}
-
-            <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-4 py-3 font-bold text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-primary-400 transition-colors"
+                className="w-full py-2 mt-1 bg-[#316B7A] text-white text-md font-semibold rounded-xl hover:bg-[#1f4f5a] transition-colors"
               >
-                {loading ? 'Creando cuenta...' : 'Registrarse'}
+                {loading ? 'Registrando...' : 'Registrarme'}
               </button>
-            </div>
-          </form>
 
-          <p className="text-sm text-center text-gray-600">
-            ¿Ya tienes una cuenta?{' '}
-            <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
-              Inicia sesión
-            </Link>
-          </p>
+              <p className="text-center text-gray-500">
+                ¿Ya tienes una cuenta?{' '}
+                <Link to="/login" className="text-[#FDB2A0] font-semibold">
+                  Inicia sesión
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
     </div>
