@@ -1,90 +1,114 @@
 package com.matchpet.backend_user.controller;
 
-import com.matchpet.backend_user.dto.AuthResponse;
-import com.matchpet.backend_user.dto.LoginRequest;
-import com.matchpet.backend_user.dto.RegisterRequest;
+import com.matchpet.backend_user.dto.*; // Importa TODOS los DTOs
 import com.matchpet.backend_user.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*; // Importa GetMapping
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import com.matchpet.backend_user.dto.RefreshTokenRequest; // <-- ¡Añade este!
-import org.springframework.web.bind.annotation.GetMapping; // <-- Añade este
-import java.util.Map; // <-- Añade este
+import java.util.Map;
 
-@RestController // 1. Le dice a Spring que esto es un controlador API (devuelve JSON)
-@RequestMapping("/api/auth") // 2. URL base para todos los métodos de esta clase
+@RestController
+@RequestMapping("/api/auth") //
 @RequiredArgsConstructor
-@Tag(name = "1. Autenticación", description = "Endpoints para Registro y Login") // Grupo de Endpoints
+@Tag(name = "1. Autenticación", description = "Endpoints para Registro y Login") //
 public class AuthController {
 
-    // 3. Inyectamos el "cerebro" (el servicio)
-    private final AuthService authService;
+    private final AuthService authService; //
 
-    @Operation(summary = "Registra un nuevo usuario")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente (devuelve token)"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos (ej: email mal formado, pass corto)"),
-            @ApiResponse(responseCode = "500", description = "Error interno (ej: email ya existe)")
+    // ... (tus endpoints register, login, refreshToken y google-login-url se quedan igual)
+    @Operation(summary = "Registra un nuevo usuario") //
+    @ApiResponses(value = { //
+            @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente (devuelve token)"), //
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos (ej: email mal formado, pass corto)"), //
+            @ApiResponse(responseCode = "500", description = "Error interno (ej: email ya existe)") //
     })
-
-    /**
-     * Endpoint para REGISTRAR un nuevo usuario.
-     * URL: POST http://localhost:8080/api/auth/register
-     */
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request
+    @PostMapping("/register") //
+    public ResponseEntity<AuthResponse> register( //
+                                                  @Valid @RequestBody RegisterRequest request
     ) {
-        return ResponseEntity.ok(authService.register(request));
+        return ResponseEntity.ok(authService.register(request)); //
     }
 
-    /**
-     * Endpoint para INICIAR SESIÓN.
-     * URL: POST http://localhost:8080/api/auth/login
-     */
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody LoginRequest request
+
+    @PostMapping("/login") //
+    public ResponseEntity<AuthResponse> login( //
+                                               @Valid @RequestBody LoginRequest request
     ) {
-        // 6. Devolvemos una respuesta HTTP 200 OK con el token
-        return ResponseEntity.ok(authService.login(request));
+        return ResponseEntity.ok(authService.login(request)); //
     }
 
-    @Operation(summary = "Renueva un token de acceso (Refresh Token)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Token de acceso renovado exitosamente"),
-            @ApiResponse(responseCode = "403", description = "Refresh Token inválido o expirado")
+    @Operation(summary = "Renueva un token de acceso (Refresh Token)") //
+    @ApiResponses(value = { //
+            @ApiResponse(responseCode = "200", description = "Token de acceso renovado exitosamente"), //
+            @ApiResponse(responseCode = "403", description = "Refresh Token inválido o expirado") //
     })
-    // ¡Ojo! Este endpoint es PÚBLICO (porque está en /api/auth/**)
-    // No usamos @SecurityRequirement porque el "auth" es el token en el body
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(
-            @Valid @RequestBody RefreshTokenRequest request
+    @PostMapping("/refresh") //
+    public ResponseEntity<AuthResponse> refreshToken( //
+                                                      @Valid @RequestBody RefreshTokenRequest request
     ) {
-        return ResponseEntity.ok(authService.refreshToken(request));
+        return ResponseEntity.ok(authService.refreshToken(request)); //
     }
 
-    @Operation(
-            summary = "Obtener URL para Login con Google (Solo Documentación)",
-            description = "¡ESTE ENDPOINT NO SE LLAMA DIRECTAMENTE! \n\n" +
-                    "Es solo para documentación. \n\n" +
-                    "Para iniciar el login con Google, el frontend debe **redirigir** al usuario (con un link `<a>` o un `window.location.href`) " +
-                    "a la URL que se devuelve en la respuesta: `/oauth2/authorization/google`"
+    @Operation( //
+            summary = "Obtener URL para Login con Google (Solo Documentación)", //
+            description = "¡ESTE ENDPOINT NO SE LLAMA DIRECTAMENTE! \n\n" + //
+                    "Es solo para documentación. \n\n" + //
+                    "Para iniciar el login con Google, el frontend debe **redirigir** al usuario (con un link `<a>` o un `window.location.href`) " + //
+                    "a la URL que se devuelve en la respuesta: `/oauth2/authorization/google`" //
     )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Devuelve la URL a la que el frontend debe redirigir al usuario")
+    @ApiResponses(value = { //
+            @ApiResponse(responseCode = "200", description = "Devuelve la URL a la que el frontend debe redirigir al usuario") //
     })
-    @GetMapping("/google-login-url")
+    @GetMapping("/google-login-url") //
     public ResponseEntity<Map<String, String>> getGoogleLoginUrl() {
         // Devolvemos la URL mágica que creó Spring Security
-        return ResponseEntity.ok(Map.of("google_login_url", "/oauth2/authorization/google"));
+        return ResponseEntity.ok(Map.of("google_login_url", "/oauth2/authorization/google")); //
+    }
+
+    // --- ¡NUEVOS ENDPOINTS! ---
+
+    @Operation(summary = "Solicita un reseteo de contraseña")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitud recibida (Email enviado si el usuario existe)"),
+            @ApiResponse(responseCode = "400", description = "Email mal formado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado (Aunque por seguridad, devolvemos 200)")
+    })
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request
+    ) {
+        // Por seguridad, NUNCA le decimos al frontend si el email fue encontrado o no.
+        // Simplemente aceptamos la solicitud y, si el usuario existe, enviamos el email.
+        try {
+            authService.forgotPassword(request);
+        } catch (RuntimeException e) {
+            // Capturamos el "Usuario no encontrado" pero no hacemos nada.
+            // En un caso real, aquí podrías loggear el error internamente.
+        }
+
+        // Devolvemos una respuesta genérica
+        return ResponseEntity.ok(Map.of("message", "Si tu email está registrado, recibirás un enlace para resetear tu contraseña."));
+    }
+
+
+    @Operation(summary = "Confirma un reseteo de contraseña")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Token inválido o contraseña corta"),
+            @ApiResponse(responseCode = "400", description = "Token expirado")
+    })
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        // A diferencia del forgot-password, aquí sí queremos que el usuario
+        // sepa si el token es inválido o expiró, para que pueda pedir uno nuevo.
+        authService.resetPassword(request);
+        return ResponseEntity.ok(Map.of("message", "¡Contraseña actualizada exitosamente!"));
     }
 }

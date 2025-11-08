@@ -7,9 +7,11 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import org.springframework.scheduling.annotation.EnableAsync; // <-- ¡NUEVO IMPORT!
+
 
 @SpringBootApplication
-
+@EnableAsync
 @OpenAPIDefinition(info = @Info(title = "MatchPet API", version = "1.0", description = "API de Backend para Usuarios"))
 @SecurityScheme(
         name = "bearerAuth", // Un nombre para referenciarlo
