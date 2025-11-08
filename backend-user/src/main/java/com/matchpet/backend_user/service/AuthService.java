@@ -36,4 +36,6 @@ public interface AuthService {
      */
     void resetPassword(ResetPasswordRequest request);
 
+    AuthResponse registerRefugio(RegisterRefugioRequest request);
+
 }

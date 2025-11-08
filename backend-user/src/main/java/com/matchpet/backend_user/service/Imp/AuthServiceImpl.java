@@ -1,5 +1,11 @@
 package com.matchpet.backend_user.service.Imp;
 
+// --- ¡IMPORTS AÑADIDOS! ---
+import com.matchpet.backend_user.dto.RegisterRefugioRequest;
+import com.matchpet.backend_user.model.Refugio;
+import com.matchpet.backend_user.repository.RefugioRepository;
+// --- FIN DE IMPORTS AÑADIDOS ---
+
 import com.matchpet.backend_user.dto.*;
 import com.matchpet.backend_user.model.PasswordResetToken;
 import com.matchpet.backend_user.model.RolModel;
@@ -18,8 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.HashSet; // <-- ¡Importante!
-import java.util.Set;     // <-- ¡Importante!
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -34,51 +40,45 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordResetTokenRepository tokenRepository;
     private final EmailService emailService;
 
+    // --- ¡INYECCIÓN AÑADIDA! ---
+    // Este era el primer error que marcaba la imagen
+    private final RefugioRepository refugioRepository;
+    // --- FIN DE LA INYECCIÓN ---
+
+
     @Override
     public AuthResponse register(RegisterRequest request) {
-        // 1. Validar si el email ya existe
+        // (Tu método register normal... sin cambios)
         userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
             throw new RuntimeException("El email ya está registrado");
         });
-
-        // 2. Buscar el rol por defecto
         RolModel defaultRole = rolRepository.findByNombreRol("Adoptante")
                 .orElseThrow(() -> new RuntimeException("Error: Rol 'Adoptante' no encontrado."));
-
-        // 3. Crear el nuevo usuario
-        // --- ¡CORRECCIÓN AQUÍ! ---
         Set<RolModel> roles = new HashSet<>();
         roles.add(defaultRole);
-
         UserModel user = UserModel.builder()
                 .email(request.getEmail())
                 .hashContrasena(passwordEncoder.encode(request.getPassword()))
                 .nombreCompleto(request.getNombreCompleto())
                 .telefono(request.getTelefono())
-                .roles(roles) // <-- Se usa el HashSet mutable
+                .roles(roles)
                 .estaActivo(true)
                 .fechaCreacionPerfil(new Timestamp(System.currentTimeMillis()))
                 .fechaActualizacion(new Timestamp(System.currentTimeMillis()))
                 .build();
-        // --- FIN DE LA CORRECCIÓN ---
-
-        // 4. Guardar en la BD
         userRepository.save(user);
-
-        // 5. Generar los tokens
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
-
-        // 6. Devolver la respuesta
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
     }
 
+    // ... (Tus métodos login, refreshToken, forgotPassword y resetPassword se quedan igual)
+
     @Override
     public AuthResponse login(LoginRequest request) {
-        // (Sin cambios en este método)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -97,7 +97,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse refreshToken(RefreshTokenRequest request) {
-        // (Sin cambios en este método)
         String userEmail = jwtService.extractUsernameFromRefreshToken(request.getRefreshToken());
         UserModel user = this.userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -111,7 +110,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        // (Sin cambios en este método)
         UserModel user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + request.getEmail()));
         tokenRepository.findByUser(user).ifPresent(tokenRepository::delete);
@@ -127,7 +125,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        // (Sin cambios en este método)
         PasswordResetToken resetToken = tokenRepository.findByToken(request.getToken())
                 .orElseThrow(() -> new RuntimeException("Token de reseteo inválido"));
         if (resetToken.getExpiryDate().before(new Timestamp(System.currentTimeMillis()))) {
@@ -137,7 +134,67 @@ public class AuthServiceImpl implements AuthService {
         UserModel user = resetToken.getUser();
         user.setHashContrasena(passwordEncoder.encode(request.getNewPassword()));
         user.setFechaActualizacion(new Timestamp(System.currentTimeMillis()));
-        userRepository.save(user); // Esta línea es la que fallaba
+        userRepository.save(user);
         tokenRepository.delete(resetToken);
+    }
+
+
+    // --- ¡NUEVO MÉTODO CORREGIDO! ---
+    // (Este es el método que estabas escribiendo)
+    @Override
+    @Transactional
+    public AuthResponse registerRefugio(RegisterRefugioRequest request) {
+
+        // 1. Validar que el email de LOGIN no exista
+        userRepository.findByEmail(request.getEmailLogin()).ifPresent(user -> {
+            throw new RuntimeException("El email de login ya está registrado");
+        });
+
+        // 2. Validar que el email del REFUGIO no exista
+        refugioRepository.findByEmail(request.getEmailRefugio()).ifPresent(refugio -> {
+            throw new RuntimeException("El email del refugio ya está registrado");
+        });
+
+        // 3. Buscar el rol "Refugio"
+        RolModel refugioRole = rolRepository.findByNombreRol("Refugio")
+                .orElseThrow(() -> new RuntimeException("Error: Rol 'Refugio' no encontrado."));
+
+        // 4. Crear la entidad Refugio
+        Refugio nuevoRefugio = new Refugio();
+        nuevoRefugio.setNombre(request.getNombreRefugio());
+        nuevoRefugio.setDireccion(request.getDireccion());
+        nuevoRefugio.setCiudad(request.getCiudad());
+        nuevoRefugio.setEmail(request.getEmailRefugio());
+        nuevoRefugio.setPersonaContacto(request.getPersonaContacto());
+        nuevoRefugio.setTelefono(request.getTelefonoContacto());
+
+        // 5. Crear la entidad Usuario
+        Set<RolModel> roles = new HashSet<>();
+        roles.add(refugioRole);
+
+        UserModel user = UserModel.builder()
+                .email(request.getEmailLogin())
+                .hashContrasena(passwordEncoder.encode(request.getPassword()))
+                .nombreCompleto(request.getPersonaContacto())
+                .telefono(request.getTelefonoContacto())
+                .roles(roles)
+                .estaActivo(true)
+                .fechaCreacionPerfil(new Timestamp(System.currentTimeMillis()))
+                .fechaActualizacion(new Timestamp(System.currentTimeMillis()))
+                .refugio(nuevoRefugio) // <-- ¡Ahora esto funcionará!
+                .build();
+
+        // 6. Guardar el Usuario
+        userRepository.save(user);
+
+        // 7. Generar los tokens
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        // 8. Devolver la respuesta
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }
