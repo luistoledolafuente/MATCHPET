@@ -37,7 +37,10 @@ public class UserServiceImp implements UserService {
 
         // 4. Mapeamos la entidad UserModel al DTO de respuesta (la "caja" segura)
         return UserProfileResponse.builder()
-                .usuarioId(user.getUsuarioId())
+                // --- ¡CORRECCIÓN AQUÍ! ---
+                // Era .getUsuarioId() pero el método correcto es .getId()
+                .usuarioId(user.getId())
+                // --- FIN DE LA CORRECCIÓN ---
                 .email(user.getEmail())
                 .nombreCompleto(user.getNombreCompleto())
                 .telefono(user.getTelefono())

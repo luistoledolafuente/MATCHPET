@@ -39,7 +39,10 @@ public class JwtService {
 
         if (userDetails instanceof UserModel) {
             UserModel user = (UserModel) userDetails;
-            claims.put("usuarioId", user.getUsuarioId());
+            // --- ¡CORRECCIÓN AQUÍ! ---
+            // Era .getUsuarioId() pero el método correcto es .getId()
+            claims.put("usuarioId", user.getId());
+            // --- FIN DE LA CORRECCIÓN ---
             claims.put("nombre", user.getNombreCompleto());
         }
 
