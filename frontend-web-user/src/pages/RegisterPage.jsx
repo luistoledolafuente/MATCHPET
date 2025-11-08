@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 
-// ✅ Mover el componente fuera de RegisterPage evita que se regenere cada render
+// ✅ Componente de input reutilizable
 const InputField = ({ id, label, placeholder, type = 'text', className = '', value, onChange }) => (
   <div className={`flex flex-col min-w-0 ${className}`}>
     <label htmlFor={id} className="block text-md font-medium text-gray-700">
@@ -59,35 +59,35 @@ export default function RegisterPage() {
     }
 
     try {
-      const userData =
-        userType === 'adoptante'
-          ? {
-              nombreCompleto: formData.nombreCompleto,
-              email: formData.email,
-              password: formData.password,
-              telefono: formData.telefono,
-              fechaNacimiento: formData.fechaNacimiento,
-              ciudad: formData.ciudad,
-              direccion: formData.direccion,
-            }
-          : {
-              nombreRefugio: formData.nombreRefugio,
-              email: formData.email,
-              password: formData.password,
-              telefono: formData.telefono,
-              personaContacto: formData.personaContacto,
-              ciudad: formData.ciudad,
-              direccion: formData.direccion,
-            };
+      if (userType === 'adoptante') {
+        await authService.register({
+          nombreCompleto: formData.nombreCompleto,
+          email: formData.email,
+          password: formData.password,
+          telefono: formData.telefono,
+          fechaNacimiento: formData.fechaNacimiento,
+          ciudad: formData.ciudad,
+          direccion: formData.direccion,
+        });
+      } else {
+        // Refugio
+        await authService.registerRefugio({
+          nombreRefugio: formData.nombreRefugio,
+          emailLogin: formData.email,   // Email para login
+          emailRefugio: formData.email, // Email de contacto
+          password: formData.password,
+          telefonoContacto: formData.telefono,
+          personaContacto: formData.personaContacto,
+          ciudad: formData.ciudad,
+          direccion: formData.direccion,
+        });
+      }
 
-      await authService.register(userData);
       setSuccess('¡Registro exitoso! Redirigiendo al inicio de sesión...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      const errorMessage =
-        err.response?.data || 'Error en el registro. Por favor, intenta de nuevo.';
-      setError(errorMessage);
-      console.error(err);
+      console.error('Error API:', err.response ? err.response.data : err.message);
+      setError(err.response?.data?.message || err.message || 'Error en el registro. Por favor, intenta de nuevo.');
     } finally {
       setLoading(false);
     }
