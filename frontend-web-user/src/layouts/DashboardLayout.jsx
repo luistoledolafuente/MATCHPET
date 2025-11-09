@@ -1,15 +1,48 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function DashboardLayout() {
-  return (
-    <div className="flex bg-gray-100 min-h-screen">
-      <Sidebar />
-      <div className="flex-1 p-8">
-        {/* Aquí se renderizará el contenido de la página del dashboard actual */}
-        <Outlet />
-      </div>
-    </div>
-  );
+import AdoptanteHeader from "../components/dashboard/AdoptanteHeader";
+import RefugioHeader from "../components/dashboard/RefugioHeader";
+
+
+// Loader opcional mientras se verifica el tipo de usuario
+const DashboardLayout = () => {
+const { user, userType, profileLoading } = useAuth();
+
+// 1. Muestra un loader mientras se carga el perfil (Necesario, ya que ProtectedRoute podría haber retornado null)
+if (profileLoading) {
+return (
+<div className="flex items-center justify-center min-h-screen bg-gray-50">
+<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#407581]"></div>
+</div>
+);
 }
+
+// 2. Si no se pudo determinar el tipo de usuario (aunque AuthContext ya debe manejar esto)
+if (!userType) {
+return (
+<div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-700">
+<p className="text-lg">Error de sesión. Por favor, inicia sesión nuevamente.</p>
+</div>
+);
+}
+
+return (
+<div className="min-h-screen flex flex-col">
+{/* Header según el tipo de usuario - CORRECCIÓN DE NOMBRE */}
+{userType === "refugio" ? (
+<RefugioHeader user={user} /> 
+) : (
+<AdoptanteHeader user={user} />
+)}
+
+{/* Contenido principal */}
+<main className="flex-1 bg-gray-50 p-4">
+<Outlet />
+</main>
+</div>
+);
+};
+
+export default DashboardLayout;

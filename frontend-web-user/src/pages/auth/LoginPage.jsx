@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,10 +17,12 @@ export default function LoginPage() {
 
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
+  if (isAuthenticated) {
+    if (userType === 'Adoptante') navigate('/dashboard/adoptante');
+    else if (userType === 'Refugio') navigate('/dashboard/refugio');
+  }
+}, [isAuthenticated, navigate, userType]);
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import authService from '../../services/authService';
 
 // ✅ Componente de input reutilizable
 const InputField = ({ id, label, placeholder, type = 'text', className = '', value, onChange }) => (

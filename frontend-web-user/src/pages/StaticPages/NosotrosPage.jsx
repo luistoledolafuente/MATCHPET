@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-
-import MisionImg from "../assets/images/mision.png";
-import VisionImg from "../assets/images/vision.png";
-import ValoresImg from "../assets/images/valores.png";
-import FilosofiaImg from "../assets/images/filosofia.png";
-
-import FirulaisImg from "../assets/images/firulais.png";
-import LunaImg from "../assets/images/luna.png";
-import NinaImg from "../assets/images/nina.png";
-import MaxImg from "../assets/images/max.png";
-import RockyImg from "../assets/images/rocky.png";
+import MisionImg from "../../assets/images/mision.png";
+import VisionImg from "../../assets/images/vision.png";
+import ValoresImg from "../../assets/images/valores.png";
+import FilosofiaImg from "../../assets/images/filosofia.png";
+import FirulaisImg from "../../assets/images/firulais.png";
+import LunaImg from "../../assets/images/luna.png";
+import NinaImg from "../../assets/images/nina.png";
+import MaxImg from "../../assets/images/max.png";
+import RockyImg from "../../assets/images/rocky.png";
 
 const sections = [
   {
