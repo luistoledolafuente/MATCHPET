@@ -8,9 +8,17 @@ export default function Navbar() {
   return (
     <header className="bg-white shadow-md">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold text-[#407581]">
-          🐾 MatchPet
-        </Link>
+        <Link
+                  to="/"
+                  className="text-xl font-bold text-[#407581] flex items-center"
+                >
+                  <img
+                    src="/src/assets/images/logo_matchpet.png" 
+                    alt="Pata de mascota"
+                    className="w-26 h-12 mr-2"
+                  />
+                  MatchPet
+                </Link>
         <div className="flex items-center space-x-6">
           <Link to="/#about" className="text-gray-600 hover:text-[#407581]">¿Cómo Funciona?</Link>
           <Link to="/nosotros" className="text-gray-600 hover:text-[#407581]">Nosotros</Link>

@@ -29,20 +29,21 @@ return (
 }
 
 return (
-<div className="min-h-screen flex flex-col">
-{/* Header según el tipo de usuario - CORRECCIÓN DE NOMBRE */}
-{userType === "refugio" ? (
-<RefugioHeader user={user} /> 
-) : (
-<AdoptanteHeader user={user} />
-)}
+  <div className="min-h-screen flex flex-col">
+    {/* Header según el tipo de usuario */}
+    {userType === "refugio" ? (
+      <RefugioHeader user={user} /> 
+    ) : (
+      <AdoptanteHeader user={user} />
+    )}
 
-{/* Contenido principal */}
-<main className="flex-1 bg-gray-50 p-4">
-<Outlet />
-</main>
-</div>
+    {/* Contenido principal */}
+    <main className="flex-1 w-full bg-transparent">
+      <div className="w-full">
+        <Outlet />
+      </div>
+    </main>
+  </div>
 );
-};
-
+}
 export default DashboardLayout;
