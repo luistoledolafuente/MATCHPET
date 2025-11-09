@@ -16,5 +16,6 @@ public class UserProfileResponse {
     private String nombreCompleto;
     private String telefono;
 
+    private String role; // Ejemplo: "ADOPTANTE" o "REFUGIO"
 
 }

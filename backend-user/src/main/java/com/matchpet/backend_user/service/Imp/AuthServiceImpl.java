@@ -138,6 +138,28 @@ public class AuthServiceImpl implements AuthService {
         tokenRepository.delete(resetToken);
     }
 
+    // --- ¡MÉTODO GET PROFILE CORREGIDO! ---
+        @Override
+        @Transactional // <-- ¡CRUCIAL! Esto resuelve el 500 de Lazy Initialization
+        public UserProfileResponse getProfile(String username) {
+        UserModel user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        // Obtener el rol principal (asumiendo que tiene al menos uno)
+        // CRUCIAL: El front-end necesita saber si es "Adoptante" o "Refugio" para el dashboard
+        String mainRole = user.getRoles().stream()
+                .findFirst() // Toma el primer rol (siempre debería tener al menos uno)
+                .map(RolModel::getNombreRol)
+                .orElse("ADOPTANTE"); // Falla por defecto a Adoptante si no hay rol
+
+        return UserProfileResponse.builder()
+                .usuarioId(user.getId())
+                .nombreCompleto(user.getNombreCompleto())
+                .email(user.getEmail())
+                .telefono(user.getTelefono())
+                .role(mainRole) // <-- ¡Añadimos el rol aquí!
+                .build();
+        }
 
     // --- ¡NUEVO MÉTODO CORREGIDO! ---
     // (Este es el método que estabas escribiendo)

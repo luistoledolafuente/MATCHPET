@@ -24,6 +24,13 @@ public interface AuthService {
 
     AuthResponse refreshToken(RefreshTokenRequest request);
 
+     /**
+     * Obtiene el perfil del usuario.
+     * @param username El email o username del usuario.
+     * @return Un DTO con la información del usuario.
+     */
+    UserProfileResponse getProfile(String username);
+
     /**
      * Inicia el proceso de reseteo de contraseña.
      * @param request El DTO que contiene el email del usuario.

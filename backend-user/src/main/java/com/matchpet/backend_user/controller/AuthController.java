@@ -2,6 +2,7 @@ package com.matchpet.backend_user.controller;
 
 import com.matchpet.backend_user.dto.*; // Asegúrate de que importe todos los DTOs
 import com.matchpet.backend_user.service.AuthService;
+import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -103,6 +104,12 @@ public class AuthController {
         authService.resetPassword(request);
         return ResponseEntity.ok(Map.of("message", "¡Contraseña actualizada exitosamente!"));
     }
+
+    @GetMapping("/profile")
+        public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
+        UserProfileResponse profile = authService.getProfile(authentication.getName());
+        return ResponseEntity.ok(profile);
+        }
 
 
     // --- ¡NUEVO ENDPOINT PARA H-5! ---
