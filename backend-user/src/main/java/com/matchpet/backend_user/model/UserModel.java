@@ -1,16 +1,20 @@
 package com.matchpet.backend_user.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.*; // ¡Asegúrate de que esté importado!
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -23,79 +27,92 @@ public class UserModel implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "usuario_id")
-    private Integer usuarioId;
+    private Integer id;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "hash_contraseña", nullable = false)
+    @Column(name = "hash_contraseña", nullable = false, columnDefinition = "TEXT")
     private String hashContrasena;
 
     @Column(name = "nombre_completo", nullable = false)
     private String nombreCompleto;
 
-    @Column(name = "telefono")
     private String telefono;
 
+    @CreationTimestamp
     @Column(name = "fecha_creacion_perfil", updatable = false)
     private Timestamp fechaCreacionPerfil;
 
+    @UpdateTimestamp
     @Column(name = "fecha_actualizacion")
     private Timestamp fechaActualizacion;
 
     @Column(name = "esta_activo", nullable = false)
-    private boolean estaActivo;
+    private Boolean estaActivo;
 
-    // --- Relación Muchos-a-Muchos con Roles ---
-    @ManyToMany(fetch = FetchType.EAGER) // EAGER: Traer los roles junto con el usuario
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "Usuario_Roles", // Nombre de la tabla intermedia
-            joinColumns = @JoinColumn(name = "usuario_id"), // Clave de esta entidad
-            inverseJoinColumns = @JoinColumn(name = "rol_id") // Clave de la otra entidad
+            name = "Usuario_Roles",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
     private Set<RolModel> roles;
 
+    // --- ¡CAMBIO IMPORTANTE AQUÍ! ---
+    // Este es el campo que faltaba y que causaba el error en el builder
 
-    // --- MÉTODOS DE USERDETAILS (¡LA CLAVE DE SECURITY!) ---
-    // Spring Security usará estos métodos para autenticar.
+    /**
+     * Un Usuario (con rol "Refugio") puede tener UN perfil de Refugio.
+     * Esta anotación crea la relación usando la tabla 'Perfil_Refugio'.
+     */
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "Perfil_Refugio",
+            joinColumns = @JoinColumn(name = "usuario_id"), // FK a esta entidad (Usuario)
+            inverseJoinColumns = @JoinColumn(name = "refugio_id") // FK a la otra entidad (Refugio)
+    )
+    private Refugio refugio;
+
+    // --- FIN DEL CAMBIO ---
+
+
+    // ... (El resto de tus métodos de UserDetails se quedan igual)
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Le decimos a Spring que nuestra colección de "roles"
-        // es la lista de autoridades.
-        return this.roles;
+        return roles.stream()
+                .map(rol -> new SimpleGrantedAuthority(rol.getNombreRol()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public String getPassword() {
-        // Le decimos a Spring dónde está la contraseña ENCRIPTADA.
         return this.hashContrasena;
     }
 
     @Override
     public String getUsername() {
-        // Le decimos a Spring que nuestro "username" es el EMAIL.
         return this.email;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Asumimos que las cuentas nunca expiran
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // Asumimos que las cuentas nunca se bloquean
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Asumimos que las credenciales nunca expiran
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        // Le decimos a Spring si el usuario está activo o no.
         return this.estaActivo;
     }
 }

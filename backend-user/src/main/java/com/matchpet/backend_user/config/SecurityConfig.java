@@ -16,6 +16,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -86,4 +90,19 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
+    
+@Bean
+public CorsFilter corsFilter() {
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    CorsConfiguration config = new CorsConfiguration();
+    
+    config.setAllowCredentials(true); // permite enviar cookies y headers
+    config.addAllowedOrigin("http://localhost:5173"); // el puerto de tu frontend Vite
+    config.addAllowedHeader("*"); // permite cualquier header
+    config.addAllowedMethod("*"); // permite GET, POST, PUT, DELETE...
+    
+    source.registerCorsConfiguration("/**", config);
+    return new CorsFilter(source);
+}
 }

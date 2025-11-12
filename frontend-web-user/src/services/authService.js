@@ -1,53 +1,92 @@
 import axios from 'axios';
 
-// La URL base de tu API de backend.
-// Apunta al servicio que está corriendo (sea en local o en Docker).
-const API_URL = 'http://localhost:8080/api/auth';
+// ✅ URLs apuntando al backend en 8081
+const API_URL = 'http://localhost:8081/api/auth';
 
-/**
- * Función para iniciar sesión.
- * Envía las credenciales al endpoint /api/auth/login.
- * @param {string} email - El correo electrónico del usuario.
- * @param {string} password - La contraseña del usuario.
- * @returns {Promise<string>} Una promesa que se resuelve con el token JWT si el login es exitoso.
- */
+// LOGIN
 const login = async (email, password) => {
-  const response = await axios.post(`${API_URL}/login`, {
-    email,
-    password,
-  });
+  const response = await axios.post(`${API_URL}/login`, { email, password });
 
-  // Si la respuesta contiene un token, lo guardamos en el almacenamiento local del navegador.
-  // Esto nos permitirá "recordar" que el usuario está autenticado.
-  if (response.data.token) {
-    localStorage.setItem('userToken', response.data.token);
+  if (response.data.accessToken) {
+    localStorage.setItem('userToken', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
+
+    // Configura el header por defecto para futuras solicitudes
+    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
   }
 
-  return response.data.token;
+  return response.data;
 };
 
-/**
- * Función para registrar un nuevo usuario.
- * @param {object} userData - Un objeto con { nombreCompleto, email, password, telefono }.
- * @returns {Promise<any>} Una promesa que se resuelve con la respuesta del servidor.
- */
-const register = (userData) => {
-  return axios.post(`${API_URL}/register`, userData);
+// REGISTRO ADOPTANTE
+const register = async (userData) => {
+  const response = await axios.post(`${API_URL}/register`, userData);
+
+  if (response.data.accessToken) {
+    localStorage.setItem('userToken', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
+    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
+  }
+
+  return response.data;
 };
 
-/**
- * Función para cerrar sesión.
- * Simplemente elimina el token del almacenamiento local.
- */
+// REGISTRO REFUGIO
+const registerRefugio = async (refugioData) => {
+  const response = await axios.post(`${API_URL}/register-refugio`, refugioData);
+
+  if (response.data.accessToken) {
+    localStorage.setItem('userToken', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
+    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
+  }
+
+  return response.data;
+};
+
+// LOGOUT
 const logout = () => {
   localStorage.removeItem('userToken');
+  localStorage.removeItem('refreshToken');
+  delete axios.defaults.headers.common["Authorization"];
 };
 
-// Exportamos un objeto con todas nuestras funciones de autenticación.
-const authService = {
-  login,
-  register,
-  logout,
+// OBTENER PERFIL
+const getProfile = async () => {
+  const token = localStorage.getItem('userToken');
+  if (!token) throw new Error('No hay token disponible');
+
+  const response = await axios.get(`${API_URL}/profile`, {  // <-- aquí apuntamos al endpoint correcto
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  return response.data;
+};
+
+// RENOVAR TOKEN
+const refreshToken = async () => {
+  const tokenRefresh = localStorage.getItem('refreshToken');
+  if (!tokenRefresh) throw new Error('No hay refresh token disponible');
+
+  const response = await axios.post(`${API_URL}/refresh`, { refreshToken: tokenRefresh });
+
+  if (response.data.accessToken) {
+    localStorage.setItem('userToken', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
+    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
+  }
+
+  return response.data.accessToken;
+};
+
+// Exportamos todos los servicios
+const authService = { 
+  login, 
+  register, 
+  registerRefugio,
+  logout, 
+  getProfile, 
+  refreshToken
 };
 
 export default authService;

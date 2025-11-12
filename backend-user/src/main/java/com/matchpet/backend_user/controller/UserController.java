@@ -31,7 +31,7 @@ public class UserController {
 
     /**
      * Endpoint para OBTENER el perfil del usuario autenticado.
-     * URL: GET http://localhost:8080/api/user/profile
+     * URL: GET http://localhost:8081/api/user/profile
      * ¡Este endpoint está protegido!
      * (Porque no empieza con /api/auth/)
      */

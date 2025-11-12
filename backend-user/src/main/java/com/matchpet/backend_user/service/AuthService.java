@@ -1,9 +1,6 @@
 package com.matchpet.backend_user.service;
 
-import com.matchpet.backend_user.dto.AuthResponse;
-import com.matchpet.backend_user.dto.LoginRequest;
-import com.matchpet.backend_user.dto.RegisterRequest;
-import com.matchpet.backend_user.dto.RefreshTokenRequest;
+import com.matchpet.backend_user.dto.*;
 
 
 /**
@@ -26,5 +23,26 @@ public interface AuthService {
     AuthResponse login(LoginRequest request);
 
     AuthResponse refreshToken(RefreshTokenRequest request);
+
+     /**
+     * Obtiene el perfil del usuario.
+     * @param username El email o username del usuario.
+     * @return Un DTO con la información del usuario.
+     */
+    UserProfileResponse getProfile(String username);
+
+    /**
+     * Inicia el proceso de reseteo de contraseña.
+     * @param request El DTO que contiene el email del usuario.
+     */
+    void forgotPassword(ForgotPasswordRequest request);
+
+    /**
+     * Completa el reseteo de contraseña.
+     * @param request El DTO que contiene el token y la nueva contraseña.
+     */
+    void resetPassword(ResetPasswordRequest request);
+
+    AuthResponse registerRefugio(RegisterRefugioRequest request);
 
 }
