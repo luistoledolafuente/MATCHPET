@@ -13,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.HashSet; // <-- ¡NUEVO IMPORT!
 import java.util.Set;
 
 @Data
@@ -25,7 +26,6 @@ public class Animal {
     @Column(name = "animal_id")
     private Integer id;
 
-    // ... (campos de nombre, descripcion, etc. sin cambios) ...
     @Column(nullable = false, length = 100)
     private String nombre;
     @Column(name = "fecha_nacimiento_aprox")
@@ -49,10 +49,6 @@ public class Animal {
     private Timestamp fechaActualizacion;
 
     // --- Relaciones (Foreign Keys) ---
-
-    // --- ¡CORRECCIÓN AQUÍ! ---
-    // Cambiado de LAZY a EAGER.
-    // Siempre queremos saber la raza cuando cargamos un animal.
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "raza_id", nullable = false)
     private Raza raza;
@@ -64,7 +60,6 @@ public class Animal {
     @EqualsAndHashCode.Exclude
     private Refugio refugio;
 
-    // (El resto de relaciones EAGER ya estaban bien)
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "genero_id", nullable = false)
     private Genero genero;
@@ -80,14 +75,18 @@ public class Animal {
 
     // --- Relaciones (Tablas Externas) ---
 
+    // --- ¡CORRECCIÓN AQUÍ! ---
     @OneToMany(mappedBy = "animal", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<AnimalFoto> fotos;
+    private Set<AnimalFoto> fotos = new HashSet<>(); // <-- INICIALIZADO
+    // --- FIN DE LA CORRECCIÓN ---
 
+    // --- ¡MEJORA ADICIONAL! ---
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "Animal_Temperamentos",
             joinColumns = @JoinColumn(name = "animal_id"),
             inverseJoinColumns = @JoinColumn(name = "temperamento_id")
     )
-    private Set<Temperamento> temperamentos;
+    private Set<Temperamento> temperamentos = new HashSet<>(); // <-- INICIALIZADO
+    // --- FIN DE LA MEJORA ---
 }

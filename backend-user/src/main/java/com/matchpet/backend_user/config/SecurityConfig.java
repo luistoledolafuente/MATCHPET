@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -26,30 +25,32 @@ import org.springframework.web.filter.CorsFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // --- Inyectamos nuestras herramientas ---
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    /**
-     * ¡FIX 1: ARREGLA EL ERROR "Expected 2 arguments..."!
-     * * Le pedimos a Spring que nos inyecte el 'AuthenticationProvider'
-     * (que definimos en el Bean de abajo)
-     */
+    // ¡Quitamos el AuthenticationProvider de aquí para romper el ciclo!
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception { // <-- Se inyecta aquí
 
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        // --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
-                        // Añade las rutas de Swagger a la lista pública
+                        // --- Swagger (Público) ---
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        // --- FIN DE LA SOLUCIÓN ---
 
-                        // Tus otras rutas públicas
-                        .requestMatchers("/api/auth/**", "/login/oauth2/**", "/", "/error").permitAll()
+                        // --- ¡INICIO DE LA CORRECCIÓN! ---
+                        // Añadimos las nuevas rutas públicas
+                        .requestMatchers(
+                                "/api/auth/**",              // Login, refresh, forgot-password
+                                "/api/adoptantes/register",  // Nueva ruta de registro de adoptantes
+                                "/api/refugios/register",    // Nueva ruta de registro de refugios
+                                "/api/lookups/**",           // ¡Permitir ver las listas de lookups!
+                                "/login/oauth2/**", "/", "/error"
+                        ).permitAll()
+                        // --- FIN DE LA CORRECCIÓN ---
 
                         // Todo lo demás sigue protegido
                         .anyRequest().authenticated()
@@ -58,51 +59,43 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .exceptionHandling(ex -> ex
-                        // Si la autenticación falla (sin token), devuelve 401 Unauthorized
-                        // en lugar de redirigir a la página de login de Google (302)
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .oauth2Login(oauth2 ->
                         oauth2.successHandler(oAuth2LoginSuccessHandler)
                 )
-                .authenticationProvider(authenticationProvider) // <-- ¡Arreglado! Usamos el bean inyectado
+                .authenticationProvider(authenticationProvider) // Usamos el provider inyectado
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
 
-    /**
-     * ¡FIX 2: ARREGLA LOS AVISOS "deprecated"!
-     * * Usamos el constructor moderno de DaoAuthenticationProvider
-     * que acepta el PasswordEncoder.
-     */
     @Bean
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-
+        // (Tu bean se queda igual - está perfecto)
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(passwordEncoder);
         authProvider.setUserDetailsService(userDetailsService);
-
         return authProvider;
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        // (Tu bean se queda igual - está perfecto)
         return config.getAuthenticationManager();
     }
 
-    
-@Bean
-public CorsFilter corsFilter() {
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    CorsConfiguration config = new CorsConfiguration();
-    
-    config.setAllowCredentials(true); // permite enviar cookies y headers
-    config.addAllowedOrigin("http://localhost:5173"); // el puerto de tu frontend Vite
-    config.addAllowedHeader("*"); // permite cualquier header
-    config.addAllowedMethod("*"); // permite GET, POST, PUT, DELETE...
-    
-    source.registerCorsConfiguration("/**", config);
-    return new CorsFilter(source);
-}
+
+    @Bean
+    public CorsFilter corsFilter() {
+        // (Tu bean se queda igual - está perfecto)
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
 }
