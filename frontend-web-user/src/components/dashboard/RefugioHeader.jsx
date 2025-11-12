@@ -12,13 +12,15 @@ export default function RefugioHeader() {
   };
 
   return (
-    <header className="bg-white shadow-md">
+    <header className="bg-[#BAE6FD] shadow-md">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         <Link
           to="/dashboard/refugio"
-          className="text-xl font-bold text-[#407581]"
-        >
-          🐾 MatchPet
+          className="text-xl font-bold text-[#407581] flex items-center">
+          <img src="/src/assets/images/logo_matchpet.png" 
+              alt="Pata de mascota"
+              className="w-26 h-12 mr-2" />
+              MatchPet
         </Link>
 
         <div className="flex items-center space-x-6">
@@ -56,7 +58,7 @@ export default function RefugioHeader() {
 
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+            className="bg-[#407581] text-white px-4 py-2 rounded-md hover:bg-[#5b8c99] transition-colors duration-150 font-semibold"
           >
             Cerrar Sesión
           </button>
