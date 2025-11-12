@@ -1,12 +1,16 @@
 package com.matchpet.backend_user.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+// ¡Se quitaron las importaciones de Animal y Set!
 
 @Data
 @NoArgsConstructor
@@ -47,9 +51,13 @@ public class Refugio {
 
     /**
      * Un Refugio está "administrado" por un UserModel.
-     * 'mappedBy = "refugio"' le dice a JPA que la relación
-     * (la columna FK) se define en el campo 'refugio' de la clase UserModel.
      */
     @OneToOne(mappedBy = "refugio")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private UserModel user;
+
+    // --- ¡SE BORRÓ EL CAMPO 'animales' DE AQUÍ! ---
+    // (Lo volveremos a añadir DESPUÉS de crear la clase Animal)
 }
