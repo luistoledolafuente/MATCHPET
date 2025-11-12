@@ -58,6 +58,9 @@ public class Refugio {
     @EqualsAndHashCode.Exclude
     private UserModel user;
 
-    // --- ¡SE BORRÓ EL CAMPO 'animales' DE AQUÍ! ---
-    // (Lo volveremos a añadir DESPUÉS de crear la clase Animal)
+    @OneToMany(mappedBy = "refugio")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private java.util.Set<Animal> animales;
 }

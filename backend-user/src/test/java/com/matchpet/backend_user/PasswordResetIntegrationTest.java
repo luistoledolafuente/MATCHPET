@@ -1,7 +1,7 @@
 package com.matchpet.backend_user;
 
-import com.matchpet.backend_user.dto.ForgotPasswordRequest;
-import com.matchpet.backend_user.dto.ResetPasswordRequest;
+import com.matchpet.backend_user.dto.auth.ForgotPasswordRequest;
+import com.matchpet.backend_user.dto.auth.ResetPasswordRequest;
 import com.matchpet.backend_user.model.PasswordResetToken;
 import com.matchpet.backend_user.model.RolModel;
 import com.matchpet.backend_user.model.UserModel;

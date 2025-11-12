@@ -1,6 +1,6 @@
 package com.matchpet.backend_user.service;
 
-import com.matchpet.backend_user.dto.*;
+import com.matchpet.backend_user.dto.auth.*;
 
 public interface AuthService {
 

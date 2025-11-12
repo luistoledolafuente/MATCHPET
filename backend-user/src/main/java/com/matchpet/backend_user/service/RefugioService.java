@@ -1,8 +1,8 @@
 package com.matchpet.backend_user.service;
 
-import com.matchpet.backend_user.dto.AuthResponse;
-import com.matchpet.backend_user.dto.RegisterRefugioRequest;
-import com.matchpet.backend_user.dto.UpdateRefugioRequest;
+import com.matchpet.backend_user.dto.auth.AuthResponse;
+import com.matchpet.backend_user.dto.refugio.RegisterRefugioRequest;
+import com.matchpet.backend_user.dto.refugio.UpdateRefugioRequest;
 import com.matchpet.backend_user.model.Refugio;
 
 public interface RefugioService {

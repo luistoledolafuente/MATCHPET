@@ -1,4 +1,4 @@
-package com.matchpet.backend_user.dto;
+package com.matchpet.backend_user.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.matchpet.backend_user.model.PerfilAdoptante;

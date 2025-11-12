@@ -1,6 +1,6 @@
 package com.matchpet.backend_user.service.Imp;
 
-import com.matchpet.backend_user.dto.*;
+import com.matchpet.backend_user.dto.auth.*;
 import com.matchpet.backend_user.model.PasswordResetToken;
 import com.matchpet.backend_user.model.UserModel;
 import com.matchpet.backend_user.repository.PasswordResetTokenRepository;

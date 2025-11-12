@@ -1,4 +1,4 @@
-package com.matchpet.backend_user.dto; // Asegúrate que sea tu paquete 'dto'
+package com.matchpet.backend_user.dto.auth; // Asegúrate que sea tu paquete 'dto'
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,6 +1,6 @@
 package com.matchpet.backend_user.service.Imp;
 
-import com.matchpet.backend_user.dto.UserProfileResponse;
+import com.matchpet.backend_user.dto.user.UserProfileResponse;
 import com.matchpet.backend_user.model.RolModel; // ¡Importante!
 import com.matchpet.backend_user.model.UserModel;
 import com.matchpet.backend_user.repository.UserRepository;

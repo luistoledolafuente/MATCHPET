@@ -1,9 +1,9 @@
 package com.matchpet.backend_user.controller;
 
-import com.matchpet.backend_user.dto.AuthResponse;
-import com.matchpet.backend_user.dto.RegisterRequest;
-import com.matchpet.backend_user.dto.UpdateAdoptanteRequest;
-import com.matchpet.backend_user.dto.UserProfileResponse;
+import com.matchpet.backend_user.dto.auth.AuthResponse;
+import com.matchpet.backend_user.dto.adoptante.RegisterAdoptanteRequest;
+import com.matchpet.backend_user.dto.adoptante.UpdateAdoptanteRequest;
+import com.matchpet.backend_user.dto.user.UserProfileResponse;
 import com.matchpet.backend_user.service.AdoptanteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,7 +31,7 @@ public class AdoptanteController {
     })
     @PostMapping("/register") // La nueva URL será: POST /api/adoptantes/register
     public ResponseEntity<AuthResponse> registerAdoptante(
-            @Valid @RequestBody RegisterRequest request
+            @Valid @RequestBody RegisterAdoptanteRequest request
     ) {
         return ResponseEntity.ok(adoptanteService.registerAdoptante(request));
     }

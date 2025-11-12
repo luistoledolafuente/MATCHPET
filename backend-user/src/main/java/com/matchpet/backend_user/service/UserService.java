@@ -1,6 +1,6 @@
 package com.matchpet.backend_user.service;
 
-import com.matchpet.backend_user.dto.UserProfileResponse;
+import com.matchpet.backend_user.dto.user.UserProfileResponse;
 
 
 public interface UserService {

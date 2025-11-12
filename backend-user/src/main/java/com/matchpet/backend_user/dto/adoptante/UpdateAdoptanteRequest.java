@@ -1,4 +1,4 @@
-package com.matchpet.backend_user.dto;
+package com.matchpet.backend_user.dto.adoptante;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

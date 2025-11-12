@@ -13,11 +13,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional; // ¡Importante para tests de 'create'!
 
 // --- Imports de tu proyecto ---
-import com.matchpet.backend_user.dto.AuthResponse;
-import com.matchpet.backend_user.dto.LoginRequest;
-import com.matchpet.backend_user.dto.RegisterRequest;
-import com.matchpet.backend_user.dto.RefreshTokenRequest;
-import com.matchpet.backend_user.dto.RegisterRefugioRequest; // <-- ¡NUEVO IMPORT!
+import com.matchpet.backend_user.dto.auth.AuthResponse;
+import com.matchpet.backend_user.dto.auth.LoginRequest;
+import com.matchpet.backend_user.dto.adoptante.RegisterAdoptanteRequest;
+import com.matchpet.backend_user.dto.auth.RefreshTokenRequest;
+import com.matchpet.backend_user.dto.refugio.RegisterRefugioRequest; // <-- ¡NUEVO IMPORT!
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // --- Imports estáticos (para hacer el código más limpio) ---
@@ -50,7 +50,7 @@ public class AuthIntegrationTest {
         String nombre = "Test User Flow";
 
         // --- 1. REGISTRO ---
-        RegisterRequest registerRequest = new RegisterRequest();
+        RegisterAdoptanteRequest registerRequest = new RegisterAdoptanteRequest();
         registerRequest.setEmail(uniqueEmail);
         registerRequest.setPassword(password);
         registerRequest.setNombreCompleto(nombre);
@@ -105,7 +105,7 @@ public class AuthIntegrationTest {
         String password = "password123";
 
         // Registrar usuario
-        RegisterRequest registerRequest = new RegisterRequest();
+        RegisterAdoptanteRequest registerRequest = new RegisterAdoptanteRequest();
         registerRequest.setEmail(uniqueEmail);
         registerRequest.setPassword(password);
         registerRequest.setNombreCompleto("Test Refresh");

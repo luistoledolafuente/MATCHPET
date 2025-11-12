@@ -1,6 +1,6 @@
 package com.matchpet.backend_user.controller;
 
-import com.matchpet.backend_user.dto.*;
+import com.matchpet.backend_user.dto.auth.*;
 import com.matchpet.backend_user.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

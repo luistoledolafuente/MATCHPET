@@ -1,9 +1,9 @@
 package com.matchpet.backend_user.service.Imp;
 
-import com.matchpet.backend_user.dto.AuthResponse;
-import com.matchpet.backend_user.dto.RegisterRequest;
-import com.matchpet.backend_user.dto.UpdateAdoptanteRequest;
-import com.matchpet.backend_user.dto.UserProfileResponse;
+import com.matchpet.backend_user.dto.auth.AuthResponse;
+import com.matchpet.backend_user.dto.adoptante.RegisterAdoptanteRequest;
+import com.matchpet.backend_user.dto.adoptante.UpdateAdoptanteRequest;
+import com.matchpet.backend_user.dto.user.UserProfileResponse;
 import com.matchpet.backend_user.model.PerfilAdoptante;
 import com.matchpet.backend_user.model.RolModel;
 import com.matchpet.backend_user.model.UserModel;
@@ -35,7 +35,7 @@ public class AdoptanteServiceImpl implements AdoptanteService {
 
     @Override
     @Transactional
-    public AuthResponse registerAdoptante(RegisterRequest request) {
+    public AuthResponse registerAdoptante(RegisterAdoptanteRequest request) {
         // (Esta es la lógica exacta que movimos de AuthServiceImpl,
         // usando el método 'new' que ya arreglamos)
 
