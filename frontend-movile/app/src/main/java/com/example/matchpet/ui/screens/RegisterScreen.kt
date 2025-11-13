@@ -1,5 +1,7 @@
 package com.example.matchpet.ui.screens
 
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,20 +15,27 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.matchpet.data.model.UserRole
 import com.example.matchpet.ui.components.PrimaryButton
 import com.example.matchpet.ui.components.RoleSelector
 import com.example.matchpet.ui.theme.*
+import com.example.matchpet.viewmodel.AuthViewModel
 
 @Composable
 fun RegisterScreen(
     onRegisterClick: () -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    viewModel: AuthViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val viewModel: AuthViewModel = viewModel()
+
     var selectedRole by remember { mutableStateOf(UserRole.ADOPTER) }
     var nombre by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
@@ -196,7 +205,30 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Botón de registro
-                PrimaryButton(text = "Registrarme", onClick = onRegisterClick)
+                PrimaryButton(
+                    text = "Registrarme",
+                    onClick = {
+                        if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank()) {
+                            Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Registrando usuario...", Toast.LENGTH_SHORT).show()
+
+                            viewModel.register(
+                                email = correo,
+                                password = contrasena,
+                                nombre = nombre,
+                                telefono = telefono,
+                                onSuccess = {
+                                    Toast.makeText(context, "Registro exitoso ✅", Toast.LENGTH_LONG).show()
+                                    onRegisterClick() // Navega o limpia campos
+                                },
+                                onError = { mensajeError ->
+                                    Toast.makeText(context, "Error: $mensajeError", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        }
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 

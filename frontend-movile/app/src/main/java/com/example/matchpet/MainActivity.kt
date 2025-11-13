@@ -15,7 +15,7 @@ import com.example.matchpet.ui.screens.LoginScreen
 import com.example.matchpet.ui.screens.RegisterScreen
 import com.example.matchpet.ui.screens.WelcomeScreen
 import com.example.matchpet.ui.theme.MatchPetTheme
-
+import com.example.matchpet.ui.screens.ProfileScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,21 +49,28 @@ fun AppNavigation(navController: NavHostController) {
                 onDonateClick = { navController.navigate("register") },
                 onShelterClick = { navController.navigate("register") }
             )
-
         }
 
         composable("login") {
             LoginScreen(
-                onLoginClick = { /* TODO: acción al iniciar sesión */ },
+                navController = navController,
                 onRegisterClick = { navController.navigate("register") }
             )
         }
 
         composable("register") {
             RegisterScreen(
-                onRegisterClick = { /* TODO: acción al registrarse */ },
+                onRegisterClick = { /* acción al registrarse */ },
                 onLoginClick = { navController.navigate("login") }
             )
         }
+
+        // Perfil con token dinámico
+        composable("profile/{token}") { backStackEntry ->
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+            ProfileScreen(token = token)
+        }
     }
+
 }
+

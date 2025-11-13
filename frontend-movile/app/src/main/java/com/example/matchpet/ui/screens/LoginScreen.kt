@@ -16,20 +16,25 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.matchpet.data.model.UserRole
 import com.example.matchpet.ui.components.GoogleSignInButton
 import com.example.matchpet.ui.components.PrimaryButton
 import com.example.matchpet.ui.components.RoleSelector
 import com.example.matchpet.ui.theme.*
+import com.example.matchpet.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginClick: () -> Unit,
+    navController: NavController,
     onRegisterClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(UserRole.ADOPTER) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val viewModel = remember { AuthViewModel() }
 
     Box(
         modifier = Modifier
@@ -109,7 +114,34 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                PrimaryButton(text = "Iniciar Sesión", onClick = onLoginClick)
+                // Botón principal de login
+                PrimaryButton(
+                    text = "Iniciar Sesión",
+                    onClick = {
+                        viewModel.login(
+                            email,
+                            password,
+                            onSuccess = {
+                                // Navegar al perfil cuando login es correcto
+                                navController.navigate("profile")
+                            },
+                            onError = { error ->
+                                errorMessage = error
+                            }
+                        )
+                    }
+                )
+
+                // Mostrar error si hay
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = it,
+                        color = ErrorRed,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
