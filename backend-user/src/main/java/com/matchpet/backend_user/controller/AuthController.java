@@ -1,8 +1,7 @@
 package com.matchpet.backend_user.controller;
 
-import com.matchpet.backend_user.dto.*; // Asegúrate de que importe todos los DTOs
+import com.matchpet.backend_user.dto.auth.*;
 import com.matchpet.backend_user.service.AuthService;
-import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,23 +20,9 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Operation(summary = "Registra un nuevo usuario (Adoptante)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente (devuelve token)"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
-            @ApiResponse(responseCode = "500", description = "Error interno (ej: email ya existe)")
-    })
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request
-    ) {
-        return ResponseEntity.ok(authService.register(request));
-    }
+    // --- ¡El endpoint POST /register SE HA QUITADO DE AQUÍ! ---
+    // --- Ahora vive en AdoptanteController.java ---
 
-    /**
-     * Endpoint para INICIAR SESIÓN.
-     * URL: POST http://localhost:8080/api/auth/login
-     */
     @Operation(summary = "Inicia sesión (Login)")
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
@@ -45,8 +30,6 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.login(request));
     }
-
-    // ... (Tus otros endpoints: /refresh, /google-login-url, /forgot-password, /reset-password se quedan igual)
 
     @Operation(summary = "Renueva un token de acceso (Refresh Token)")
     @ApiResponses(value = {
@@ -105,28 +88,5 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "¡Contraseña actualizada exitosamente!"));
     }
 
-    @GetMapping("/profile")
-        public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
-        UserProfileResponse profile = authService.getProfile(authentication.getName());
-        return ResponseEntity.ok(profile);
-        }
-
-
-    // --- ¡NUEVO ENDPOINT PARA H-5! ---
-
-    @Operation(summary = "Registra un nuevo Refugio")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Refugio registrado exitosamente (devuelve token)"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos (ej: email mal formado, pass corto)"),
-            @ApiResponse(responseCode = "500", description = "Error interno (ej: email ya existe, rol no encontrado)")
-    })
-    @PostMapping("/register-refugio")
-    public ResponseEntity<AuthResponse> registerRefugio(
-            @Valid @RequestBody RegisterRefugioRequest request
-    ) {
-        // Llamamos al nuevo método del servicio que creamos en el Paso 2
-        return ResponseEntity.ok(authService.registerRefugio(request));
-    }
-    // --- FIN DEL NUEVO ENDPOINT ---
-
+    // --- ¡El endpoint register-refugio YA SE HABÍA QUITADO DE AQUÍ! ---
 }

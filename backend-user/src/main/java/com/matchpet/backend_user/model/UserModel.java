@@ -1,6 +1,6 @@
 package com.matchpet.backend_user.model;
 
-import jakarta.persistence.*; // ¡Asegúrate de que esté importado!
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -59,25 +59,19 @@ public class UserModel implements UserDetails {
     )
     private Set<RolModel> roles;
 
-    // --- ¡CAMBIO IMPORTANTE AQUÍ! ---
-    // Este es el campo que faltaba y que causaba el error en el builder
-
-    /**
-     * Un Usuario (con rol "Refugio") puede tener UN perfil de Refugio.
-     * Esta anotación crea la relación usando la tabla 'Perfil_Refugio'.
-     */
     @OneToOne(cascade = CascadeType.ALL)
     @JoinTable(
             name = "Perfil_Refugio",
-            joinColumns = @JoinColumn(name = "usuario_id"), // FK a esta entidad (Usuario)
-            inverseJoinColumns = @JoinColumn(name = "refugio_id") // FK a la otra entidad (Refugio)
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "refugio_id")
     )
     private Refugio refugio;
 
-    // --- FIN DEL CAMBIO ---
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private PerfilAdoptante adoptante;
 
 
-    // ... (El resto de tus métodos de UserDetails se quedan igual)
+    // --- Métodos de UserDetails ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

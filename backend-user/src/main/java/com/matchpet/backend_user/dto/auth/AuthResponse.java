@@ -1,4 +1,4 @@
-package com.matchpet.backend_user.dto;
+package com.matchpet.backend_user.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

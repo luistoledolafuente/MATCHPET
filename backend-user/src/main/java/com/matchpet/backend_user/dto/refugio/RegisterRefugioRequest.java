@@ -1,4 +1,4 @@
-package com.matchpet.backend_user.dto;
+package com.matchpet.backend_user.dto.refugio;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

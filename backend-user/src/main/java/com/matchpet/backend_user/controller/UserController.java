@@ -1,6 +1,6 @@
 package com.matchpet.backend_user.controller;
 
-import com.matchpet.backend_user.dto.UserProfileResponse;
+import com.matchpet.backend_user.dto.user.UserProfileResponse;
 import com.matchpet.backend_user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
