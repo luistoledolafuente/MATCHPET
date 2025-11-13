@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin; // ⬅️ ¡Nueva importación!
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,10 +15,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"}, maxAge = 3600)
 @RestController
-@RequestMapping("/api/user") // ¡Nueva URL base! No es /api/auth
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
-@Tag(name = "2. Usuario", description = "Endpoints de gestión de perfil de usuario") // Nuevo grupo
+@Tag(name = "2. Usuario", description = "Endpoints de gestión de perfil de usuario")
 public class UserController {
 
     private final UserService userService;

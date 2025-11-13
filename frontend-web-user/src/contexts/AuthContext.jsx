@@ -1,49 +1,32 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import authService from "../services/authService";
-import axios from 'axios'; 
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import authService from "../services/authService.js";
+import axios from "axios";
 
 const AuthContext = createContext();
 
-// Función de utilidad para extraer el rol del objeto de perfil
 const extractUserType = (profile) => {
-  // Asume que el backend devuelve la lista de roles en 'roles' o 'authorities'
-  const roles = profile.roles || profile.authorities; 
-  
+  const roles = profile.roles || profile.authorities;
   if (roles && roles.length > 0) {
-      // Intentamos tomar el nombre del rol.
-      const principalRole = roles[0].nombreRol || roles[0].authority || roles[0];
-      
-      // Limpiamos el prefijo 'ROLE_' y convertimos a minúsculas
-      if (typeof principalRole === 'string') {
-          return principalRole.replace('ROLE_', '').toLowerCase();
-      }
+    const principalRole = roles[0].nombreRol || roles[0].authority || roles[0];
+    if (typeof principalRole === "string") return principalRole.replace("ROLE_", "").toLowerCase();
   }
-  
-  // Si el backend devuelve un campo directo
-  if (profile.role) {
-      return profile.role.toLowerCase();
-  }
-  
-  // Valor de respaldo por defecto
-  return 'adoptante'; 
-}
-
+  if (profile.role) return profile.role.toLowerCase();
+  return "adoptante";
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [userType, setUserType] = useState(null); 
+  const [userType, setUserType] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Cargar perfil al iniciar
   const loadProfile = async () => {
     const token = localStorage.getItem("userToken");
-    
-    // Configurar token en el header global de axios si existe
     if (token) {
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     } else {
-        delete axios.defaults.headers.common["Authorization"];
+      delete axios.defaults.headers.common["Authorization"];
     }
 
     if (!token) {
@@ -57,14 +40,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const profile = await authService.getProfile();
       setUser(profile);
-      
-      // ✅ CORRECCIÓN: Usamos la función para obtener el tipo de usuario limpio
-      setUserType(extractUserType(profile)); 
-      
+      setUserType(extractUserType(profile));
       setIsAuthenticated(true);
     } catch (error) {
-      console.error("No se pudo obtener perfil o token expirado. Logout automático:", error);
-      // Limpiar datos si el token es inválido o expiró
+      console.error("No se pudo obtener perfil o token expirado:", error);
       authService.logout();
       setUser(null);
       setUserType(null);
@@ -76,25 +55,36 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     loadProfile();
-  }, []); // Se ejecuta solo al montar el componente
+  }, []);
 
-  // La función de login también debe actualizar el perfil
-  const login = async (email, password) => {
-    const data = await authService.login(email, password);
-    await loadProfile(); // Cargar perfil y setear estados después de un login exitoso
-    return data;
+  // --- Función de Login corregida para usar authService ---
+  const login = async (email, password) => { 
+    setLoading(true);
+    setError(null);
+    try {
+      // Usamos el servicio que ya tiene la URL correcta (127.0.0.1)
+      await authService.login(email, password);
+      
+      // Si el login es exitoso, cargamos el perfil
+      await loadProfile();
+
+    } catch (err) {
+      console.error("Error en el login:", err);
+      // Mostrar el mensaje de error de la respuesta si existe
+      setError(err.response?.data?.message || "Credenciales inválidas o error de conexión.");
+      setIsAuthenticated(false);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const register = async (userData) => {
-    const data = await authService.register(userData);
-    await loadProfile();
-    return data;
+    await authService.register(userData);
   };
 
   const registerRefugio = async (refugioData) => {
-    const data = await authService.registerRefugio(refugioData);
-    await loadProfile();
-    return data;
+    await authService.registerRefugio(refugioData);
   };
 
   const logout = () => {
@@ -102,23 +92,23 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setUserType(null);
     setIsAuthenticated(false);
+    setError(null);
+    delete axios.defaults.headers.common["Authorization"];
   };
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     userType,
     isAuthenticated,
     loading,
+    error,
     login,
     register,
     registerRefugio,
-    logout,
-    profileLoading: loading, // Mantener compatibilidad
-  };
+    logout
+  }), [user, userType, isAuthenticated, loading, error]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

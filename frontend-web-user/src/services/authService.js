@@ -1,92 +1,61 @@
-import axios from 'axios';
+import axios from "axios";
 
-// ✅ URLs apuntando al backend en 8081
-const API_URL = 'http://localhost:8081/api/auth';
+// ¡IMPORTANTE! Cambiamos 'localhost' por '127.0.0.1' para evitar el bloqueo de red
+const API_URL = "http://127.0.0.1:8081/api";
 
-// LOGIN
-const login = async (email, password) => {
-  const response = await axios.post(`${API_URL}/login`, { email, password });
-
-  if (response.data.accessToken) {
-    localStorage.setItem('userToken', response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.refreshToken);
-
-    // Configura el header por defecto para futuras solicitudes
-    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
-  }
-
-  return response.data;
+const saveToken = (token) => {
+  localStorage.setItem("userToken", token);
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
 
-// REGISTRO ADOPTANTE
-const register = async (userData) => {
-  const response = await axios.post(`${API_URL}/register`, userData);
-
-  if (response.data.accessToken) {
-    localStorage.setItem('userToken', response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.refreshToken);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
-  }
-
-  return response.data;
-};
-
-// REGISTRO REFUGIO
-const registerRefugio = async (refugioData) => {
-  const response = await axios.post(`${API_URL}/register-refugio`, refugioData);
-
-  if (response.data.accessToken) {
-    localStorage.setItem('userToken', response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.refreshToken);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
-  }
-
-  return response.data;
-};
-
-// LOGOUT
-const logout = () => {
-  localStorage.removeItem('userToken');
-  localStorage.removeItem('refreshToken');
+const removeToken = () => {
+  localStorage.removeItem("userToken");
   delete axios.defaults.headers.common["Authorization"];
 };
 
-// OBTENER PERFIL
-const getProfile = async () => {
-  const token = localStorage.getItem('userToken');
-  if (!token) throw new Error('No hay token disponible');
-
-  const response = await axios.get(`${API_URL}/profile`, {  // <-- aquí apuntamos al endpoint correcto
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
+// 1. LOGIN
+const login = async (email, password) => {
+  const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+  const token = response.data.accessToken;
+  saveToken(token);
   return response.data;
 };
 
-// RENOVAR TOKEN
+// 2. REGISTRO (Adoptante)
+const register = async (userData) => {
+  const response = await axios.post(`${API_URL}/adoptantes/register`, userData);
+  return response.data;
+};
+
+// 3. REGISTRO (Refugio)
+const registerRefugio = async (refugioData) => {
+  const response = await axios.post(`${API_URL}/refugios/register`, refugioData);
+  return response.data;
+};
+
+// 4. PERFIL
+const getProfile = async () => {
+  const response = await axios.get(`${API_URL}/user/profile`);
+  return response.data;
+};
+
+// 5. REFRESH TOKEN
 const refreshToken = async () => {
-  const tokenRefresh = localStorage.getItem('refreshToken');
-  if (!tokenRefresh) throw new Error('No hay refresh token disponible');
-
-  const response = await axios.post(`${API_URL}/refresh`, { refreshToken: tokenRefresh });
-
-  if (response.data.accessToken) {
-    localStorage.setItem('userToken', response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.refreshToken);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.accessToken}`;
-  }
-
-  return response.data.accessToken;
+  const response = await axios.post(`${API_URL}/auth/refresh`);
+  const token = response.data.accessToken;
+  saveToken(token);
+  return token;
 };
 
-// Exportamos todos los servicios
-const authService = { 
-  login, 
-  register, 
+const logout = () => {
+  removeToken();
+};
+
+export default {
+  login,
+  register,
   registerRefugio,
-  logout, 
-  getProfile, 
-  refreshToken
+  getProfile,
+  refreshToken,
+  logout,
 };
-
-export default authService;
