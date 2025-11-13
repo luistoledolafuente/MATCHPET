@@ -1,307 +1,264 @@
 import React, { useState, useEffect } from "react";
+import {
+  User, Mail, Phone, Edit, Save, Lock, Send, RefreshCw,
+  AlertCircle, CheckCircle,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-// Iconos de Lucide React (Asegúrate de tenerlos instalados con: npm install lucide-react)
-import { Camera, User, Phone, MapPin, Heart, Lock, Trash2, Edit, Save } from "lucide-react";
 
-// Función para obtener solo el primer nombre
-const getFirstName = (fullName) => {
-  if (typeof fullName !== 'string' || !fullName) return 'Usuario';
-  return fullName.split(' ')[0];
+const BASE_URL = "http://localhost:8081";
+
+const StatusMessage = ({ type, text }) => {
+  if (!text) return null;
+  const styles = type === "error"
+    ? "bg-red-100 text-red-700 border-red-400"
+    : "bg-green-100 text-green-700 border-green-400";
+  const Icon = type === "error" ? AlertCircle : CheckCircle;
+  return (
+    <div className={`flex items-center p-3 mb-4 rounded-xl border ${styles} font-medium shadow-sm`}>
+      <Icon className="w-5 h-5 mr-3" />
+      <p className="text-sm">{text}</p>
+    </div>
+  );
 };
 
 export default function Perfil() {
-  const { user, loading } = useAuth();
-  const [isEditingProfile, setIsEditingProfile] = useState(false); // Controla si se puede editar
-  
-  // Estado para los datos del formulario
-  const [profileData, setProfileData] = useState({
-    nombre: '',
-    apellido: '',
-    telefono: 'No especificado',
-    ubicacion: 'No especificada',
-  });
-  
-  // Estado para el formulario de cambio de contraseña
-  const [passwordFields, setPasswordFields] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: '',
+  const { user, userType, logout } = useAuth();
+  const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    nombreCompleto: "",
+    telefono: "",
   });
 
-  // Efecto para inicializar los datos del perfil cuando el objeto 'user' está disponible
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [resetData, setResetData] = useState({ token: "", newPassword: "" });
+  const [status, setStatus] = useState(null);
+
   useEffect(() => {
     if (user) {
-      // Intenta extraer nombre y apellido de nombreCompleto
-      const nameParts = user.nombreCompleto ? user.nombreCompleto.split(' ') : [];
-      const nombre = nameParts[0] || '';
-      const apellido = nameParts.slice(1).join(' ') || ''; 
-      
-      setProfileData({
-        nombre: nombre,
-        apellido: apellido,
-        // Usamos los campos reales del usuario (si existen en el objeto 'user')
-        telefono: user.telefono || 'No especificado',
-        ubicacion: user.ubicacion || 'No especificada',
+      setFormData({
+        nombreCompleto: user.nombreCompleto || "",
+        telefono: user.telefono || "",
       });
     }
-  }, [user]); 
+  }, [user]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSave = async () => {
+    setLoading(true);
+    setStatus(null);
+    try {
+      // Cambié user.id por user.usuario_id
+      const response = await fetch(`${BASE_URL}/api/adoptantes/${user.adoptante.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setStatus({ type: "success", text: "¡Perfil actualizado exitosamente!" });
+        setEditMode(false);
+      } else {
+        const data = await response.json();
+        setStatus({ type: "error", text: data.message || "Error al guardar cambios." });
+      }
+    } catch {
+      setStatus({ type: "error", text: "Error de conexión con el servidor." });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordFields(prev => ({ ...prev, [name]: value }));
+
+  const handleForgotPassword = async () => {
+    setLoading(true);
+    setStatus(null);
+    try {
+      const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail || user.email }),
+      });
+      if (response.ok) {
+        setStatus({ type: "success", text: "Email enviado. Revisa tu correo para el token." });
+      } else {
+        setStatus({ type: "error", text: "No se pudo enviar el email. Verifica tu dirección." });
+      }
+    } catch {
+      setStatus({ type: "error", text: "Error de conexión con el servidor." });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSaveProfile = () => {
-    // ESTO ES PENDIENTE DE CONEXIÓN CON EL ENDPOINT PUT/PATCH /api/user/profile
-    console.log("Guardando cambios de perfil (PENDIENTE DE API):", profileData);
-    setIsEditingProfile(false); // Desactiva el modo edición después de "guardar"
-    alert("Datos de perfil actualizados localmente. Falta la conexión con la API.");
+  const handleResetPassword = async () => {
+    if (resetData.newPassword.length < 6) {
+      setStatus({ type: "error", text: "La contraseña debe tener al menos 6 caracteres." });
+      return;
+    }
+    setLoading(true);
+    setStatus(null);
+    try {
+      const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resetData),
+      });
+      if (response.ok) {
+        setStatus({ type: "success", text: "Contraseña cambiada correctamente. 🎉" });
+        setResetData({ token: "", newPassword: "" });
+      } else {
+        setStatus({ type: "error", text: "Token inválido o expirado." });
+      }
+    } catch {
+      setStatus({ type: "error", text: "Error al conectar con el servidor." });
+    } finally {
+      setLoading(false);
+    }
   };
-  
-  const handleEditProfile = () => {
-    setIsEditingProfile(true); // Activa el modo edición
-  };
 
-  const handleSavePassword = () => {
-    // ESTO ES PENDIENTE DE CONEXIÓN CON EL ENDPOINT POST /api/auth/reset-password
-    console.log("Enviando solicitud de cambio de contraseña (PENDIENTE DE API):", { newPassword: passwordFields.newPassword });
-    alert("Solicitud de cambio de contraseña enviada. Falta la conexión con la API.");
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#407581]"></div>
-      </div>
-    );
-  }
-
-  // Valores de visualización
-  const userEmail = user?.email || 'usuario@email.com';
-  const displayUserName = user?.nombreCompleto || 'Ana García';
-
+  if (!user) return <div className="text-center p-10">Cargando perfil...</div>;
 
   return (
-    <div className="bg-gradient-to-b from-[#BAE6FD] to-[#FFF7E6] min-h-screen overflow-x-hidden p-4 sm:p-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-6 sm:p-10">
-        
-        <h1 className="text-3xl font-extrabold text-[#316B7A] mb-8 border-b pb-4">
-          Gestionar Perfil
-        </h1>
+    <div className="min-h-screen bg-gradient-to-b from-[#BAE6FD] to-[#FFF7E6] py-10 px-6 font-sans relative overflow-hidden">
+      <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-10 grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
 
-        {/* --- 1. Información Personal --- */}
-        <section className="mb-10 p-6 bg-[#F8F9FA] rounded-lg shadow-inner">
-          <h2 className="text-xl font-bold text-[#316B7A] mb-4 flex items-center">
-            <User className="w-5 h-5 mr-2" /> Información Personal
-          </h2>
-          
-          <div className="flex flex-col sm:flex-row items-center mb-6 border-b pb-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center mr-6 mb-4 sm:mb-0">
-              {/* Placeholder de imagen */}
-              <img 
-                src="https://placehold.co/80x80/D1E7DD/316B7A?text=Foto" 
-                alt="Foto de perfil" 
-                className="w-full h-full object-cover" 
-              />
-            </div>
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-semibold text-gray-800">{displayUserName}</p>
-              <p className="text-sm text-gray-500">{userEmail}</p>
-            </div>
-            <button 
-              onClick={() => console.log("Cambiar foto")}
-              className="ml-0 sm:ml-auto mt-4 sm:mt-0 text-[#407581] hover:text-[#316B7A] text-sm flex items-center transition-colors"
-            >
-              <Camera className="w-4 h-4 mr-1" /> Cambiar Foto
-            </button>
+        {/* 🧍 IZQUIERDA — DATOS PERSONALES */}
+        <div>
+          <h1 className="text-3xl font-extrabold text-[#316B7A] mb-6 flex items-center">
+            <User className="w-7 h-7 mr-3 text-[#FDB2A0]" />
+            Datos Personales
+          </h1>
+
+          {status && <StatusMessage type={status.type} text={status.text} />}
+
+          <div className="space-y-5">
+            <Input label="Nombre Completo" name="nombreCompleto" value={formData.nombreCompleto} onChange={handleChange} disabled={!editMode} icon={User} />
+            <Input label="Correo Electrónico" value={user.email} disabled icon={Mail} />
+            <Input label="Teléfono" name="telefono" value={formData.telefono} onChange={handleChange} disabled={!editMode} icon={Phone} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputField 
-              label="Nombre" 
-              name="nombre" 
-              value={profileData.nombre} 
-              onChange={handleChange} 
-              readOnly={!isEditingProfile} 
-            />
-            <InputField 
-              label="Apellido" 
-              name="apellido" 
-              value={profileData.apellido} 
-              onChange={handleChange} 
-              readOnly={!isEditingProfile} 
-            />
-            <InputField 
-              label="Teléfono" 
-              name="telefono" 
-              value={profileData.telefono} 
-              onChange={handleChange} 
-              icon={Phone} 
-              readOnly={!isEditingProfile} 
-            />
-            <InputField 
-              label="Ubicación" 
-              name="ubicacion" 
-              value={profileData.ubicacion} 
-              onChange={handleChange} 
-              icon={MapPin} 
-              readOnly={!isEditingProfile} 
-            />
-          </div>
-
-          <div className="flex justify-end mt-6">
-            {!isEditingProfile ? (
+          <div className="flex justify-between items-center mt-8 border-t border-gray-200 pt-5">
+            {!editMode ? (
               <button
-                onClick={handleEditProfile}
-                className="px-6 py-2 bg-[#FDB2A0] text-white font-semibold rounded-xl hover:bg-[#fa8c7a] transition-colors shadow-md flex items-center"
+                onClick={() => setEditMode(true)}
+                className="px-6 py-2 bg-[#FDB2A0] text-white font-semibold rounded-xl hover:bg-[#fa8c7a] shadow-md flex items-center"
               >
-                <Edit className="w-4 h-4 mr-2" /> Editar Perfil
+                <Edit className="w-4 h-4 mr-2" /> Editar
               </button>
             ) : (
-              <button
-                onClick={handleSaveProfile}
-                className="px-6 py-2 bg-[#407581] text-white font-semibold rounded-xl hover:bg-[#316B7A] transition-colors shadow-md flex items-center"
-              >
-                <Save className="w-4 h-4 mr-2" /> Guardar Cambios
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSave}
+                  className="px-6 py-2 bg-[#407581] text-white font-semibold rounded-xl hover:bg-[#316B7A] shadow-md flex items-center"
+                >
+                  <Save className="w-4 h-4 mr-2" /> Guardar
+                </button>
+                <button
+                  onClick={() => setEditMode(false)}
+                  className="px-6 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100"
+                >
+                  Cancelar
+                </button>
+              </div>
             )}
           </div>
-        </section>
+        </div>
 
-
-        {/* --- 2. Mis Preferencias de Búsqueda --- */}
-        <section className="mb-10 p-6 bg-[#F8F9FA] rounded-lg shadow-inner">
-          <h2 className="text-xl font-bold text-[#316B7A] mb-4 flex items-center">
-            <Heart className="w-5 h-5 mr-2" /> Mis Preferencias de Búsqueda
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <SelectField label="Especie" options={["Perro", "Gato", "Ambos"]} defaultValue="Perro" />
-            <SelectField label="Rango de Edad" options={["Cachorro (0-1 año)", "Joven (1-5 años)", "Adulto (+5 años)"]} defaultValue="Cachorro (0-1 año)" />
-            <SelectField label="Tamaño" options={["Pequeño", "Mediano", "Grande"]} defaultValue="Pequeño" />
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Compatibilidad</label>
-            <div className="flex flex-wrap gap-4">
-              <Checkbox label="Apto para niños" name="ninos" defaultChecked />
-              <Checkbox label="Apto con otros perros" name="otrosPerros" defaultChecked />
-              <Checkbox label="Apto con gatos" name="gatos" />
+        {/* 🔐 DERECHA — CONTRASEÑA + IMAGEN */}
+        <div>
+          <div className="flex justify-center mb-8">
+            <div className="relative w-40 h-40 rounded-full bg-gradient-to-tr from-[#BAE6FD] to-[#FDB2A0] p-[3px] shadow-xl">
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                <img
+                  src="/src/assets/images/luna.png"
+                  alt="Foto de perfil"
+                  className="w-full h-full object-cover rounded-full transform transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <div className="absolute bottom-1 right-1 bg-[#407581] text-white p-2 rounded-full shadow-md hover:bg-[#316B7A] cursor-pointer transition-colors duration-300">
+                <Edit className="w-4 h-4" />
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <button
-              onClick={() => console.log("Guardando preferencias")}
-              className="px-6 py-2 bg-[#FDB2A0] text-white font-semibold rounded-xl hover:bg-[#fa8c7a] transition-colors shadow-md"
-            >
-              Guardar Preferencias
-            </button>
-          </div>
-        </section>
 
-
-        {/* --- 3. Configuración de la Cuenta --- */}
-        <section className="p-6 bg-[#F8F9FA] rounded-lg shadow-inner">
-          <h2 className="text-xl font-bold text-[#316B7A] mb-4 flex items-center">
-            <Lock className="w-5 h-5 mr-2" /> Configuración de la Cuenta
+          <h2 className="text-2xl font-extrabold text-[#316B7A] mb-4 flex items-center">
+            <Lock className="w-6 h-6 mr-3 text-[#FDB2A0]" />
+            Gestión de Contraseña
           </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <PasswordField label="Contraseña Antigua" name="currentPassword" value={passwordFields.currentPassword} onChange={handlePasswordChange} />
-            <PasswordField label="Nueva Contraseña" name="newPassword" value={passwordFields.newPassword} onChange={handlePasswordChange} />
-            <PasswordField label="Confirmar Nueva Contraseña" name="confirmNewPassword" value={passwordFields.confirmNewPassword} onChange={handlePasswordChange} />
-          </div>
 
-          <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+          <div className="mb-6 p-4 bg-[#F8F9FA] rounded-xl border border-[#BAE6FD] shadow-inner">
+            <h3 className="font-semibold text-[#407581] mb-2 flex items-center">
+              <Send className="w-4 h-4 mr-2" /> Solicitar Token
+            </h3>
+            <input
+              type="email"
+              placeholder={`Tu email (${user.email})`}
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+              className="w-full mb-3 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#407581] outline-none"
+            />
             <button
-              onClick={() => console.log("Eliminar cuenta")}
-              className="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center transition-colors"
+              onClick={handleForgotPassword}
+              className="w-full bg-[#407581] hover:bg-[#316B7A] text-white font-semibold py-2 rounded-lg flex items-center justify-center"
             >
-              <Trash2 className="w-4 h-4 mr-1" /> Eliminar cuenta
-            </button>
-
-            <button
-              onClick={handleSavePassword}
-              className="px-6 py-2 border border-[#407581] text-[#407581] font-semibold rounded-xl hover:bg-gray-100 transition-colors shadow-sm"
-            >
-              Cambiar Contraseña
+              <Send className="w-4 h-4 mr-2" /> Enviar Email
             </button>
           </div>
-        </section>
 
+          <div className="p-4 bg-[#F8F9FA] rounded-xl border border-[#BAE6FD] shadow-inner">
+            <h3 className="font-semibold text-[#407581] mb-2 flex items-center">
+              <RefreshCw className="w-4 h-4 mr-2" /> Cambiar Contraseña
+            </h3>
+            <input
+              type="text"
+              placeholder="Token recibido"
+              value={resetData.token}
+              onChange={(e) => setResetData({ ...resetData, token: e.target.value })}
+              className="w-full mb-3 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#407581] outline-none"
+            />
+            <input
+              type="password"
+              placeholder="Nueva contraseña"
+              value={resetData.newPassword}
+              onChange={(e) => setResetData({ ...resetData, newPassword: e.target.value })}
+              className="w-full mb-3 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#407581] outline-none"
+            />
+            <button
+              onClick={handleResetPassword}
+              className="w-full bg-[#FDB2A0] hover:bg-[#fa8c7a] text-white font-semibold py-2 rounded-lg flex items-center justify-center"
+            >
+              <Lock className="w-4 h-4 mr-2" /> Cambiar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// --- Componentes Reutilizables ---
-
-const InputField = ({ label, name, value, onChange, icon: Icon, readOnly = false }) => (
+const Input = ({ label, name, value, onChange, disabled, icon: Icon, type = "text" }) => (
   <div>
-    <label htmlFor={name} className="block text-gray-700 font-medium mb-1">{label}</label>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
     <div className="relative">
-      {Icon && <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />}
+      {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />}
       <input
         id={name}
         name={name}
-        type="text"
+        type={type}
         value={value}
         onChange={onChange}
-        readOnly={readOnly} // Aquí se aplica el modo de solo lectura
-        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-shadow 
-          ${readOnly 
-            ? 'bg-gray-100 border-gray-200 text-gray-600 cursor-default' 
-            : 'bg-white border-gray-300 focus:ring-[#407581]'
-          }
-          ${Icon ? 'pl-10' : ''}`}
+        disabled={disabled}
+        className={`w-full px-4 py-3 border rounded-xl outline-none transition-all
+        ${disabled ? "bg-gray-100 border-gray-200 cursor-not-allowed" : "bg-white border-gray-300 focus:ring-2 focus:ring-[#FDB2A0]"}`}
+        style={{ paddingLeft: Icon ? "2.2rem" : "1rem" }}
       />
     </div>
-  </div>
-);
-
-const PasswordField = ({ label, name, value, onChange }) => (
-  <div>
-    <label htmlFor={name} className="block text-gray-700 font-medium mb-1">{label}</label>
-    <input
-      id={name}
-      name={name}
-      type="password"
-      value={value}
-      onChange={onChange}
-      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#407581] transition-shadow"
-    />
-  </div>
-);
-
-const SelectField = ({ label, options, defaultValue }) => (
-  <div>
-    <label className="block text-gray-700 font-medium mb-1">{label}</label>
-    <select
-      defaultValue={defaultValue}
-      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#407581] transition-shadow"
-    >
-      {options.map(option => (
-        <option key={option} value={option}>{option}</option>
-      ))}
-    </select>
-  </div>
-);
-
-const Checkbox = ({ label, name, defaultChecked = false }) => (
-  <div className="flex items-center">
-    <input
-      id={name}
-      name={name}
-      type="checkbox"
-      defaultChecked={defaultChecked}
-      className="h-4 w-4 text-[#407581] border-gray-300 rounded focus:ring-[#407581] transition-colors"
-    />
-    <label htmlFor={name} className="ml-2 text-gray-700 text-sm">{label}</label>
   </div>
 );

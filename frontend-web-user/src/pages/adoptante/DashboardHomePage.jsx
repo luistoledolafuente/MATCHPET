@@ -1,124 +1,154 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { Search, MapPin, Gift, Heart, Users } from "lucide-react"; 
 
-// FontAwesome
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaw } from '@fortawesome/free-solid-svg-icons';
-import { faFacebook, faInstagram, faTwitter } from '@fortawesome/free-brands-svg-icons'; 
-import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import { faHouse } from '@fortawesome/free-solid-svg-icons';
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faPaw } from '@fortawesome/free-solid-svg-icons'; 
+
 export default function DashboardHome() {
   const { user } = useAuth(); 
+  const userName = user?.nombreCompleto || "Adoptante";
 
   return (
-    <div className="bg-gradient-to-b from-[#BAE6FD] to-[#FFF7E6] min-h-screen overflow-x-hidden">
-
-      <br />
-      <br />
-      <div className="text-center py-28 mb-8">
-        <div className="text-center mb-6 text-[#316B7A]">
-          <FontAwesomeIcon icon={faPaw} className="text-4xl" />
-        </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-[#316B7A] mb-8">
-          Encuentra a tu compañero ideal
-        </h1>
-        <p className="text-gray-700 text-lg max-w-2xl mx-auto mb-12">
-          Conecta con refugios, conoce mascotas increíbles y encuentra a tu mejor amigo.
-        </p>
-       
-        <div className="flex justify-center gap-8 flex-wrap">
-          <Link
-            to="/dashboard/mascotas"
-            className="px-8 py-4 bg-[#316B7A] text-white rounded-xl hover:bg-teal-800 transition-colors text-lg" >
-            Ver Mascotas
-          </Link>
-          <Link
-            to="/dashboard/refugios"
-            className="px-8 py-4 bg-[#FDB2A0] text-white rounded-xl hover:bg-[#fa8c7a] transition-colors text-lg">
-            Ver Refugios
-          </Link>
-        </div>
-      </div>
-
-  
-      <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen bg-white py-20 mb-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-0">
-          <div className="text-center mb-16">
-            <h3 className="text-2xl font-extrabold text-[#316B7A] mb-4">
-              Bienvenido a MatchPet{user?.nombreCompleto ? `, ${user.nombreCompleto}` : ""} !!
-            </h3>
-            <p className="text-gray-700 text-md max-w-2xl mx-auto">
-              Encuentra a tu compañero ideal. Nuestra misión es conectar a las mascotas necesitadas con hogares amorosos a través de la tecnología.
-              Creemos que cada mascota merece una segunda oportunidad y que cada persona merece un compañero leal.
+    <div className="bg-[#FFF7E6] min-h-screen p-8"> 
+      <div className="bg-white rounded-xl p-8 shadow-xl max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6 border-b pb-4 border-gray-100">
+          <h2 className="text-3xl font-extrabold text-[#316B7A]">
+            ¡Hola, {userName}! 🐾
+          </h2>
+          <div className="flex items-center space-x-4">
+            <p className="text-sm text-gray-500 flex items-center">
+                <MapPin className="w-4 h-4 mr-1 text-[#FDB2A0]" />
+                Tu Ubicación
             </p>
           </div>
+        </div>
 
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow bg-[#FFF7E6] flex flex-col items-center">
-              <FontAwesomeIcon icon={faRobot} className="text-4xl mb-4 text-[#316B7A]" />
-              <h3 className="text-[#316B7A] text-xl font-semibold mb-4">Búsqueda Inteligente</h3>
-              <p className="text-gray-600">
-                Nuestro sistema de recomendación por IA te ayuda a encontrar la mascota perfecta para tu estilo de vida.
-              </p>
+        {/* Barra de Búsqueda */}
+        <div className="mb-8">
+            <div className="relative">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                    type="text"
+                    placeholder="Buscar mascota por tipo, refugio o raza..."
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#316B7A] focus:border-[#316B7A] transition-colors bg-[#BAE6FD]/30"
+                />
             </div>
+        </div>
 
-            <div className="p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow bg-[#FFF7E6] flex flex-col items-center">
-              <FontAwesomeIcon icon={faHouse} className="text-4xl mb-4 text-[#316B7A]" />
-              <h3 className="text-[#316B7A] text-xl font-semibold mb-4">Refugios Verificados</h3>
-              <p className="text-gray-600">
-                Trabajamos con refugios de confianza para garantizar el bienestar de todas las mascotas.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow bg-[#FFF7E6] flex flex-col items-center">
-              <FontAwesomeIcon icon={faHeart} className="text-4xl mb-4 text-[#316B7A]" />
-              <h3 className="text-[#316B7A] text-xl font-semibold mb-4">Adopción Responsable</h3>
-              <p className="text-gray-600">
-                Promovemos la adopción responsable para asegurar que cada mascota encuentre un hogar para siempre.
-              </p>
-            </div>
+        {/* 2. Banner de Promoción/Destacado (Similar al "Get free one large popcorn...") */}
+        <div className="bg-[#BAE6FD] p-6 rounded-xl flex justify-between items-center mb-10 shadow-md">
+          <div>
+            <h3 className="text-xl font-bold text-[#316B7A] mb-2">
+              ¡Tu Match Perfecto te Espera!
+            </h3>
+            <p className="text-gray-700 max-w-lg">
+              Te presentamos las mascotas más compatibles contigo según tus preferencias de búsqueda.
+            </p>
+            <Link
+                to="/dashboard/mascotas"
+                className="inline-block mt-4 px-5 py-2 bg-[#316B7A] text-white rounded-lg hover:bg-teal-800 transition-colors font-semibold text-sm"
+            >
+                Ver Recomendaciones
+            </Link>
           </div>
+          <FontAwesomeIcon icon={faPaw} className="text-5xl text-[#316B7A]/50 rotate-12" />
+        </div>
 
+        {/* 3. Secciones Destacadas (Popular this week) */}
+        <h3 className="text-2xl font-bold text-gray-800 mb-6">
+          Nuevas Mascotas Cerca de Ti
+        </h3>
+        
+        {/* Tarjetas de Mascotas (Ejemplo) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
+            
+            {/* Tarjeta 1 */}
+            <div className="bg-[#FFF7E6] p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-[#316B7A]/20">
+                <img src="/src/assets/images/abrazo.png" alt="Mascota 1" className="w-full h-32 object-cover rounded-lg mb-3" />
+                <h4 className="font-semibold text-[#316B7A]">Max (Perro)</h4>
+                <p className="text-xs text-gray-600 mb-2">Refugio San Roque</p>
+                <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-[#FDB2A0]">3 Años</span>
+                    <Heart className="w-5 h-5 text-gray-400 hover:text-[#FDB2A0] transition-colors cursor-pointer" />
+                </div>
+            </div>
+
+            {/* Tarjeta 2 */}
+            <div className="bg-[#FFF7E6] p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-[#316B7A]/20">
+                <img src="/src/assets/images/cat1.webp" alt="Mascota 2" className="w-full h-32 object-cover rounded-lg mb-3" />
+                <h4 className="font-semibold text-[#316B7A]">Luna (Gato)</h4>
+                <p className="text-xs text-gray-600 mb-2">Asociación Felina</p>
+                <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-[#FDB2A0]">1 Año</span>
+                    <Heart className="w-5 h-5 text-gray-400 hover:text-[#FDB2A0] transition-colors cursor-pointer" />
+                </div>
+            </div>
+
+            {/* Tarjeta 3 */}
+            <div className="bg-[#FFF7E6] p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-[#316B7A]/20">
+                <img src="/src/assets/images/perro_dash.jpg" alt="Mascota 3" className="w-full h-32 object-cover rounded-lg mb-3" />
+                <h4 className="font-semibold text-[#316B7A]">Rocky (Perro)</h4>
+                <p className="text-xs text-gray-600 mb-2">Rescate Patitas</p>
+                <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-[#FDB2A0]">5 Meses</span>
+                    <Heart className="w-5 h-5 text-red-500 transition-colors cursor-pointer fill-red-500" />
+                </div>
+            </div>
+             
+            {/* Tarjeta 4: Botón para ver más */}
+            <Link to="/dashboard/mascotas" className="flex flex-col items-center justify-center p-4 rounded-xl shadow-md bg-[#BAE6FD]/50 hover:bg-[#BAE6FD] transition-colors border-2 border-dashed border-[#316B7A]/50 group">
+                <Users className="w-8 h-8 text-[#316B7A] mb-2 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-[#316B7A] text-center">Ver todas las Mascotas</span>
+            </Link>
+        </div>
+
+        {/* 4. Restaurantes Favoritos -> Refugios Favoritos/Destacados */}
+        <h3 className="text-2xl font-bold text-gray-800 mb-6 mt-8">
+          Refugios Destacados
+        </h3>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            
+            {/* Refugio 1 */}
+            <div className="bg-[#FFF7E6] p-4 rounded-xl shadow-md border border-[#FDB2A0]/30 hover:shadow-lg transition-shadow cursor-pointer">
+                <h4 className="font-semibold text-[#316B7A]">Refugio Esperanza</h4>
+                <p className="text-xs text-gray-600 mb-2 flex items-center"><MapPin className="w-3 h-3 mr-1"/> Lima, Perú</p>
+                <div className="flex items-center text-yellow-500 text-sm">
+                    {/* Estrellas */}
+                    ★ ★ ★ ★ ☆
+                </div>
+                <Link to="/dashboard/refugios/1" className="text-xs text-[#FDB2A0] hover:underline mt-1 block">Ver perfil</Link>
+            </div>
+            
+            {/* Refugio 2 */}
+            <div className="bg-[#FFF7E6] p-4 rounded-xl shadow-md border border-[#FDB2A0]/30 hover:shadow-lg transition-shadow cursor-pointer">
+                <h4 className="font-semibold text-[#316B7A]">Patitas Felices</h4>
+                <p className="text-xs text-gray-600 mb-2 flex items-center"><MapPin className="w-3 h-3 mr-1"/> Arequipa, Perú</p>
+                <div className="flex items-center text-yellow-500 text-sm">
+                    ★ ★ ★ ★ ★
+                </div>
+                <Link to="/dashboard/refugios/2" className="text-xs text-[#FDB2A0] hover:underline mt-1 block">Ver perfil</Link>
+            </div>
+            
+             {/* Refugio 3 */}
+            <div className="bg-[#FFF7E6] p-4 rounded-xl shadow-md border border-[#FDB2A0]/30 hover:shadow-lg transition-shadow cursor-pointer">
+                <h4 className="font-semibold text-[#316B7A]">Casa Rescate</h4>
+                <p className="text-xs text-gray-600 mb-2 flex items-center"><MapPin className="w-3 h-3 mr-1"/> Cusco, Perú</p>
+                <div className="flex items-center text-yellow-500 text-sm">
+                    ★ ★ ★ ☆ ☆
+                </div>
+                <Link to="/dashboard/refugios/3" className="text-xs text-[#FDB2A0] hover:underline mt-1 block">Ver perfil</Link>
+            </div>
+
+            {/* Ver Todos los Refugios */}
+            <Link to="/dashboard/refugios" className="flex flex-col items-center justify-center p-4 rounded-xl shadow-md bg-[#FDB2A0]/50 hover:bg-[#FDB2A0] transition-colors border-2 border-dashed border-[#FDB2A0]/80 group">
+                <Users className="w-8 h-8 text-[#316B7A] mb-2 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-[#316B7A] text-center">Ver todos los Refugios</span>
+            </Link>
         </div>
       </div>
-
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-center max-w-7xl mx-auto mb-16 px-4">
-        <div className="h-60 bg-gray-200 rounded-lg border border-gray">
-          <img src="/src/assets/images/abrazo.png" alt="Imagen 1" className="w-full h-full object-cover rounded-lg" />
-        </div>
-        <div className="h-60 bg-gray-200 rounded-lg border border-gray">
-          <img src="/src/assets/images/cat1.webp" alt="Imagen 2" className="w-full h-full object-cover rounded-lg" />
-        </div>
-        <div className="h-60 bg-gray-200 rounded-lg border border-gray">
-          <img src="/src/assets/images/familia.jpg" alt="Imagen 3" className="w-full h-full object-cover rounded-lg" />
-        </div>
-        <div className="h-60 bg-gray-200 rounded-lg border border-gray">
-          <img src="/src/assets/images/perro_dash.jpg" alt="Imagen 4" className="w-full h-full object-cover rounded-lg" />
-        </div>
-      </div>
-
-      <div className="mt-16 text-center text-gray-500 text-sm mb-8 space-y-2">
-        <p>
-          Términos de Servicio | Política de Privacidad | Contacto
-        </p>
-        <div className="flex justify-center gap-6 text-gray-500">
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faFacebook} className="text-lg hover:text-blue-600 transition-colors" />
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faInstagram} className="text-lg hover:text-pink-500 transition-colors" />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faTwitter} className="text-lg hover:text-blue-400 transition-colors" />
-          </a>
-        </div>
-        <p>© 2025 MatchPet. Todos los derechos reservados.</p>
-      </div>
-
-
     </div>
   );
 }

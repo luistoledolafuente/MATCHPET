@@ -47,9 +47,11 @@ const refreshToken = async () => {
   return token;
 };
 
+
 const logout = () => {
   removeToken();
 };
+
 
 export default {
   login,

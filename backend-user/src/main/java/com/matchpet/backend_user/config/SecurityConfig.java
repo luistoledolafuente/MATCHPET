@@ -6,13 +6,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer; // <-- IMPORTACIÓN AÑADIDA
+import org.springframework.security.config.Customizer; 
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer; // <-- IMPORTACIÓN AÑADIDA
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer; 
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder; // <-- ¡IMPORTACIÓN AÑADIDA!
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -30,10 +31,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    // Asumo que tienes estas dependencias:
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
-    // Si no estás usando OAuth2, puedes comentar esta línea, pero la dejo por si la usas:
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler; 
 
     @Bean
@@ -50,8 +49,14 @@ public class SecurityConfig {
 
             // 4. Autorización de solicitudes:
             .authorizeHttpRequests(auth -> auth
-                // PERMITIR /api/user/profile TEMPORALMENTE para el diagnóstico del firewall
-                .requestMatchers("/api/user/profile").permitAll() 
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html"
+                ).permitAll()
+
+                // Volvemos a proteger /api/user/profile:
+                .requestMatchers("/api/user/profile").authenticated()
                 
                 // Rutas públicas
                 .requestMatchers(
@@ -70,7 +75,11 @@ public class SecurityConfig {
             .authenticationProvider(authenticationProvider(userDetailsService, passwordEncoder))
             
             // 7. Añadir el filtro JWT antes del filtro estándar de login/usuario
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
+            // 8. CRÍTICO: Limpiar el contexto de seguridad al salir.
+            .logout(l -> l.logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext())));
+
 
         return http.build();
     }

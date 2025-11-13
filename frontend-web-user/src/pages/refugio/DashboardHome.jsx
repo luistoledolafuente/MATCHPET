@@ -1,162 +1,95 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { faFacebook, faInstagram, faTwitter } from '@fortawesome/free-brands-svg-icons'; 
+import { 
+  PawPrint, ClipboardList, Gift, BarChart3, Clock, CheckCircle, MessageSquare 
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaw, faUsers,faHandHoldingHeart,faChartLine,faHeart,faDog,} from "@fortawesome/free-solid-svg-icons";
+
+const mockStats = {
+  mascotasEnAdopcion: 18,
+  solicitudesPendientes: 5,
+  adopcionesEsteMes: 3,
+  donacionesUltimaSemana: 450,
+};
+
+const navCards = [
+  { title: "Gestionar Mascotas", description: "Agrega, edita o elimina perfiles de mascotas.", Icon: PawPrint, color: "from-[#FDB2A0] to-[#FD7E6A]" },
+  { title: "Revisar Solicitudes", description: "Evalúa procesos de adopción pendientes.", Icon: ClipboardList, color: "from-[#407581] to-[#316B7A]" },
+  { title: "Control de Donaciones", description: "Administra las donaciones recibidas.", Icon: Gift, color: "from-[#BAE6FD] to-[#407581]" },
+  { title: "Comunidad y Contacto", description: "Responde mensajes de adoptantes.", Icon: MessageSquare, color: "from-[#FFD6BA] to-[#FDB2A0]" },
+];
+
+const StatCard = ({ title, value, Icon, unit }) => (
+  <div className="p-6 rounded-2xl shadow-md flex flex-col justify-between bg-white hover:scale-[1.03] transition-transform">
+    <div className="flex items-center justify-between">
+      <Icon className="w-10 h-10 text-[#316B7A]" />
+      <span className="text-3xl md:text-4xl font-extrabold text-[#316B7A]">
+        {value} <span className="text-base font-semibold">{unit}</span>
+      </span>
+    </div>
+    <p className="mt-4 text-[#407581] font-semibold">{title}</p>
+  </div>
+);
+
+const NavCard = ({ title, description, Icon, color }) => (
+  <div className={`flex flex-col md:flex-row justify-between rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:scale-[1.02] transition-transform bg-gradient-to-br ${color}`}>
+    <div className="p-6 md:w-2/3 text-white">
+      <h3 className="text-2xl font-bold mb-2">{title}</h3>
+      <p className="opacity-90">{description}</p>
+      <button className="mt-4 py-2 px-4 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors text-sm font-bold">
+        Ir a {title}
+      </button>
+    </div>
+    <div className="md:w-1/3 flex justify-center items-center p-4 bg-white/10">
+      <Icon className="w-16 h-16 opacity-90 text-white" />
+    </div>
+  </div>
+);
 
 export default function DashboardHome() {
   const { user } = useAuth();
-  const refugioName = user?.nombreCompleto || "Refugio Amigable";
-
-  // Datos simulados (hasta conectar a la API real :))
-  const stats = {
-    mascotasActivas: 12,
-    adopcionesAprobadas: 8,
-    donacionesRecientes: 550.0,
-  };
 
   return (
-    <div className="bg-gradient-to-b from-[#BAE6FD] to-[#FFF7E6] min-h-screen overflow-x-hidden">
-      <br />
-      <br />
-      <div className="text-center py-24 mb-12">
-        <div className="text-center mb-6 text-[#316B7A]">
-          <FontAwesomeIcon icon={faPaw} className="text-5xl" />
-        </div>
+    <div className="bg-gradient-to-b from-[#FFF7E6] to-[#FFE8C4] min-h-screen md:pl-72 p-8 font-sans">
+      {/* Contenedor blanco central */}
+      <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-xl p-8 space-y-12">
 
-        <h1 className="text-4xl md:text-5xl font-extrabold text-[#316B7A] mb-4">
-          ¡Bienvenido, {refugioName}! 
-        </h1>
-        <p className="text-gray-700 text-lg max-w-2xl mx-auto mb-10">
-          Este es tu panel de refugio. Desde aquí puedes gestionar tus mascotas,
-          revisar solicitudes y seguir el impacto que generas en MatchPet 
-        </p>
-
-      
-        <div className="flex justify-center gap-8 flex-wrap">
-          <Link
-            to="/dashboard/refugio/mascotas/nueva"
-            className="px-8 py-4 bg-[#316B7A] text-white rounded-xl hover:bg-teal-800 transition-colors text-lg"
-          >
-            Registrar Nueva Mascota
-          </Link>
-          <Link
-            to="/dashboard/refugio/estadisticas"
-            className="px-8 py-4 bg-[#FDB2A0] text-white rounded-xl hover:bg-[#fa8c7a] transition-colors text-lg"
-          >
-            Ver Estadísticas
-          </Link>
-        </div>
-      </div>
-
-     
-      <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen bg-white py-20 mb-20">
-        <div className="max-w-6xl mx-auto px-6 md:px-0">
-          <div className="text-center mb-16">
-            <h3 className="text-2xl font-extrabold text-[#316B7A] mb-4">
-              Nuestra misión en MatchPet
-            </h3>
-            <p className="text-gray-700 text-md max-w-2xl mx-auto">
-              En MatchPet, ayudamos a refugios como{" "}
-              <strong>{refugioName}</strong> a conectar animales con familias
-              responsables. Juntos promovemos la adopción responsable y el
-              bienestar animal.
-            </p>
+        {/* HEADER */}
+        <header className="relative bg-[#316B7A] rounded-2xl overflow-hidden p-8 flex flex-col md:flex-row items-center justify-between text-white">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-2">¡Bienvenido, {user.nombreCompleto}!</h2>
+            <p className="text-lg md:text-xl opacity-90">Gestiona tus mascotas, adopciones y donaciones desde un solo lugar.</p>
           </div>
+          <img src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=400&q=80" 
+               alt="Mascotas felices" 
+               className="mt-6 md:mt-0 w-64 h-40 object-cover rounded-xl shadow-lg"/>
+          <div className="absolute -top-10 -right-10 w-48 h-48 bg-[#FDB2A0] rounded-full opacity-30 blur-3xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#407581] rounded-full opacity-30 blur-3xl"></div>
+        </header>
 
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <FeatureCard
-              icon={faDog}
-              title="Gestión de Mascotas"
-              text="Administra fácilmente las mascotas disponibles y mantenlas visibles para los adoptantes."
-            />
-            <FeatureCard
-              icon={faUsers}
-              title="Conecta con Adoptantes"
-              text="Revisa solicitudes, aprueba adopciones y da seguimiento a familias interesadas."
-            />
-            <FeatureCard
-              icon={faHandHoldingHeart}
-              title="Recibe Apoyo"
-              text="Consulta estadísticas e información sobre las donaciones que recibe tu refugio."
-            />
+        {/* ESTADÍSTICAS */}
+        <section>
+          <h2 className="text-3xl font-bold text-[#407581] mb-6 flex items-center">
+            <BarChart3 className="w-7 h-7 mr-3 text-[#FDB2A0]" /> Resumen de Actividad
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard title="Mascotas Disponibles" value={mockStats.mascotasEnAdopcion} unit="animales" Icon={PawPrint} />
+            <StatCard title="Solicitudes Pendientes" value={mockStats.solicitudesPendientes} unit="pendientes" Icon={Clock} />
+            <StatCard title="Adopciones (Mes)" value={mockStats.adopcionesEsteMes} unit="éxitos" Icon={CheckCircle} />
+            <StatCard title="Donaciones (Semana)" value={mockStats.donacionesUltimaSemana} unit="$" Icon={Gift} />
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* --- Sección de estadísticas (impacto visual) --- */}
-      <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 mb-20 px-6">
-        <StatCard
-          icon={faDog}
-          color="text-[#316B7A]"
-          title="Mascotas Activas"
-          value={stats.mascotasActivas}
-        />
-        <StatCard
-          icon={faHeart}
-          color="text-green-600"
-          title="Adopciones Exitosas"
-          value={stats.adopcionesAprobadas}
-        />
-        <StatCard
-          icon={faChartLine}
-          color="text-[#FDB2A0]"
-          title="Donaciones Recientes"
-          value={`$${stats.donacionesRecientes.toFixed(2)}`}
-        />
-      </div>
+        {/* NAV CARDS */}
+        <section>
+          <h2 className="text-3xl font-bold text-[#407581] mb-6">Funciones Principales</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {navCards.map((card, idx) => (
+              <NavCard key={idx} {...card} />
+            ))}
+          </div>
+        </section>
 
-      {/* --- Galería inspiracional --- */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-center max-w-6xl mx-auto mb-16 px-6">
-        <GalleryImage src="/src/assets/images/perro_dash.jpg" alt="Mascota 1" />
-        <GalleryImage src="/src/assets/images/abrazo.png" alt="Mascota 2" />
-        <GalleryImage src="/src/assets/images/familia.jpg" alt="Adopción" />
-        <GalleryImage src="/src/assets/images/vision.png" alt="Refugio" />
-      </div>
-      
-      <div className="mt-16 text-center text-gray-500 text-sm mb-8 space-y-2">
-        <p>
-          Términos de Servicio | Política de Privacidad | Contacto
-        </p>
-        <div className="flex justify-center gap-6 text-gray-500">
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faFacebook} className="text-lg hover:text-blue-600 transition-colors" />
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faInstagram} className="text-lg hover:text-pink-500 transition-colors" />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faTwitter} className="text-lg hover:text-blue-400 transition-colors" />
-          </a>
-        </div>
-        <p>© 2025 MatchPet. Todos los derechos reservados.</p>
       </div>
     </div>
   );
 }
-
-/* --- Tarjetas de características --- */
-const FeatureCard = ({ icon, title, text }) => (
-  <div className="p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow bg-[#FFF7E6] flex flex-col items-center">
-    <FontAwesomeIcon icon={icon} className="text-4xl mb-4 text-[#316B7A]" />
-    <h3 className="text-[#316B7A] text-xl font-semibold mb-4">{title}</h3>
-    <p className="text-gray-600">{text}</p>
-  </div>
-);
-
-/* --- Tarjetas de estadísticas --- */
-const StatCard = ({ icon, color, title, value }) => (
-  <div className="bg-white rounded-xl shadow-lg p-8 text-center hover:scale-[1.02] transition-transform border-t-4 border-gray-100">
-    <FontAwesomeIcon icon={icon} className={`text-3xl mb-4 ${color}`} />
-    <h3 className="text-3xl font-extrabold text-gray-800">{value}</h3>
-    <p className="text-gray-600 font-medium mt-2">{title}</p>
-  </div>
-);
-
-/* --- Imágenes de galería --- */
-const GalleryImage = ({ src, alt }) => (
-  <div className="h-60 bg-gray-200 rounded-lg border">
-    <img src={src} alt={alt} className="w-full h-full object-cover rounded-lg" />
-  </div>
-);
