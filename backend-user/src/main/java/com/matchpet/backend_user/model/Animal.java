@@ -13,7 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.HashSet; // <-- ¡NUEVO IMPORT!
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -24,7 +24,7 @@ public class Animal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "animal_id")
-    private Integer id;
+    private Integer animal_id; // <-- ARREGLO 1: Renombrado
 
     @Column(nullable = false, length = 100)
     private String nombre;
@@ -33,7 +33,7 @@ public class Animal {
     @Column(name = "descripcion_personalidad", columnDefinition = "TEXT")
     private String descripcionPersonalidad;
     @Column(name = "compatible_niños")
-    private Boolean compatibleNiños = false;
+    private Boolean compatibleNiños = false; // (Este campo está bien)
     @Column(name = "compatible_otras_mascotas")
     private Boolean compatibleOtrasMascotas = false;
     @Column(name = "esta_vacunado")
@@ -74,19 +74,16 @@ public class Animal {
     private EstadoAdopcion estadoAdopcion;
 
     // --- Relaciones (Tablas Externas) ---
-
-    // --- ¡CORRECCIÓN AQUÍ! ---
     @OneToMany(mappedBy = "animal", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<AnimalFoto> fotos = new HashSet<>(); // <-- INICIALIZADO
-    // --- FIN DE LA CORRECCIÓN ---
+    private Set<AnimalFoto> fotos = new HashSet<>();
 
-    // --- ¡MEJORA ADICIONAL! ---
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "Animal_Temperamentos",
             joinColumns = @JoinColumn(name = "animal_id"),
             inverseJoinColumns = @JoinColumn(name = "temperamento_id")
     )
-    private Set<Temperamento> temperamentos = new HashSet<>(); // <-- INICIALIZADO
-    // --- FIN DE LA MEJORA ---
+    private Set<Temperamento> temperamentos = new HashSet<>();
+
+
 }

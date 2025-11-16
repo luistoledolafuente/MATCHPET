@@ -3,11 +3,7 @@ package com.matchpet.backend_user.service.Imp;
 import com.matchpet.backend_user.dto.animal.AnimalDTO;
 import com.matchpet.backend_user.dto.animal.CreateAnimalRequest;
 import com.matchpet.backend_user.dto.animal.UpdateAnimalRequest;
-import com.matchpet.backend_user.model.Animal;
-import com.matchpet.backend_user.model.AnimalFoto;
-import com.matchpet.backend_user.model.Refugio;
-import com.matchpet.backend_user.model.Temperamento;
-import com.matchpet.backend_user.model.UserModel;
+import com.matchpet.backend_user.model.*; // Importación general
 import com.matchpet.backend_user.repository.*;
 import com.matchpet.backend_user.service.AnimalService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AnimalServiceImpl implements AnimalService {
 
-    // (Repositorios inyectados - sin cambios)
+    // (Repositorios - sin cambios)
     private final AnimalRepository animalRepository;
     private final UserRepository userRepository;
     private final RazaRepository razaRepository;
@@ -35,10 +31,10 @@ public class AnimalServiceImpl implements AnimalService {
     private final TemperamentoRepository temperamentoRepository;
     private final AnimalFotoRepository animalFotoRepository;
 
+    // (Método createAnimal - sin cambios)
     @Override
     @Transactional
     public AnimalDTO createAnimal(CreateAnimalRequest request, String userEmail) {
-        // (Método Create - sin cambios)
         UserModel user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Refugio refugio = user.getRefugio();
@@ -87,10 +83,10 @@ public class AnimalServiceImpl implements AnimalService {
         return convertToDTO(animalGuardado);
     }
 
+    // (getAnimalesByRefugio - sin cambios)
     @Override
     @Transactional(readOnly = true)
     public List<AnimalDTO> getAnimalesByRefugio(String userEmail) {
-        // (Método Read - sin cambios)
         UserModel user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Refugio refugio = user.getRefugio();
@@ -103,10 +99,10 @@ public class AnimalServiceImpl implements AnimalService {
                 .collect(Collectors.toList());
     }
 
+    // (updateAnimal - sin cambios)
     @Override
     @Transactional
     public AnimalDTO updateAnimal(Integer animalId, UpdateAnimalRequest request, String userEmail) {
-        // (Método Update - sin cambios)
         UserModel user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Refugio refugio = user.getRefugio();
@@ -160,39 +156,29 @@ public class AnimalServiceImpl implements AnimalService {
         return convertToDTO(animalActualizado);
     }
 
-    // --- ¡NUEVO MÉTODO IMPLEMENTADO! ---
+    // (deleteAnimal - sin cambios)
     @Override
     @Transactional
     public void deleteAnimal(Integer animalId, String userEmail) {
-        // 1. Encontrar al usuario y su refugio (para seguridad)
         UserModel user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Refugio refugio = user.getRefugio();
         if (refugio == null) {
             throw new RuntimeException("No autorizado: Este usuario no es un refugio.");
         }
-
-        // 2. Encontrar el animal que se quiere eliminar
         Animal animal = animalRepository.findById(animalId)
                 .orElseThrow(() -> new RuntimeException("Animal no encontrado con id: " + animalId));
-
-        // 3. ¡VERIFICACIÓN DE SEGURIDAD!
         if (!animal.getRefugio().getId().equals(refugio.getId())) {
             throw new RuntimeException("No autorizado: No tienes permiso para eliminar este animal.");
         }
-
-        // 4. Eliminar el animal
-        // Gracias a CascadeType.ALL y orphanRemoval en las entidades,
-        // esto también borrará las AnimalFotos y las relaciones en Animal_Temperamentos.
         animalRepository.delete(animal);
     }
 
 
-    // --- Método Helper (sin cambios) ---
+    // --- ¡¡MÉTODO HELPER 100% CORREGIDO!! ---
     private AnimalDTO convertToDTO(Animal animal) {
-        // (Este método se queda 100% igual)
         return AnimalDTO.builder()
-                .id(animal.getId())
+                .animal_id(animal.getAnimal_id()) // <-- Corrección de .id a .animal_id
                 .nombre(animal.getNombre())
                 .fechaNacimientoAprox(animal.getFechaNacimientoAprox())
                 .descripcionPersonalidad(animal.getDescripcionPersonalidad())
@@ -202,13 +188,25 @@ public class AnimalServiceImpl implements AnimalService {
                 .estaEsterilizado(animal.getEstaEsterilizado())
                 .historialMedico(animal.getHistorialMedico())
                 .fechaIngresoRefugio(animal.getFechaIngresoRefugio())
-                .raza(animal.getRaza())
-                .genero(animal.getGenero())
-                .tamano(animal.getTamano())
-                .nivelEnergia(animal.getNivelEnergia())
-                .estadoAdopcion(animal.getEstadoAdopcion())
-                .temperamentos(animal.getTemperamentos())
-                .fotos(animal.getFotos())
+
+                // --- ¡ARREGLOS! Convertimos objetos a Strings ---
+                .raza(animal.getRaza().getNombreRaza())
+                .especie(animal.getRaza().getEspecie().getNombreEspecie())
+                .genero(animal.getGenero().getNombre())
+                .tamano(animal.getTamano() != null ? animal.getTamano().getNombre() : null)
+                .nivelEnergia(animal.getNivelEnergia() != null ? animal.getNivelEnergia().getNombre() : null)
+                .estadoAdopcion(animal.getEstadoAdopcion().getNombre())
+                .refugioNombre(animal.getRefugio().getNombre())
+                .refugioCiudad(animal.getRefugio().getCiudad())
+
+                // --- ¡ARREGLOS! Convertimos Sets a Listas de Strings ---
+                .temperamentos(animal.getTemperamentos().stream()
+                        .map(Temperamento::getNombreTemperamento)
+                        .collect(Collectors.toList()))
+                .fotos(animal.getFotos().stream()
+                        .map(AnimalFoto::getUrlFoto)
+                        .collect(Collectors.toList()))
+                // --- FIN DE ARREGLOS ---
                 .build();
     }
 }

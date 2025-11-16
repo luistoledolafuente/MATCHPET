@@ -16,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.matchpet.backend_user.service.RecomendacionService; // ¡NUEVO!
+import java.security.Principal;
+
 import java.security.Principal;
 import java.util.List;
 import java.util.Map; // <-- ¡NUEVO IMPORT!
@@ -27,6 +30,7 @@ import java.util.Map; // <-- ¡NUEVO IMPORT!
 public class AnimalController {
 
     private final AnimalService animalService;
+    private final RecomendacionService recomendacionService;
 
 
     @Operation(
@@ -111,5 +115,19 @@ public class AnimalController {
         // 3. Devolvemos una respuesta simple de éxito
         // (DELETE también puede devolver 204 No Content, pero un 200 con JSON es más claro)
         return ResponseEntity.ok(Map.of("message", "Animal eliminado exitosamente"));
+    }
+
+    @Operation(
+            summary = "Obtiene recomendaciones de mascotas (Match IA)",
+            description = "Utiliza el perfil del adoptante autenticado para obtener una lista de mascotas recomendadas por la IA.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @GetMapping("/recomendados")
+    public ResponseEntity<List<AnimalDTO>> getRecomendaciones(Principal principal) {
+
+        String adoptanteEmail = principal.getName();
+        List<AnimalDTO> recomendaciones = recomendacionService.getRecomendaciones(adoptanteEmail);
+
+        return ResponseEntity.ok(recomendaciones);
     }
 }
