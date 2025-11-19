@@ -1,46 +1,52 @@
 package com.matchpet.backend_user.dto.animal;
 
-import com.matchpet.backend_user.model.AnimalFoto;
-import com.matchpet.backend_user.model.Raza;
-import com.matchpet.backend_user.model.Temperamento;
-import com.matchpet.backend_user.model.lookup.EstadoAdopcion;
-import com.matchpet.backend_user.model.lookup.Genero;
-import com.matchpet.backend_user.model.lookup.NivelEnergia;
-import com.matchpet.backend_user.model.lookup.Tamano;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
-import java.util.Set;
+// CAMBIO: Importación moderna para fechas
+import java.time.LocalDate;
+import java.util.List;
 
-// Este DTO representa un Animal "completo" para mostrar en el frontend
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnimalDTO {
 
-    private Integer id;
+    private Integer animal_id; // El ServiceImpl mapea animal.getId() a este campo
     private String nombre;
-    private Date fechaNacimientoAprox;
+
+    // CAMBIO: Tipo de dato actualizado
+    private LocalDate fechaNacimientoAprox;
+
     private String descripcionPersonalidad;
-    private Boolean compatibleNiños;
-    private Boolean compatibleOtrasMascotas;
-    private Boolean estaVacunado;
-    private Boolean estaEsterilizado;
+
+    // CAMBIO: Tipo de dato actualizado a primitivo
+    private boolean compatibleNiños;
+    private boolean compatibleOtrasMascotas;
+    private boolean estaVacunado;
+    private boolean estaEsterilizado;
+
     private String historialMedico;
-    private Date fechaIngresoRefugio;
 
-    // --- Objetos completos en lugar de IDs ---
-    private Raza raza;
-    private Genero genero;
-    private Tamano tamano;
-    private NivelEnergia nivelEnergia;
-    private EstadoAdopcion estadoAdopcion;
-    private Set<Temperamento> temperamentos;
-    private Set<AnimalFoto> fotos;
+    // CAMBIO: Tipo de dato actualizado
+    private LocalDate fechaIngresoRefugio;
 
-    // (No incluimos 'refugio' para evitar bucles)
+    private String raza;
+    private String especie;
+    private String genero;
+    private String tamano;
+    private String nivelEnergia;
+    private String estadoAdopcion;
+    private String refugioNombre;
+    private String refugioCiudad;
+    private List<String> temperamentos;
+    private List<String> fotos;
+
+    // CAMBIO: Se eliminó el constructor public AnimalDTO(Animal animal)
+    // Era redundante con @Builder y contenía la lógica obsoleta
+    // que causaba los errores de tipo de dato.
+    // Tu AnimalServiceImpl usa el patrón Builder, que es el correcto.
 }

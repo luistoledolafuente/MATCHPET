@@ -10,7 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
-// ¡Se quitaron las importaciones de Animal y Set!
+import java.util.Set; // Import requerido para la colección de Animales
 
 @Data
 @NoArgsConstructor
@@ -23,7 +23,7 @@ public class Refugio {
     @Column(name = "refugio_id")
     private Integer id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String nombre;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -32,25 +32,36 @@ public class Refugio {
     @Column(nullable = false, length = 100)
     private String ciudad;
 
-    @Column(length = 20)
+    @Column(nullable = false, length = 100)
+    private String pais;
+
+    @Column(nullable = false, length = 20)
     private String telefono;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "persona_contacto")
+    @Column(name = "persona_contacto", nullable = false, length = 255)
     private String personaContacto;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String descripcion;
+
+    @Column(name = "url_sitio_web", nullable = false, length = 255)
+    private String urlSitioWeb;
+
     @CreationTimestamp
-    @Column(name = "fecha_registro", updatable = false)
+    @Column(name = "fecha_registro", updatable = false, nullable = false)
     private Timestamp fechaRegistro;
 
     @UpdateTimestamp
-    @Column(name = "fecha_actualizacion")
+    @Column(name = "fecha_actualizacion", nullable = false)
     private Timestamp fechaActualizacion;
 
     /**
-     * Un Refugio está "administrado" por un UserModel.
+     * Relación con el usuario que administra el refugio.
+     * 'mappedBy="refugio"' asume que la clase UserModel tiene el campo 'private Refugio refugio;'
+     * que posee la relación (con @JoinColumn).
      */
     @OneToOne(mappedBy = "refugio")
     @JsonIgnore
@@ -58,9 +69,12 @@ public class Refugio {
     @EqualsAndHashCode.Exclude
     private UserModel user;
 
+    /**
+     * Relación con los animales que pertenecen a este refugio.
+     */
     @OneToMany(mappedBy = "refugio")
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private java.util.Set<Animal> animales;
+    private Set<Animal> animales;
 }

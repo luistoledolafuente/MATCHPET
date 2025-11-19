@@ -1,30 +1,39 @@
 package com.matchpet.backend_user.dto.adoptante;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class UpdateAdoptanteRequest {
 
-    // --- Datos de UserModel ---
-    @NotBlank(message = "El nombre completo es requerido")
-    private String nombreCompleto;
+    // (Quita 'nombreCompleto' si lo tenías)
+    @NotBlank(message = "El nombre es obligatorio")
+    private String nombre;
 
-    @NotBlank(message = "El teléfono es requerido")
+    @NotBlank(message = "El apellido paterno es obligatorio")
+    private String apellidoPaterno;
+
+    @NotBlank(message = "El apellido materno es obligatorio")
+    private String apellidoMaterno;
+
+    @NotBlank(message = "El teléfono es obligatorio")
     private String telefono;
 
-    // --- Datos de PerfilAdoptante ---
-    private Date fechaNacimiento; // Formato: "YYYY-MM-DD"
+    @NotNull(message = "La fecha de nacimiento es obligatoria")
+    private LocalDate fechaNacimiento;
+
+    @NotBlank(message = "La dirección es obligatoria")
     private String direccion;
+
+    @NotBlank(message = "La ciudad es obligatoria")
     private String ciudad;
 
-    // TODO: Aquí se podrían añadir las "preferencias de mascota" de la HU-05
+    @NotBlank(message = "El país es obligatorio")
+    private String pais;
+
+    // (Si tienes un DTO de preferencias, iría aquí)
+    // private PreferenciasDTO preferencias;
 }

@@ -1,0 +1,9 @@
+# application.yml (archivo principal)
+
+spring:
+  profiles:
+    active: dev # O puede ser 'test' o 'prod' según el entorno donde estés ejecutando la aplicación.
+
+# Otros valores generales comunes a todos los entornos
+server:
+  port: 8080

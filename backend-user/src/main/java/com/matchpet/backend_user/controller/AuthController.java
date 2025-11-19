@@ -20,9 +20,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // --- ¡El endpoint POST /register SE HA QUITADO DE AQUÍ! ---
-    // --- Ahora vive en AdoptanteController.java ---
-
     @Operation(summary = "Inicia sesión (Login)")
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
@@ -41,21 +38,6 @@ public class AuthController {
             @Valid @RequestBody RefreshTokenRequest request
     ) {
         return ResponseEntity.ok(authService.refreshToken(request));
-    }
-
-    @Operation(
-            summary = "Obtener URL para Login con Google (Solo Documentación)",
-            description = "¡ESTE ENDPOINT NO SE LLAMA DIRECTAMENTE! \n\n" +
-                    "Es solo para documentación. \n\n" +
-                    "Para iniciar el login con Google, el frontend debe **redirigir** al usuario (con un link `<a>` o un `window.location.href`) " +
-                    "a la URL que se devuelve en la respuesta: `/oauth2/authorization/google`"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Devuelve la URL a la que el frontend debe redirigir al usuario")
-    })
-    @GetMapping("/google-login-url")
-    public ResponseEntity<Map<String, String>> getGoogleLoginUrl() {
-        return ResponseEntity.ok(Map.of("google_login_url", "/oauth2/authorization/google"));
     }
 
     @Operation(summary = "Solicita un reseteo de contraseña")
@@ -87,6 +69,4 @@ public class AuthController {
         authService.resetPassword(request);
         return ResponseEntity.ok(Map.of("message", "¡Contraseña actualizada exitosamente!"));
     }
-
-    // --- ¡El endpoint register-refugio YA SE HABÍA QUITADO DE AQUÍ! ---
 }

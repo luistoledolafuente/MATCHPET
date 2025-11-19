@@ -13,12 +13,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateRefugioRequest {
 
-    // Nota: No incluimos emailLogin o password.
-    // Esas son parte del 'Usuario', no del 'Refugio'.
-    // Esta HU-06 es solo para actualizar los datos de contacto.
-
     @NotBlank(message = "El nombre del refugio es requerido")
     private String nombre;
+
+    // --- CAMPOS AÑADIDOS/CORREGIDOS PARA CONSISTENCIA DE LA BD ---
+    @NotBlank(message = "La descripción del refugio es requerida")
+    private String descripcion;
+
+    @NotBlank(message = "El país es requerido")
+    private String pais;
+
+    @NotBlank(message = "La URL del sitio web es requerida")
+    private String urlSitioWeb;
+    // -----------------------------------------------------------
 
     @NotBlank(message = "La dirección del refugio es requerida")
     private String direccion;
