@@ -36,23 +36,20 @@ import DashboardLayout from "./layouts/DashboardLayout.jsx";
 // --- Componentes de Seguridad ---
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { useAuth } from "./contexts/AuthContext.jsx";
+import Solicitudes from "./pages/refugio/Solicitudes.jsx";
 
 
 // ------------------ DASHBOARD ROUTES ------------------
 function DashboardRoutes() {
   const { user, userType, loading } = useAuth();
 
-  // El cálculo de la ruta se mantiene
   const navigateTo = userType === "refugio" ? "refugio" : "adoptante";
-
-  // ❌ ELIMINADO: Se quitó el useEffect que generaba el bucle infinito ❌
 
   if (loading) {
     return <p className="text-center mt-10 text-gray-600">Cargando tu perfil...</p>;
   }
 
   if (!user) {
-    // Si no hay usuario, redirigir a login
     return <Navigate to="/login" replace />;
   }
 
@@ -69,10 +66,6 @@ function DashboardRoutes() {
           </ProtectedRoute>
         }
       >
-        {/*           ✨ CAMBIO CLAVE: Usamos el índice para redirigir 
-          Si el usuario visita /dashboard (la ruta index), es inmediatamente redirigido 
-          a /dashboard/refugio o /dashboard/adoptante. 
-        */}
         <Route index element={<Navigate to={navigateTo} replace />} />
 
 
@@ -89,9 +82,10 @@ function DashboardRoutes() {
         <Route path="refugio">
           <Route index element={<DashboardHomeRefugio />} />
           <Route path="mis-mascotas" element={<MisMascotas />} />
+          <Route path="nueva-mascota" element={<NuevaMascota />} />
           <Route path="donaciones" element={<DonacionesRecibidas />} />
           <Route path="perfil" element={<PerfilRefugio />} />
-          <Route path="mascotas/nueva" element={<NuevaMascota />} />
+          <Route path="solicitudes" element={<Solicitudes />} />
         </Route>
       </Route>
     </Routes>

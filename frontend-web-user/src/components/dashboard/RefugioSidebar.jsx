@@ -1,14 +1,7 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import {
-  Home,
-  PawPrint,
-  FileText,
-  Gift,
-  User,
-  LogOut
-} from "lucide-react";
+import { Home, PawPrint, FileText, Gift, User, LogOut } from "lucide-react";
 
 export default function RefugioSidebar() {
   const { user, logout } = useAuth();
@@ -18,6 +11,14 @@ export default function RefugioSidebar() {
     logout();
     navigate("/login");
   };
+
+  const links = [
+    { to: "/dashboard/refugio", icon: Home, label: "Home" },
+    { to: "/dashboard/refugio/mis-mascotas", icon: PawPrint, label: "Mis Mascotas" },
+    { to: "/dashboard/refugio/solicitudes", icon: FileText, label: "Solicitudes" },
+    { to: "/dashboard/refugio/donaciones", icon: Gift, label: "Donaciones" },
+    { to: "/dashboard/refugio/perfil", icon: User, label: "Mi Perfil" }
+  ];
 
   return (
     <aside
@@ -37,28 +38,24 @@ export default function RefugioSidebar() {
       </div>
 
       {/* Links de navegación */}
-      <nav
-        className="flex-1 px-6 py-6 space-y-3 overflow-y-auto"
-        aria-label="Menú principal Refugio"
-      >
-        {[
-          { to: "/dashboard/refugio", icon: Home, label: "Home" },
-          { to: "/dashboard/refugio/mis-mascotas", icon: PawPrint, label: "Mis Mascotas" },
-          { to: "/dashboard/refugio/solicitudes", icon: FileText, label: "Solicitudes" },
-          { to: "/dashboard/refugio/donaciones", icon: Gift, label: "Donaciones" },
-          { to: "/dashboard/refugio/perfil", icon: User, label: "Mi Perfil" }
-        ].map(({ to, icon: Icon, label }) => (
-          <Link
+      <nav className="flex-1 px-6 py-6 space-y-3 overflow-y-auto" aria-label="Menú principal Refugio">
+        {links.map(({ to, icon: Icon, label }) => (
+          <NavLink
             key={to}
             to={to}
-            className="flex items-center px-4 py-3 text-[#007C91] rounded-lg hover:bg-[#B2EBF2] hover:text-white transition-colors duration-200 font-semibold shadow-sm"
+            end={to === "/dashboard/refugio"} // Solo Home exacto
+            className={({ isActive }) =>
+              `flex items-center px-4 py-3 rounded-lg font-semibold transition-colors duration-200
+              ${isActive ? "bg-[#B2EBF2] text-[#007C91]" : "text-[#007C91] hover:bg-[#E0F7FA] hover:text-[#007C91]"}`
+            }
           >
             <Icon className="w-5 h-5 mr-3" />
             {label}
-          </Link>
+          </NavLink>
         ))}
       </nav>
 
+      {/* Footer con logout */}
       <div className="px-6 py-4 border-t border-[#407581]">
         {user?.nombreCompleto && (
           <span className="flex items-center text-[#407581] font-semibold mb-3 truncate">
