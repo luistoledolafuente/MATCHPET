@@ -1,16 +1,13 @@
 package com.matchpet.backend_user.dto.animal;
 
-import com.matchpet.backend_user.model.Animal;
-import com.matchpet.backend_user.model.AnimalFoto;
-import com.matchpet.backend_user.model.Temperamento;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+// CAMBIO: Importación moderna para fechas
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -18,16 +15,25 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AnimalDTO {
 
-    private Integer animal_id;
+    private Integer animal_id; // El ServiceImpl mapea animal.getId() a este campo
     private String nombre;
-    private Date fechaNacimientoAprox;
+
+    // CAMBIO: Tipo de dato actualizado
+    private LocalDate fechaNacimientoAprox;
+
     private String descripcionPersonalidad;
-    private Boolean compatibleNiños;
-    private Boolean compatibleOtrasMascotas;
-    private Boolean estaVacunado;
-    private Boolean estaEsterilizado;
+
+    // CAMBIO: Tipo de dato actualizado a primitivo
+    private boolean compatibleNiños;
+    private boolean compatibleOtrasMascotas;
+    private boolean estaVacunado;
+    private boolean estaEsterilizado;
+
     private String historialMedico;
-    private Date fechaIngresoRefugio;
+
+    // CAMBIO: Tipo de dato actualizado
+    private LocalDate fechaIngresoRefugio;
+
     private String raza;
     private String especie;
     private String genero;
@@ -39,32 +45,8 @@ public class AnimalDTO {
     private List<String> temperamentos;
     private List<String> fotos;
 
-    public AnimalDTO(Animal animal) {
-        this.animal_id = animal.getAnimal_id(); // Funciona gracias al Arreglo 1
-        this.nombre = animal.getNombre();
-        this.fechaNacimientoAprox = animal.getFechaNacimientoAprox();
-
-        this.compatibleNiños = animal.getCompatibleNiños();
-
-        this.compatibleOtrasMascotas = animal.getCompatibleOtrasMascotas();
-        this.estaVacunado = animal.getEstaVacunado();
-        this.estaEsterilizado = animal.getEstaEsterilizado();
-        this.descripcionPersonalidad = animal.getDescripcionPersonalidad();
-        this.historialMedico = animal.getHistorialMedico();
-        this.fechaIngresoRefugio = animal.getFechaIngresoRefugio();
-        this.raza = animal.getRaza().getNombreRaza();
-        this.especie = animal.getRaza().getEspecie().getNombreEspecie();
-        this.genero = animal.getGenero().getNombre();
-        this.tamano = (animal.getTamano() != null) ? animal.getTamano().getNombre() : null;
-        this.nivelEnergia = (animal.getNivelEnergia() != null) ? animal.getNivelEnergia().getNombre() : null;
-        this.estadoAdopcion = animal.getEstadoAdopcion().getNombre();
-        this.refugioNombre = animal.getRefugio().getNombre();
-        this.refugioCiudad = animal.getRefugio().getCiudad();
-        this.fotos = animal.getFotos().stream()
-                .map(AnimalFoto::getUrlFoto)
-                .collect(Collectors.toList());
-        this.temperamentos = animal.getTemperamentos().stream()
-                .map(Temperamento::getNombreTemperamento)
-                .collect(Collectors.toList());
-    }
+    // CAMBIO: Se eliminó el constructor public AnimalDTO(Animal animal)
+    // Era redundante con @Builder y contenía la lógica obsoleta
+    // que causaba los errores de tipo de dato.
+    // Tu AnimalServiceImpl usa el patrón Builder, que es el correcto.
 }

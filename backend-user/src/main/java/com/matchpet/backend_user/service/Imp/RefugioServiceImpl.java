@@ -24,18 +24,16 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class RefugioServiceImpl implements RefugioService {
 
-    // --- ¡TODAS LAS DEPENDENCIAS QUE NECESITAMOS! ---
     private final RefugioRepository refugioRepository;
     private final UserRepository userRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-
+    // --- Método de Registro (registerRefugio) ---
     @Override
     @Transactional
     public AuthResponse registerRefugio(RegisterRefugioRequest request) {
-        // (Esta es la lógica exacta que movimos de AuthServiceImpl)
 
         userRepository.findByEmail(request.getEmailLogin()).ifPresent(user -> {
             throw new RuntimeException("El email de login ya está registrado");
@@ -52,6 +50,12 @@ public class RefugioServiceImpl implements RefugioService {
         roles.add(refugioRole);
 
         nuevoRefugio.setNombre(request.getNombreRefugio());
+
+        // Mapeo de campos que causaron error en el registro
+        nuevoRefugio.setDescripcion(request.getDescripcion());
+        nuevoRefugio.setPais(request.getPais());
+        nuevoRefugio.setUrlSitioWeb(request.getUrlSitioWeb());
+
         nuevoRefugio.setDireccion(request.getDireccion());
         nuevoRefugio.setCiudad(request.getCiudad());
         nuevoRefugio.setEmail(request.getEmailRefugio());
@@ -60,7 +64,13 @@ public class RefugioServiceImpl implements RefugioService {
 
         user.setEmail(request.getEmailLogin());
         user.setHashContrasena(passwordEncoder.encode(request.getPassword()));
-        user.setNombreCompleto(request.getPersonaContacto());
+
+        // Mapeo de nombre granular a UserModel
+        String[] nombreParts = request.getPersonaContacto().split("\\s+", 3);
+        user.setNombre(nombreParts.length > 0 ? nombreParts[0] : "Refugio");
+        user.setApellidoPaterno(nombreParts.length > 1 ? nombreParts[1] : "");
+        user.setApellidoMaterno(nombreParts.length > 2 ? nombreParts[2] : "");
+
         user.setTelefono(request.getTelefonoContacto());
         user.setRoles(roles);
         user.setEstaActivo(true);
@@ -80,18 +90,35 @@ public class RefugioServiceImpl implements RefugioService {
                 .build();
     }
 
-
+    // --- Método de Actualización (updateRefugio) ---
     @Override
     @Transactional
     public Refugio updateRefugio(Integer refugioId, UpdateRefugioRequest request) {
-        // (Este es el método que ya teníamos)
         Refugio refugio = refugioRepository.findById(refugioId)
                 .orElseThrow(() -> new RuntimeException("Refugio no encontrado con id: " + refugioId));
 
+        // Mapeo de campos del DTO al Refugio
         refugio.setNombre(request.getNombre());
         refugio.setDireccion(request.getDireccion());
         refugio.setCiudad(request.getCiudad());
         refugio.setEmail(request.getEmail());
+
+        // MAPEO DE CAMPOS NUEVOS/CORREGIDOS
+        refugio.setDescripcion(request.getDescripcion());
+        refugio.setPais(request.getPais());
+        refugio.setUrlSitioWeb(request.getUrlSitioWeb());
+        // FIN MAPEO
+
+        // Si el Refugio cambia el nombre de la Persona de Contacto, actualizamos el UserModel
+        if (request.getPersonaContacto() != null && !request.getPersonaContacto().equals(refugio.getPersonaContacto())) {
+            UserModel user = refugio.getUser();
+            String[] nombreParts = request.getPersonaContacto().split("\\s+", 3);
+            user.setNombre(nombreParts.length > 0 ? nombreParts[0] : "Refugio");
+            user.setApellidoPaterno(nombreParts.length > 1 ? nombreParts[1] : "");
+            user.setApellidoMaterno(nombreParts.length > 2 ? nombreParts[2] : "");
+            userRepository.save(user); // Guarda el cambio en UserModel
+        }
+
         refugio.setPersonaContacto(request.getPersonaContacto());
         refugio.setTelefono(request.getTelefono());
 

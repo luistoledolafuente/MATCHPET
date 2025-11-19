@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -19,11 +19,14 @@ import java.util.Set;
 @AllArgsConstructor
 public class UpdateAnimalRequest {
 
-    // (Es idéntico al CreateAnimalRequest,
-    // pero es buena práctica mantenerlos separados)
-
     @NotBlank(message = "El nombre es requerido")
     private String nombre;
+
+    @NotBlank(message = "La descripción de personalidad es requerida")
+    private String descripcionPersonalidad;
+
+    @NotBlank(message = "El historial médico es requerido")
+    private String historialMedico;
 
     @NotNull(message = "La raza es requerida")
     private Integer razaId;
@@ -34,8 +37,22 @@ public class UpdateAnimalRequest {
     @NotNull(message = "El estado de adopción es requerido")
     private Integer estadoAdopcionId;
 
+    @NotNull(message = "El tamaño es requerido")
     private Integer tamanoId;
+
+    @NotNull(message = "El nivel de energía es requerido")
     private Integer nivelEnergiaId;
+
+    @NotNull(message = "La fecha de nacimiento aproximada es requerida")
+    private LocalDate fechaNacimientoAprox;
+
+    @NotNull(message = "La fecha de ingreso al refugio es requerida")
+    private LocalDate fechaIngresoRefugio;
+
+    private boolean compatibleNiños;
+    private boolean compatibleOtrasMascotas;
+    private boolean estaVacunado;
+    private boolean estaEsterilizado;
 
     @NotEmpty(message = "Debe tener al menos un temperamento")
     private Set<Integer> temperamentosIds;
@@ -44,14 +61,7 @@ public class UpdateAnimalRequest {
     @Size(min = 1, max = 5, message = "Puedes subir entre 1 y 5 fotos")
     private List<String> fotosUrls;
 
+    // CORRECCIÓN: Añadido @Builder.Default para evitar la advertencia
+    @Builder.Default
     private Integer fotoPrincipalIndex = 0;
-
-    private Date fechaNacimientoAprox;
-    private String descripcionPersonalidad;
-    private Boolean compatibleNiños;
-    private Boolean compatibleOtrasMascotas;
-    private Boolean estaVacunado;
-    private Boolean estaEsterilizado;
-    private String historialMedico;
-    private Date fechaIngresoRefugio;
 }

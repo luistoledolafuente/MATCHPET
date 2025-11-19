@@ -5,7 +5,7 @@ import com.matchpet.backend_user.dto.animal.AnimalDTO;
 import com.matchpet.backend_user.dto.solicitud.CreateSolicitudRequest;
 import com.matchpet.backend_user.dto.solicitud.SolicitudResponseDTO;
 import com.matchpet.backend_user.dto.solicitud.UpdateSolicitudRequest;
-import com.matchpet.backend_user.model.*; // Importación general
+import com.matchpet.backend_user.model.*;
 import com.matchpet.backend_user.model.lookup.EstadoSolicitud;
 import com.matchpet.backend_user.repository.*;
 import com.matchpet.backend_user.service.SolicitudAdopcionService;
@@ -20,13 +20,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
 
-    // (Repositorios - sin cambios)
     private final SolicitudAdopcionRepository solicitudRepository;
     private final UserRepository userRepository;
     private final AnimalRepository animalRepository;
     private final EstadoSolicitudRepository estadoSolicitudRepository;
 
-    // (createSolicitud - sin cambios)
     @Override
     @Transactional
     public SolicitudResponseDTO createSolicitud(CreateSolicitudRequest request, String adoptanteEmail) {
@@ -44,7 +42,6 @@ public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
         return convertToDTO(solicitudGuardada);
     }
 
-    // (getMisSolicitudes - sin cambios)
     @Override
     @Transactional(readOnly = true)
     public List<SolicitudResponseDTO> getMisSolicitudes(String adoptanteEmail) {
@@ -55,7 +52,6 @@ public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
                 .collect(Collectors.toList());
     }
 
-    // (getSolicitudesRecibidas - sin cambios)
     @Override
     @Transactional(readOnly = true)
     public List<SolicitudResponseDTO> getSolicitudesRecibidas(String refugioEmail) {
@@ -70,7 +66,6 @@ public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
                 .collect(Collectors.toList());
     }
 
-    // (updateSolicitud - sin cambios)
     @Override
     @Transactional
     public SolicitudResponseDTO updateSolicitud(Integer solicitudId, UpdateSolicitudRequest request, String refugioEmail) {
@@ -97,7 +92,6 @@ public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
 
     // --- MAPPERS PRIVADOS ---
 
-    // (convertToDTO - sin cambios)
     private SolicitudResponseDTO convertToDTO(SolicitudAdopcion solicitud) {
         return SolicitudResponseDTO.builder()
                 .id(solicitud.getId())
@@ -111,49 +105,47 @@ public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
                 .build();
     }
 
-    // (convertAdoptanteToDTO - sin cambios)
     private AdoptanteInfoDTO convertAdoptanteToDTO(UserModel adoptante) {
         return AdoptanteInfoDTO.builder()
                 .usuarioId(adoptante.getId())
                 .email(adoptante.getEmail())
+                // CORREGIDO: Uso del método de compatibilidad
                 .nombreCompleto(adoptante.getNombreCompleto())
                 .telefono(adoptante.getTelefono())
                 .perfil(adoptante.getAdoptante())
                 .build();
     }
 
-    // --- ¡¡MÉTODO HELPER 100% CORREGIDO!! ---
     private AnimalDTO convertAnimalToDTO(Animal animal) {
         return AnimalDTO.builder()
-                .animal_id(animal.getAnimal_id()) // <-- Corrección de .id a .animal_id
+                // CORREGIDO: Uso de getId() que es la convención estándar
+                .animal_id(animal.getId())
                 .nombre(animal.getNombre())
                 .fechaNacimientoAprox(animal.getFechaNacimientoAprox())
                 .descripcionPersonalidad(animal.getDescripcionPersonalidad())
-                .compatibleNiños(animal.getCompatibleNiños())
-                .compatibleOtrasMascotas(animal.getCompatibleOtrasMascotas())
-                .estaVacunado(animal.getEstaVacunado())
-                .estaEsterilizado(animal.getEstaEsterilizado())
+                // CORREGIDO: Uso de los getters booleanos correctos (is...)
+                .compatibleNiños(animal.isCompatibleNiños())
+                .compatibleOtrasMascotas(animal.isCompatibleOtrasMascotas())
+                .estaVacunado(animal.isEstaVacunado())
+                .estaEsterilizado(animal.isEstaEsterilizado())
                 .historialMedico(animal.getHistorialMedico())
                 .fechaIngresoRefugio(animal.getFechaIngresoRefugio())
 
-                // --- ¡ARREGLOS! Convertimos objetos a Strings ---
                 .raza(animal.getRaza().getNombreRaza())
                 .especie(animal.getRaza().getEspecie().getNombreEspecie())
                 .genero(animal.getGenero().getNombre())
-                .tamano(animal.getTamano() != null ? animal.getTamano().getNombre() : null)
-                .nivelEnergia(animal.getNivelEnergia() != null ? animal.getNivelEnergia().getNombre() : null)
+                .tamano(animal.getTamano().getNombre()) // CAMBIO: Hecho NOT NULL, no necesita chequeo de nulo
+                .nivelEnergia(animal.getNivelEnergia().getNombre()) // CAMBIO: Hecho NOT NULL
                 .estadoAdopcion(animal.getEstadoAdopcion().getNombre())
                 .refugioNombre(animal.getRefugio().getNombre())
                 .refugioCiudad(animal.getRefugio().getCiudad())
 
-                // --- ¡ARREGLOS! Convertimos Sets a Listas de Strings ---
                 .temperamentos(animal.getTemperamentos().stream()
                         .map(Temperamento::getNombreTemperamento)
                         .collect(Collectors.toList()))
                 .fotos(animal.getFotos().stream()
                         .map(AnimalFoto::getUrlFoto)
                         .collect(Collectors.toList()))
-                // --- FIN DE ARREGLOS ---
                 .build();
     }
 }

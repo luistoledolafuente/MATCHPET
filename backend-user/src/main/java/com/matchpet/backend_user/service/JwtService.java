@@ -39,14 +39,11 @@ public class JwtService {
 
         if (userDetails instanceof UserModel) {
             UserModel user = (UserModel) userDetails;
-            // --- ¡CORRECCIÓN AQUÍ! ---
-            // Era .getUsuarioId() pero el método correcto es .getId()
             claims.put("usuarioId", user.getId());
-            // --- FIN DE LA CORRECCIÓN ---
+            // CORRECCIÓN: Uso de getNombreCompleto()
             claims.put("nombre", user.getNombreCompleto());
         }
 
-        // ⚡ Claim aleatorio para garantizar que el token sea único
         claims.put("rnd", UUID.randomUUID().toString());
 
         return buildToken(claims, userDetails, JWT_ACCESS_EXPIRATION, getAccessSignInKey());

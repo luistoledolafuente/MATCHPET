@@ -1,0 +1,42 @@
+# application-prod.yml
+
+spring:
+  datasource:
+    url: jdbc:mysql://prod-db-server:3306/db_matchpet
+    username: prod-user
+    password: ${PROD_DB_PASSWORD}  # Se toma de una variable de entorno
+  jpa:
+    hibernate:
+      ddl-auto: none  # No modificar el esquema en producción
+    show-sql: false  # Deshabilitado en producción
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${PROD_GOOGLE_CLIENT_ID}
+            client-secret: ${PROD_GOOGLE_CLIENT_SECRET}
+            scope: openid, email, profile
+
+google:
+  api:
+    key: ${GOOGLE_API_KEY}  # Clave de API real para producción
+
+jwt:
+  access:
+    secret: ${PROD_JWT_ACCESS_SECRET}
+    expiration: 43200000
+  refresh:
+    secret: ${PROD_JWT_REFRESH_SECRET}
+    expiration: 2592000000
+
+mercadopago:
+  access:
+    token: ${PROD_MERCADOPAGO_ACCESS_TOKEN}
+
+# Configuración del frontend para producción
+frontend:
+  url: https://matchpet.com  # URL real en producción

@@ -38,4 +38,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", ex.getMessage()));
     }
+
+    @ExceptionHandler(AnimalNotFoundException.class)
+    public ResponseEntity<String> handleAnimalNotFoundException(AnimalNotFoundException ex) {
+        // Devuelve un 404 Not Found con el mensaje de la excepción
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
 }

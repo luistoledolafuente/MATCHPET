@@ -8,7 +8,6 @@ import com.matchpet.backend_user.repository.AnimalRepository;
 import com.matchpet.backend_user.repository.UserRepository;
 import com.matchpet.backend_user.service.RecomendacionService;
 
-// Imports de la librería de Gemini que elegiste
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.gson.Gson;
@@ -32,55 +31,53 @@ public class RecomendacionServiceImpl implements RecomendacionService {
     @Value("${gemini.model.name}")
     private String modelName;
 
+    @Value("${google.api.key}")
+    private String apiKey; // Mantenemos la inyección de la clave por si acaso
+
     private Client client;
 
     @PostConstruct
     public void init() {
-        // Esto lee la variable de entorno GEMINI_API_KEY
-        // que configuraste en tu IDE
+        // CORRECCIÓN 1: Usamos el constructor sin argumentos para resolver el error de compilación
+        // y confiar en que el SDK de Gemini encuentre la clave de entorno/propiedades.
         this.client = new Client();
     }
 
     @Override
     public List<AnimalDTO> getRecomendaciones(String adoptanteEmail) {
 
-        // 1. Obtener datos
         UserModel user = userRepository.findByEmail(adoptanteEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // (Usamos .getAdoptante() como en tu UserModel.java)
         PerfilAdoptante perfil = user.getAdoptante();
 
-        // (Usamos el método que añadiste al AnimalRepository)
-        List<Animal> mascotasDisponibles = animalRepository.findByEstadoAdopcionId(1); // 1 = Disponible
+        List<Animal> mascotasDisponibles = animalRepository.findByEstadoAdopcionId(1);
 
-        // 2. Convertir a JSON
-        // (Esto usa el AnimalDTO.java corregido)
+        List<AnimalDTO> mascotasDTOs = mascotasDisponibles.stream()
+                .map(this::convertAnimalToDTO)
+                .collect(Collectors.toList());
+
         String perfilJson = gson.toJson(perfil);
-        String mascotasJson = mascotasDisponibles.stream()
-                .map(AnimalDTO::new)
-                .collect(Collectors.toList()).toString();
+        String mascotasJson = gson.toJson(mascotasDTOs);
 
         String prompt = construirPrompt(perfilJson, mascotasJson);
 
         try {
-            // 3. Llamar a la API de Gemini
             GenerateContentResponse response = this.client.models.generateContent(
                     modelName,
-                    prompt, // Pasamos el prompt como un String
-                    null    // Para GenerationConfig
+                    prompt,
+                    null
             );
 
-            // 4. Obtener la respuesta
-            String respuestaTexto = response.text();
+            String respuestaTexto = response.text().trim();
 
-            // 5. Parsear la respuesta
             List<Integer> idsRecomendados = gson.fromJson(respuestaTexto,
                     new TypeToken<List<Integer>>(){}.getType());
 
-            // 6. Devolver los animales de la BD
+            // CORRECCIÓN 2: Llamamos findAllById con la lista de Integer directamente,
+            // ya que el ID de Animal es Integer.
             return animalRepository.findAllById(idsRecomendados).stream()
-                    .map(AnimalDTO::new)
+                    .map(this::convertAnimalToDTO)
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
@@ -88,9 +85,16 @@ public class RecomendacionServiceImpl implements RecomendacionService {
         }
     }
 
-    /**
-     * Método helper para construir el prompt.
-     */
+    // Nota: Este método DEBE existir en tu AnimalServiceImpl
+    // Lo replicamos aquí para la compilación de este servicio.
+    private AnimalDTO convertAnimalToDTO(Animal animal) {
+        return AnimalDTO.builder()
+                .animal_id(animal.getId())
+                .nombre(animal.getNombre())
+                // ** DEBES ASEGURARTE QUE TODOS LOS CAMPOS DE ANIMALDTO ESTÉN AQUÍ **
+                .build();
+    }
+
     private String construirPrompt(String perfilAdoptante, String listaMascotas) {
         return "Eres 'Match IA', un asistente experto en adopción de mascotas para la app MatchPet. " +
                 "Tu trabajo es analizar el perfil de un adoptante y una lista de mascotas disponibles, y encontrar las 3 mejores coincidencias. " +

@@ -35,9 +35,16 @@ public class UserModel implements UserDetails {
     @Column(name = "hash_contraseña", nullable = false, columnDefinition = "TEXT")
     private String hashContrasena;
 
-    @Column(name = "nombre_completo", nullable = false)
-    private String nombreCompleto;
+    @Column(nullable = false, length = 100)
+    private String nombre;
 
+    @Column(name = "apellido_paterno", nullable = false, length = 100)
+    private String apellidoPaterno;
+
+    @Column(name = "apellido_materno", nullable = false, length = 100)
+    private String apellidoMaterno;
+
+    @Column(nullable = false, length = 20)
     private String telefono;
 
     @CreationTimestamp
@@ -70,6 +77,18 @@ public class UserModel implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PerfilAdoptante adoptante;
 
+
+    // --- MÉTODOS CUSTOM PARA RETROCOMPATIBILIDAD ---
+
+    /**
+     * MÉTODOS DE COMPATIBILIDAD. Permite que los servicios antiguos
+     * que esperan un solo campo 'nombreCompleto' sigan funcionando.
+     */
+    public String getNombreCompleto() {
+        return this.nombre + " " + this.apellidoPaterno + " " + this.apellidoMaterno;
+    }
+
+    // El setNombreCompleto no se necesita en el modelo, solo en los DTOs de registro.
 
     // --- Métodos de UserDetails ---
 

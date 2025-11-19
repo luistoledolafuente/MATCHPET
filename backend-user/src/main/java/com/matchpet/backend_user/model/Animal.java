@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.sql.Date;
+import java.time.LocalDate; // CAMBIO: Importación moderna para fechas
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,28 +24,45 @@ public class Animal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "animal_id")
-    private Integer animal_id; // <-- ARREGLO 1: Renombrado
+    private Integer id; // Práctica común: usar 'id' en Java
 
     @Column(nullable = false, length = 100)
     private String nombre;
-    @Column(name = "fecha_nacimiento_aprox")
-    private Date fechaNacimientoAprox;
-    @Column(name = "descripcion_personalidad", columnDefinition = "TEXT")
+
+    // CAMBIO: Tipo cambiado a LocalDate y hecho NOT NULL
+    @Column(name = "fecha_nacimiento_aprox", nullable = false)
+    private LocalDate fechaNacimientoAprox;
+
+    // CAMBIO: Hecho NOT NULL
+    @Column(name = "descripcion_personalidad", columnDefinition = "TEXT", nullable = false)
     private String descripcionPersonalidad;
-    @Column(name = "compatible_niños")
-    private Boolean compatibleNiños = false; // (Este campo está bien)
-    @Column(name = "compatible_otras_mascotas")
-    private Boolean compatibleOtrasMascotas = false;
-    @Column(name = "esta_vacunado")
-    private Boolean estaVacunado = false;
-    @Column(name = "esta_esterilizado")
-    private Boolean estaEsterilizado = false;
-    @Column(name = "historial_medico", columnDefinition = "TEXT")
+
+    // CAMBIO: Hecho NOT NULL (primitive 'boolean' es 'false' por defecto)
+    @Column(name = "compatible_niños", nullable = false)
+    private boolean compatibleNiños = false;
+
+    // CAMBIO: Hecho NOT NULL
+    @Column(name = "compatible_otras_mascotas", nullable = false)
+    private boolean compatibleOtrasMascotas = false;
+
+    // CAMBIO: Hecho NOT NULL
+    @Column(name = "esta_vacunado", nullable = false)
+    private boolean estaVacunado = false;
+
+    // CAMBIO: Hecho NOT NULL
+    @Column(name = "esta_esterilizado", nullable = false)
+    private boolean estaEsterilizado = false;
+
+    // CAMBIO: Hecho NOT NULL
+    @Column(name = "historial_medico", columnDefinition = "TEXT", nullable = false)
     private String historialMedico;
-    @Column(name = "fecha_ingreso_refugio")
-    private Date fechaIngresoRefugio;
+
+    // CAMBIO: Hecho NOT NULL y tipo cambiado
+    @Column(name = "fecha_ingreso_refugio", nullable = false)
+    private LocalDate fechaIngresoRefugio;
+
     @UpdateTimestamp
-    @Column(name = "fecha_actualizacion")
+    @Column(name = "fecha_actualizacion", nullable = false)
     private Timestamp fechaActualizacion;
 
     // --- Relaciones (Foreign Keys) ---
@@ -63,12 +80,17 @@ public class Animal {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "genero_id", nullable = false)
     private Genero genero;
+
+    // CAMBIO: Hecho NOT NULL
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "tamano_id")
+    @JoinColumn(name = "tamano_id", nullable = false)
     private Tamano tamano;
+
+    // CAMBIO: Hecho NOT NULL
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "nivel_energia_id")
+    @JoinColumn(name = "nivel_energia_id", nullable = false)
     private NivelEnergia nivelEnergia;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "estado_adopcion_id", nullable = false)
     private EstadoAdopcion estadoAdopcion;
@@ -84,6 +106,4 @@ public class Animal {
             inverseJoinColumns = @JoinColumn(name = "temperamento_id")
     )
     private Set<Temperamento> temperamentos = new HashSet<>();
-
-
 }
