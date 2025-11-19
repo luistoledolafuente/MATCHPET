@@ -6,18 +6,14 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    @POST("/api/auth/register")
-    suspend fun register(
-        @Body request: RegisterRequest
-    ): Response<AuthResponse>
+    // ✅ Nuevo endpoint
+    @POST("/api/adoptantes/register")
+    suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
+
 
     @POST("/api/auth/login")
-    suspend fun login(
-        @Body request: LoginRequest
-    ): Response<AuthResponse>
+    suspend fun login(@Body request: LoginRequest): Response<AuthResponse>
 
     @GET("/api/user/profile")
-    suspend fun getProfile(
-        @Header("Authorization") token: String
-    ): Response<UserProfileResponse>
+    suspend fun getProfile(@Header("Authorization") token: String): Response<UserProfileResponse>
 }

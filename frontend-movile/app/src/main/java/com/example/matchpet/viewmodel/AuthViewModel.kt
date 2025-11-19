@@ -6,74 +6,79 @@ import com.example.matchpet.data.model.*
 import com.example.matchpet.data.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
+import retrofit2.Response
+import android.util.Log
+import kotlinx.coroutines.withContext
+
 
 class AuthViewModel : ViewModel() {
 
     var authResponse: AuthResponse? = null
         private set
+    fun login(
+        email: String,
+        password: String,
+        onSuccess: (AuthResponse) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val request = LoginRequest(email = email, password = password)
+                val response = RetrofitClient.api.login(request)
 
-    /**
-     * Registro de usuario
-     */
+                if (response.isSuccessful && response.body() != null) {
+                    authResponse = response.body()
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error ${response.code()}: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                onError(e.message ?: "Error de conexión")
+            }
+        }
+    }
+
     fun register(
         email: String,
         password: String,
         nombre: String,
-        telefono: String,
-        onSuccess: () -> Unit,
+        telefono: String?,
+        onSuccess: (AuthResponse) -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = RetrofitClient.api.register(
-                    RegisterRequest(email, password, nombre, telefono)
+                val request = RegisterRequest(
+                    nombreCompleto = nombre,
+                    email = email,
+                    password = password,
+                    telefono = telefono,
+                    ciudad = "Lima",
+                    direccion = "Av. Los Álamos 123",
+                    rol = "ADOPTANTE"
                 )
-                if (response.isSuccessful && response.body() != null) {
-                    authResponse = response.body()
-                    onSuccess()
-                } else {
-                    onError("Error ${response.code()}: ${response.message()}")
-                }
-            } catch (e: Exception) {
-                onError(e.message ?: "Error al registrarse")
-            }
-        }
 
-    }
-
-    /**
-     * Login de usuario
-     */
-    fun login(
-        email: String,
-        password: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                println("📤 Iniciando sesión: $email")
-
-                val response = RetrofitClient.api.login(LoginRequest(email, password))
-
-                println("📥 Respuesta login: ${response.code()} ${response.message()}")
+                val response: Response<AuthResponse> =
+                    RetrofitClient.api.register(request)
 
                 if (response.isSuccessful && response.body() != null) {
                     authResponse = response.body()
-                    println("✅ Login exitoso: ${authResponse?.accessToken}")
-                    onSuccess()
+
+                    // 🔴 HAY QUE VOLVER AL HILO PRINCIPAL AQUÍ
+                    withContext(Dispatchers.Main) {
+                        onSuccess(response.body()!!)
+                    }
+
                 } else {
-                    val errorBody = response.errorBody()?.string() ?: "Error desconocido"
-                    println("⚠️ Error en login: $errorBody")
-                    onError("Error ${response.code()}: ${response.message()}")
+                    withContext(Dispatchers.Main) {
+                        onError("Error ${response.code()}: ${response.message()}")
+                    }
                 }
-            } catch (e: HttpException) {
-                println("❌ HttpException: ${e.code()} - ${e.message()}")
-                onError("Error HTTP ${e.code()}")
+
             } catch (e: Exception) {
-                println("❌ Excepción en login: ${e.localizedMessage}")
-                onError("Excepción: ${e.localizedMessage ?: "Error de red"}")
+                withContext(Dispatchers.Main) {
+                    onError(e.message ?: "Error de conexión")
+                }
             }
         }
     }

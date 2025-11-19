@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,6 +15,8 @@ import com.example.matchpet.ui.screens.RegisterScreen
 import com.example.matchpet.ui.screens.WelcomeScreen
 import com.example.matchpet.ui.theme.MatchPetTheme
 import com.example.matchpet.ui.screens.ProfileScreen
+import com.example.matchpet.ui.screens.SplashScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,9 +29,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MatchPetApp() {
     MatchPetTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             val navController = rememberNavController()
             AppNavigation(navController)
         }
@@ -41,8 +40,14 @@ fun MatchPetApp() {
 fun AppNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = "welcome"
+        startDestination = "splash"
     ) {
+        // Pantalla de carga inicial
+        composable("splash") {
+            SplashScreen(navController = navController)
+        }
+
+        // Pantalla de bienvenida
         composable("welcome") {
             WelcomeScreen(
                 onAdoptClick = { navController.navigate("login") },
@@ -51,6 +56,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
+        // Pantalla de login
         composable("login") {
             LoginScreen(
                 navController = navController,
@@ -58,19 +64,18 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
+        // Pantalla de registro (actualizada)
         composable("register") {
             RegisterScreen(
-                onRegisterClick = { /* acción al registrarse */ },
+                navController = navController,
                 onLoginClick = { navController.navigate("login") }
             )
         }
 
-        // Perfil con token dinámico
+        // Pantalla de perfil (recibe el token del registro o login)
         composable("profile/{token}") { backStackEntry ->
             val token = backStackEntry.arguments?.getString("token") ?: ""
             ProfileScreen(token = token)
         }
     }
-
 }
-

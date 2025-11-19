@@ -1,6 +1,5 @@
 package com.example.matchpet.ui.screens
 
-import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,6 +20,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.matchpet.data.model.UserRole
 import com.example.matchpet.ui.components.PrimaryButton
 import com.example.matchpet.ui.components.RoleSelector
@@ -29,20 +29,16 @@ import com.example.matchpet.viewmodel.AuthViewModel
 
 @Composable
 fun RegisterScreen(
-    onRegisterClick: () -> Unit,
+    navController: NavController,
     onLoginClick: () -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val viewModel: AuthViewModel = viewModel()
 
     var selectedRole by remember { mutableStateOf(UserRole.ADOPTER) }
     var nombre by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
-    var fechaNacimiento by remember { mutableStateOf("") }
-    var ciudad by remember { mutableStateOf("") }
-    var direccion by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
     var confirmar by remember { mutableStateOf("") }
 
@@ -113,57 +109,13 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Teléfono y fecha
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = telefono,
-                        onValueChange = { telefono = it },
-                        label = { Text("Teléfono") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = BackgroundBeige,
-                            unfocusedContainerColor = BackgroundBeige
-                        )
-                    )
-                    OutlinedTextField(
-                        value = fechaNacimiento,
-                        onValueChange = { fechaNacimiento = it },
-                        label = { Text("Fecha de Nacimiento") },
-                        placeholder = { Text("DD/MM/AAAA") },
-                        modifier = Modifier.weight(1f),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = BackgroundBeige,
-                            unfocusedContainerColor = BackgroundBeige
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Ciudad
+                // Teléfono
                 OutlinedTextField(
-                    value = ciudad,
-                    onValueChange = { ciudad = it },
-                    label = { Text("Ciudad") },
+                    value = telefono,
+                    onValueChange = { telefono = it },
+                    label = { Text("Teléfono") },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = BackgroundBeige,
-                        unfocusedContainerColor = BackgroundBeige
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Dirección
-                OutlinedTextField(
-                    value = direccion,
-                    onValueChange = { direccion = it },
-                    label = { Text("Dirección") },
-                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = BackgroundBeige,
                         unfocusedContainerColor = BackgroundBeige
@@ -210,6 +162,8 @@ fun RegisterScreen(
                     onClick = {
                         if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank()) {
                             Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+                        } else if (contrasena != confirmar) {
+                            Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, "Registrando usuario...", Toast.LENGTH_SHORT).show()
 
@@ -218,17 +172,20 @@ fun RegisterScreen(
                                 password = contrasena,
                                 nombre = nombre,
                                 telefono = telefono,
-                                onSuccess = {
+                                onSuccess = { response ->
                                     Toast.makeText(context, "Registro exitoso ✅", Toast.LENGTH_LONG).show()
-                                    onRegisterClick() // Navega o limpia campos
+                                    // 🔹 Navega con el token al perfil
+                                    navController.navigate("profile/${response.accessToken}")
                                 },
-                                onError = { mensajeError ->
-                                    Toast.makeText(context, "Error: $mensajeError", Toast.LENGTH_LONG).show()
+                                onError = { error ->
+                                    Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
                                 }
                             )
                         }
                     }
                 )
+
+
 
                 Spacer(modifier = Modifier.height(12.dp))
 
