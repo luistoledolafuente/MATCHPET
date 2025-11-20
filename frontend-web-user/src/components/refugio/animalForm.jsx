@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext.jsx'; // <-- agregado
-import { X, Save, PawPrint, ChevronDown } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import { X, Save, PawPrint } from 'lucide-react';
 import {
     getRazas, getGeneros, getEstadosAdopcion,
     getTamanos, getNivelesEnergia, getTemperamentos
@@ -9,36 +9,38 @@ import {
 import { createAnimal, updateAnimal } from '../../services/animalService';
 
 export default function AnimalForm({ animal, onClose, onSuccess, token: tokenProp }) {
-  const auth = useAuth(); 
 
-  const token = tokenProp
-    || auth?.token
-    || auth?.accessToken
-    || auth?.user?.accessToken
-    || auth?.user?.token
-    || (axios.defaults.headers.common?.Authorization || '').replace('Bearer ', '') || null;
+    const auth = useAuth();
+
+    const token =
+        tokenProp ||
+        auth?.token ||
+        auth?.accessToken ||
+        auth?.user?.accessToken ||
+        auth?.user?.token ||
+        (axios.defaults.headers.common?.Authorization || '').replace('Bearer ', '') ||
+        null;
 
     const isEditing = !!animal;
 
     const [formData, setFormData] = useState({
         nombre: '',
+        descripcionPersonalidad: '',
+        historialMedico: '',
         razaId: '',
-        nombreRazaManual: '',
         generoId: '',
         estadoAdopcionId: 1,
         tamanoId: '',
         nivelEnergiaId: '',
-        temperamentosIds: [],
-        fotosUrls: [],
-        fotoPrincipalIndex: 0,
         fechaNacimientoAprox: new Date().toISOString().slice(0, 10),
         fechaIngresoRefugio: new Date().toISOString().slice(0, 10),
-        descripcionPersonalidad: '',
         compatibleNiños: true,
         compatibleOtrasMascotas: true,
         estaVacunado: true,
         estaEsterilizado: true,
-        historialMedico: '',
+        temperamentosIds: [],
+        fotosUrls: [],
+        fotoPrincipalIndex: 0
     });
 
     const [lookups, setLookups] = useState({});
@@ -50,13 +52,16 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
     useEffect(() => {
         const loadLookups = async () => {
             try {
-                const [razas, generos, estadosAdopcion, tamanos, nivelesEnergia, temperamentos] = await Promise.all([
+                const [
+                    razas, generos, estadosAdopcion,
+                    tamanos, nivelesEnergia, temperamentos
+                ] = await Promise.all([
                     getRazas(token),
                     getGeneros(token),
                     getEstadosAdopcion(token),
                     getTamanos(token),
                     getNivelesEnergia(token),
-                    getTemperamentos(token),
+                    getTemperamentos(token)
                 ]);
 
                 setLookups({
@@ -65,125 +70,149 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
                     estadosAdopcion,
                     tamanos,
                     nivelesEnergia,
-                    temperamentos,
+                    temperamentos
                 });
+
             } catch (err) {
                 console.error("Error cargando lookups:", err);
-                setError("No se pudieron cargar los datos de selección.");
+                setError("No se pudieron cargar los datos.");
             }
         };
-        loadLookups();
+
+        if (token) loadLookups();
     }, [token]);
 
-    // Rellenar formulario si es edición
+    // Cargar datos si es edición
     useEffect(() => {
         if (isEditing && animal) {
             setFormData({
                 nombre: animal.nombre || '',
+                descripcionPersonalidad: animal.descripcionPersonalidad || '',
+                historialMedico: animal.historialMedico || '',
                 razaId: animal.raza?.id || '',
-                nombreRazaManual: '',
                 generoId: animal.genero?.id || '',
                 estadoAdopcionId: animal.estadoAdopcion?.id || 1,
                 tamanoId: animal.tamano?.id || '',
                 nivelEnergiaId: animal.nivelEnergia?.id || '',
-                temperamentosIds: animal.temperamentos?.map(t => t.id) || [],
-                fotosUrls: animal.fotos?.map(f => f.urlFoto) || [],
-                fotoPrincipalIndex: animal.fotos?.findIndex(f => f.esPrincipal) ?? 0,
-                fechaNacimientoAprox: animal.fechaNacimientoAprox?.split('T')[0] || new Date().toISOString().slice(0, 10),
-                fechaIngresoRefugio: animal.fechaIngresoRefugio?.split('T')[0] || new Date().toISOString().slice(0, 10),
-                descripcionPersonalidad: animal.descripcionPersonalidad || '',
+                fechaNacimientoAprox: animal.fechaNacimientoAprox?.split("T")[0],
+                fechaIngresoRefugio: animal.fechaIngresoRefugio?.split("T")[0],
                 compatibleNiños: animal.compatibleNiños ?? true,
                 compatibleOtrasMascotas: animal.compatibleOtrasMascotas ?? true,
                 estaVacunado: animal.estaVacunado ?? true,
                 estaEsterilizado: animal.estaEsterilizado ?? true,
-                historialMedico: animal.historialMedico || '',
+                temperamentosIds: animal.temperamentos?.map(t => t.id) || [],
+                fotosUrls: animal.fotos?.map(f => f.urlFoto) || [],
+                fotoPrincipalIndex: animal.fotos?.findIndex(f => f.esPrincipal) ?? 0
             });
         }
-    }, [isEditing, animal]);
+    }, [animal, isEditing]);
 
-    // Cambios en inputs
+    // Manejo de inputs
     const handleChange = e => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: name.endsWith('Id') ? parseInt(value) : type === 'checkbox' ? checked : value
+            [name]:
+                type === "checkbox"
+                    ? checked
+                    : name.endsWith("Id")
+                        ? parseInt(value)
+                        : value
         }));
     };
 
     const handleTemperamentoChange = e => {
-        const value = parseInt(e.target.value);
+        const id = parseInt(e.target.value);
         setFormData(prev => ({
             ...prev,
-            temperamentosIds: prev.temperamentosIds.includes(value)
-                ? prev.temperamentosIds.filter(id => id !== value)
-                : [...prev.temperamentosIds, value],
+            temperamentosIds: prev.temperamentosIds.includes(id)
+                ? prev.temperamentosIds.filter(t => t !== id)
+                : [...prev.temperamentosIds, id]
         }));
     };
 
     const handleFotoChange = (index, url) => {
-        setFormData(prev => {
-            const newFotos = [...prev.fotosUrls];
-            newFotos[index] = url;
-            return { ...prev, fotosUrls: newFotos };
-        });
+        const copy = [...formData.fotosUrls];
+        copy[index] = url;
+        setFormData(prev => ({ ...prev, fotosUrls: copy }));
     };
 
     const handleAddFoto = () => {
-        setFormData(prev => ({ ...prev, fotosUrls: [...prev.fotosUrls, ''] }));
+        setFormData(prev => ({
+            ...prev,
+            fotosUrls: [...prev.fotosUrls, ""]
+        }));
     };
 
     const handleRemoveFoto = index => {
-        setFormData(prev => {
-            const newFotos = prev.fotosUrls.filter((_, i) => i !== index);
-            let newPrincipal = prev.fotoPrincipalIndex;
-            if (index === prev.fotoPrincipalIndex) newPrincipal = 0;
-            else if (index < prev.fotoPrincipalIndex) newPrincipal -= 1;
-            return { ...prev, fotosUrls: newFotos, fotoPrincipalIndex: newPrincipal };
-        });
+        const updated = formData.fotosUrls.filter((_, i) => i !== index);
+        setFormData(prev => ({
+            ...prev,
+            fotosUrls: updated,
+            fotoPrincipalIndex:
+                index === prev.fotoPrincipalIndex
+                    ? 0
+                    : prev.fotoPrincipalIndex - (index < prev.fotoPrincipalIndex ? 1 : 0)
+        }));
     };
 
-    const parseJwt = (token) => {
-        try {
-            const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            return JSON.parse(decodeURIComponent(escape(atob(base64))));
-        } catch (e) {
-            return null;
-        }
+    // VALIDACIÓN DE IDS
+    const validateIds = () => {
+        const errors = [];
+        if (!lookups.razas?.some(r => r.id === formData.razaId)) errors.push("Raza inválida");
+        if (!lookups.generos?.some(g => g.id === formData.generoId)) errors.push("Género inválido");
+        if (!lookups.estadosAdopcion?.some(e => e.id === formData.estadoAdopcionId)) errors.push("Estado de adopción inválido");
+        if (!lookups.tamanos?.some(t => t.id === formData.tamanoId)) errors.push("Tamaño inválido");
+        if (!lookups.nivelesEnergia?.some(n => n.id === formData.nivelEnergiaId)) errors.push("Nivel de energía inválido");
+
+        const invalidTemps = formData.temperamentosIds.filter(
+            id => !lookups.temperamentos?.some(t => t.id === id)
+        );
+        if (invalidTemps.length > 0) errors.push("Temperamentos inválidos: " + invalidTemps.join(", "));
+        return errors;
     };
 
+    // Envío del formulario
     const handleSubmit = async e => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         setFormStatus(null);
 
-        // Obtener token: prioridad prop > contexto > axios.defaults
-        const token = tokenProp
-          || auth?.token
-          || auth?.accessToken
-          || auth?.user?.accessToken
-          || auth?.user?.token
-          || (axios.defaults.headers.common?.Authorization || '').replace('Bearer ', '') || null;
-
         if (!token) {
-          setError("Token no disponible. Por favor inicia sesión de nuevo.");
-          setLoading(false);
-          return;
+            setError("Token no disponible.");
+            setLoading(false);
+            return;
         }
 
-        // Asegurar header Authorization (refuerzo)
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const idErrors = validateIds();
+        if (idErrors.length > 0) {
+            setError("Error en los datos: " + idErrors.join("; "));
+            setLoading(false);
+            return;
+        }
 
-        // Construir payload JSON (si necesitas subir archivos binarios convierte a FormData)
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
         const dataToSend = {
-            ...formData,
-            razaId: formData.razaId || undefined,
-            nombreRazaManual: formData.razaId ? undefined : formData.nombreRazaManual || undefined,
-            fotos: formData.fotosUrls.map((url, index) => ({ urlFoto: url, esPrincipal: index === formData.fotoPrincipalIndex })),
-            temperamentosIds: formData.temperamentosIds.map(id => parseInt(id)),
+            nombre: formData.nombre,
+            descripcionPersonalidad: formData.descripcionPersonalidad,
+            historialMedico: formData.historialMedico,
+            razaId: formData.razaId,
+            generoId: formData.generoId,
+            estadoAdopcionId: formData.estadoAdopcionId,
+            tamanoId: formData.tamanoId,
+            nivelEnergiaId: formData.nivelEnergiaId,
+            fechaNacimientoAprox: formData.fechaNacimientoAprox,
+            fechaIngresoRefugio: formData.fechaIngresoRefugio,
+            compatibleNiños: formData.compatibleNiños,
+            compatibleOtrasMascotas: formData.compatibleOtrasMascotas,
+            estaVacunado: formData.estaVacunado,
+            estaEsterilizado: formData.estaEsterilizado,
+            temperamentosIds: formData.temperamentosIds,
+            fotosUrls: formData.fotosUrls,
+            fotoPrincipalIndex: formData.fotoPrincipalIndex
         };
-        delete dataToSend.fotosUrls;
-        delete dataToSend.fotoPrincipalIndex;
 
         try {
             if (isEditing) {
@@ -193,154 +222,136 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
                 await createAnimal(dataToSend, token);
                 setFormStatus("Animal registrado exitosamente.");
             }
+
             setTimeout(onSuccess, 600);
+
         } catch (err) {
-            console.error('Error creando/actualizando animal:', err);
-            if (err?.response?.status === 401) {
-                setError("No autorizado (401). El servidor rechazó el token.");
-            } else {
-                setError(err.response?.data?.message || err.message || "Error al comunicarse con el servidor.");
-            }
-        } finally {
-            setLoading(false);
+            console.error(err);
+            setError(err.response?.data?.message || "Error al guardar.");
         }
+
+        setLoading(false);
     };
 
-    const renderRazaField = () => (
+    // Render select helper
+    const renderSelect = (lookup, name, label) => (
         <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Raza</label>
-            {lookups.razas?.length > 0 ? (
-                <select
-                    name="razaId"
-                    value={formData.razaId || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0] appearance-none"
-                >
-                    <option value="" disabled>Selecciona Raza</option>
-                    {lookups.razas.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
-                </select>
-            ) : (
-                <input
-                    type="text"
-                    name="nombreRazaManual"
-                    value={formData.nombreRazaManual || ""}
-                    onChange={handleChange}
-                    placeholder="Escribe la raza"
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0]"
-                />
-            )}
-            <ChevronDown className="absolute right-3 top-9 h-4 w-4 text-gray-400 pointer-events-none" />
-        </div>
-    );
-
-    const renderSelectOptions = (lookup, name, label) => (
-        <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">{label}</label>
             <select
                 name={name}
                 value={formData[name] || ""}
                 onChange={handleChange}
+                className="w-full border rounded-lg p-2"
                 required
-                className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0] appearance-none"
             >
-                <option value="" disabled>Selecciona {label}</option>
-                {lookup?.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+                <option value="" disabled>Seleccionar {label}</option>
+                {lookup?.map(item => (
+                    <option key={item.id} value={item.id}>{item.nombre}</option>
+                ))}
             </select>
-            <ChevronDown className="absolute right-3 top-9 h-4 w-4 text-gray-400 pointer-events-none" />
         </div>
     );
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex justify-between items-center z-10">
-                    <h2 className="text-2xl font-bold text-[#316B7A] flex items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center p-6 border-b">
+                    <h2 className="text-2xl font-bold flex items-center text-[#316B7A]">
                         <PawPrint className="w-6 h-6 mr-2 text-[#FDB2A0]" />
                         {isEditing ? "Editar Mascota" : "Registrar Nueva Mascota"}
                     </h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition">
-                        <X className="w-6 h-6" />
-                    </button>
+                    <button onClick={onClose}><X className="w-6 h-6 text-gray-500" /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    {error && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-lg">{error}</div>}
-                    {formStatus && <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded-lg">{formStatus}</div>}
+                    {error && <div className="bg-red-100 p-3 rounded text-red-700">{error}</div>}
+                    {formStatus && <div className="bg-green-100 p-3 rounded text-green-700">{formStatus}</div>}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-[#FDB2A0]/50 rounded-lg bg-[#FFF7E6]">
-                        <h3 className="md:col-span-2 text-xl font-semibold text-[#316B7A] border-b pb-2 mb-4">Datos Principales</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-[#FFF7E6] rounded-lg border">
+                        <h3 className="md:col-span-2 font-semibold text-xl text-[#316B7A]">Datos Principales</h3>
+
                         <div>
-                            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                            <input type="text" id="nombre" name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0]" />
+                            <label className="text-sm block mb-1 text-gray-700">Nombre</label>
+                            <input
+                                type="text"
+                                name="nombre"
+                                value={formData.nombre}
+                                onChange={handleChange}
+                                className="w-full border p-2 rounded"
+                                required
+                            />
                         </div>
-                        {renderRazaField()}
-                        {renderSelectOptions(lookups.generos, 'generoId', 'Género')}
-                        {renderSelectOptions(lookups.estadosAdopcion, 'estadoAdopcionId', 'Estado de Adopción')}
-                        {renderSelectOptions(lookups.tamanos, 'tamanoId', 'Tamaño')}
-                        {renderSelectOptions(lookups.nivelesEnergia, 'nivelEnergiaId', 'Nivel de Energía')}
+
+                        {renderSelect(lookups.razas, "razaId", "Raza")}
+                        {renderSelect(lookups.generos, "generoId", "Género")}
+                        {renderSelect(lookups.estadosAdopcion, "estadoAdopcionId", "Estado de Adopción")}
+                        {renderSelect(lookups.tamanos, "tamanoId", "Tamaño")}
+                        {renderSelect(lookups.nivelesEnergia, "nivelEnergiaId", "Nivel de Energía")}
+
                         <div>
-                            <label htmlFor="fechaNacimientoAprox" className="block text-sm font-medium text-gray-700 mb-1">Fecha Nacimiento (Aprox.)</label>
-                            <input type="date" id="fechaNacimientoAprox" name="fechaNacimientoAprox" value={formData.fechaNacimientoAprox} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0]" />
+                            <label className="text-sm block mb-1 text-gray-700">Fecha Nacimiento</label>
+                            <input type="date" name="fechaNacimientoAprox" value={formData.fechaNacimientoAprox} onChange={handleChange} className="w-full border p-2 rounded" required />
                         </div>
+
                         <div>
-                            <label htmlFor="fechaIngresoRefugio" className="block text-sm font-medium text-gray-700 mb-1">Fecha Ingreso Refugio</label>
-                            <input type="date" id="fechaIngresoRefugio" name="fechaIngresoRefugio" value={formData.fechaIngresoRefugio} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0]" />
+                            <label className="text-sm block mb-1 text-gray-700">Fecha Ingreso</label>
+                            <input type="date" name="fechaIngresoRefugio" value={formData.fechaIngresoRefugio} onChange={handleChange} className="w-full border p-2 rounded" required />
                         </div>
                     </div>
 
-                    {/* Personalidad y compatibilidad */}
-                    <div className="p-4 border border-[#FDB2A0]/50 rounded-lg bg-[#FFF7E6]">
-                        <h3 className="text-xl font-semibold text-[#316B7A] border-b pb-2 mb-4">Personalidad y Compatibilidad</h3>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción Personalidad</label>
-                            <textarea name="descripcionPersonalidad" value={formData.descripcionPersonalidad} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0]" />
+                    <div className="p-4 bg-[#FFF7E6] border rounded-lg">
+                        <h3 className="text-xl font-semibold text-[#316B7A]">Personalidad & Compatibilidad</h3>
+                        <label className="block mt-2 text-sm">Descripción</label>
+                        <textarea name="descripcionPersonalidad" value={formData.descripcionPersonalidad} onChange={handleChange} className="w-full border p-2 rounded" />
+                        <label className="block mt-2 text-sm">Historial Médico</label>
+                        <textarea name="historialMedico" value={formData.historialMedico} onChange={handleChange} className="w-full border p-2 rounded" />
+                        <div className="flex gap-4 mt-3">
+                            <label><input type="checkbox" name="compatibleNiños" checked={formData.compatibleNiños} onChange={handleChange} /> Niños</label>
+                            <label><input type="checkbox" name="compatibleOtrasMascotas" checked={formData.compatibleOtrasMascotas} onChange={handleChange} /> Otras Mascotas</label>
+                            <label><input type="checkbox" name="estaVacunado" checked={formData.estaVacunado} onChange={handleChange} /> Vacunado</label>
+                            <label><input type="checkbox" name="estaEsterilizado" checked={formData.estaEsterilizado} onChange={handleChange} /> Esterilizado</label>
                         </div>
-                        <div className="flex gap-4 mt-2">
-                            <label className="flex items-center gap-2"><input type="checkbox" name="compatibleNiños" checked={formData.compatibleNiños} onChange={handleChange} /> Compatible con Niños</label>
-                            <label className="flex items-center gap-2"><input type="checkbox" name="compatibleOtrasMascotas" checked={formData.compatibleOtrasMascotas} onChange={handleChange} /> Compatible con Otras Mascotas</label>
-                            <label className="flex items-center gap-2"><input type="checkbox" name="estaVacunado" checked={formData.estaVacunado} onChange={handleChange} /> Vacunado</label>
-                            <label className="flex items-center gap-2"><input type="checkbox" name="estaEsterilizado" checked={formData.estaEsterilizado} onChange={handleChange} /> Esterilizado</label>
-                        </div>
-                        <div className="mt-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Historial Médico</label>
-                            <textarea name="historialMedico" value={formData.historialMedico} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#FDB2A0] focus:border-[#FDB2A0]" />
-                        </div>
-                        <div className="mt-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Temperamentos</label>
-                            <div className="flex flex-wrap gap-2">
-                                {lookups.temperamentos?.map(t => (
-                                    <label key={t.id} className="flex items-center gap-1 border px-2 py-1 rounded">
-                                        <input type="checkbox" value={t.id} checked={formData.temperamentosIds.includes(t.id)} onChange={handleTemperamentoChange} />
-                                        {t.nombre}
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
+
+                        <label className="block mt-3 text-sm">Temperamentos</label>
+                        {lookups.temperamentos?.map(t => (
+                            <label key={t.id} className="border px-2 py-1 rounded">
+                                <input
+                                    type="checkbox"
+                                    value={t.id}
+                                    checked={formData.temperamentosIds.includes(t.id)}
+                                    onChange={handleTemperamentoChange}
+                                /> {t.nombre_temperamento}
+                            </label>
+                        ))}
+
+
                     </div>
 
-                    {/* Fotos */}
-                    <div className="p-4 border border-[#FDB2A0]/50 rounded-lg bg-[#FFF7E6]">
-                        <h3 className="text-xl font-semibold text-[#316B7A] border-b pb-2 mb-4">Fotos</h3>
-                        {formData.fotosUrls.map((url, index) => (
-                            <div key={index} className="flex items-center gap-2 mb-2">
-                                <input type="text" value={url} onChange={e => handleFotoChange(index, e.target.value)} placeholder="URL de la foto" className="flex-1 p-2 border border-gray-300 rounded-lg" />
-                                <button type="button" onClick={() => handleRemoveFoto(index)} className="px-2 py-1 bg-red-500 text-white rounded">Eliminar</button>
+                    <div className="p-4 bg-[#FFF7E6] border rounded-lg">
+                        <h3 className="text-xl font-semibold text-[#316B7A]">Fotos</h3>
+                        {formData.fotosUrls.map((url, i) => (
+                            <div key={i} className="flex items-center gap-2 mt-2">
+                                <input className="flex-1 border p-2 rounded" value={url} onChange={e => handleFotoChange(i, e.target.value)} placeholder="URL de foto" />
+                                <button type="button" onClick={() => handleRemoveFoto(i)} className="bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
                                 <label className="flex items-center gap-1">
-                                    <input type="radio" name="fotoPrincipal" checked={formData.fotoPrincipalIndex === index} onChange={() => setFormData(prev => ({ ...prev, fotoPrincipalIndex: index }))} />
+                                    <input type="radio" name="fotoPrincipal" checked={formData.fotoPrincipalIndex === i} onChange={() => setFormData(prev => ({ ...prev, fotoPrincipalIndex: i }))} />
                                     Principal
                                 </label>
                             </div>
                         ))}
-                        <button type="button" onClick={handleAddFoto} className="px-4 py-2 bg-green-500 text-white rounded mt-2">Agregar Foto</button>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-200">
-                        <button type="submit" className="w-full flex items-center justify-center bg-[#316B7A] text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-[#2a5b67] transition duration-200 disabled:opacity-50" disabled={loading}>
-                            <Save className="w-5 h-5 mr-2" /> {isEditing ? 'Guardar Cambios' : 'Registrar Animal'}
+                        <button type="button" onClick={handleAddFoto} className="mt-3 bg-green-600 text-white px-3 py-2 rounded">
+                            Agregar Foto
                         </button>
                     </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-[#316B7A] text-white py-3 rounded-full font-bold hover:bg-[#214e58]"
+                    >
+                        <Save className="inline-block w-5 h-5 mr-2" />
+                        {isEditing ? "Guardar Cambios" : "Registrar Animal"}
+                    </button>
                 </form>
             </div>
         </div>

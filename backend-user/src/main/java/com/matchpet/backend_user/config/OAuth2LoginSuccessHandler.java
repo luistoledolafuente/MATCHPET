@@ -1,11 +1,11 @@
 package com.matchpet.backend_user.config;
 
-
 import com.matchpet.backend_user.model.RolModel;
 import com.matchpet.backend_user.model.UserModel;
 import com.matchpet.backend_user.repository.RolRepository;
 import com.matchpet.backend_user.repository.UserRepository;
 import com.matchpet.backend_user.service.JwtService;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,71 +27,66 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    // --- Herramientas que necesitamos ---
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // (Descomenta para habilitar frontend y configurar las properties)
-    // @Value("${frontend.url}")
-    // private String frontendUrl;
+    @Value("${frontend.url}")
+    private String frontendUrl;  // Esta propiedad debería estar correctamente inyectada
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-        // 1. Obtenemos los datos del usuario de Google
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         String email = (String) attributes.get("email");
         String nombre = (String) attributes.get("name");
 
-        // 2. Buscamos al usuario en NUESTRA BD (o lo registramos)
         UserModel user = userRepository.findByEmail(email)
                 .orElseGet(() -> registerNewGoogleUser(email, nombre));
 
-        // 3. --- ¡FIX PARA HU-04! ---
-        // Generamos AMBOS tokens (Access y Refresh)
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        // 4. (Configuración de frontend - ¡Actualizada!)
-        // (Cuando tengas frontend, redirigirás con ambos tokens)
-        // String redirectUrl = frontendUrl + "/login-success?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
-        // response.sendRedirect(redirectUrl);
-
-
-        // 5. --- ¡FIX PARA PRUEBA SOLO BACKEND! ---
-        // Escribimos ambos tokens como JSON en la respuesta
+        // Redirige al frontend URL después de iniciar sesión exitosamente
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
+
+        // Este es el lugar donde devuelves los tokens como JSON, si es necesario redirigir:
+        // response.sendRedirect(frontendUrl + "/dashboard");  // Por ejemplo, redirigiendo al dashboard.
+
         response.getWriter().write(
                 "{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}"
         );
-        response.getWriter().flush(); // Asegura que se envíe la respuesta
+        response.getWriter().flush();
     }
 
-    /**
-     * Método privado para crear un nuevo usuario si no existe
-     * (Este método no necesita cambios)
-     */
-    private UserModel registerNewGoogleUser(String email, String nombre) {
+    private UserModel registerNewGoogleUser(String email, String nombreCompleto) {
 
         RolModel defaultRole = rolRepository.findByNombreRol("Adoptante")
                 .orElseThrow(() -> new RuntimeException("Error: Rol 'Adoptante' no encontrado."));
 
         String randomPassword = UUID.randomUUID().toString();
 
+        String[] nombreParts = nombreCompleto.split("\\s+", 3);
+        String nombre = nombreParts.length > 0 ? nombreParts[0] : "Usuario";
+        String apellidoPaterno = nombreParts.length > 1 ? nombreParts[1] : "";
+        String apellidoMaterno = nombreParts.length > 2 ? nombreParts[2] : "";
+
         UserModel newUser = UserModel.builder()
                 .email(email)
-                .nombreCompleto(nombre)
+                .nombre(nombre)
+                .apellidoPaterno(apellidoPaterno)
+                .apellidoMaterno(apellidoMaterno)
                 .hashContrasena(passwordEncoder.encode(randomPassword))
                 .roles(Set.of(defaultRole))
                 .estaActivo(true)
                 .fechaCreacionPerfil(new Timestamp(System.currentTimeMillis()))
                 .fechaActualizacion(new Timestamp(System.currentTimeMillis()))
+                .telefono("000000000")
                 .build();
 
         return userRepository.save(newUser);

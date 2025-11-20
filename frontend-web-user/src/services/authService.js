@@ -4,12 +4,12 @@ import axios from "axios";
 const API_URL = "http://127.0.0.1:8081/api";
 
 const saveToken = (token) => {
-  localStorage.setItem("userToken", token);
+  localStorage.setItem("accessToken", token);
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
 
 const removeToken = () => {
-  localStorage.removeItem("userToken");
+  localStorage.removeItem("accessToken");
   delete axios.defaults.headers.common["Authorization"];
 };
 

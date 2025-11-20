@@ -21,19 +21,23 @@ public class SolicitudAdopcion {
     @Column(name = "solicitud_id")
     private Integer id;
 
-    @CreationTimestamp
-    @Column(name = "fecha_solicitud", updatable = false)
-    private Timestamp fechaSolicitud;
-
-    @UpdateTimestamp
-    @Column(name = "fecha_actualizacion")
-    private Timestamp fechaActualizacion;
+    // CAMBIO: Añadido campo obligatorio del adoptante
+    @Column(name = "mensaje_adoptante", nullable = false, columnDefinition = "TEXT")
+    private String mensajeAdoptante;
 
     @Column(name = "notas_internas", columnDefinition = "TEXT")
     private String notasInternas; // Notas del refugio (privadas)
 
     @Column(name = "mensaje_al_adoptante", columnDefinition = "TEXT")
     private String mensajeAlAdoptante; // Mensaje del refugio al adoptante
+
+    @CreationTimestamp
+    @Column(name = "fecha_solicitud", updatable = false, nullable = false)
+    private Timestamp fechaSolicitud;
+
+    @UpdateTimestamp
+    @Column(name = "fecha_actualizacion", nullable = false)
+    private Timestamp fechaActualizacion;
 
     // --- Relaciones ---
 

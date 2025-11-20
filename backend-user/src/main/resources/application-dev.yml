@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_matchpet
+    username: root
+    password: 
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your-email@example.com
+    password: FAKE_PASSWORD
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.debug: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: FAKE_CLIENT_ID
+            client-secret: FAKE_CLIENT_SECRET
+            scope: openid, email, profile
+
+google:
+  api:
+    key: ${GOOGLE_API_KEY} # se carga de variable de entorno
+
+gemini:
+  model:
+    name: gemini-1.5-flash-001
+
+jwt:
+  access:
+    secret: ${JWT_ACCESS_SECRET}
+    expiration: 43200000
+  refresh:
+    secret: ${JWT_REFRESH_SECRET}
+    expiration: 2592000000
+
+mercadopago:
+  access:
+    token: ${MERCADOPAGO_ACCESS_TOKEN}
+
+frontend:
+  url: http://localhost:5173

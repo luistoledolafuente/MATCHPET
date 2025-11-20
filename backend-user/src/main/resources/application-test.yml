@@ -1,0 +1,42 @@
+# application-test.yml
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Crea y elimina tablas al iniciar y finalizar las pruebas
+    show-sql: true
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: TEST_GOOGLE_CLIENT_ID
+            client-secret: TEST_GOOGLE_CLIENT_SECRET
+            scope: openid, email, profile
+
+google:
+  api:
+    key: TEST_GOOGLE_API_KEY  # Clave de API mock para pruebas
+
+jwt:
+  access:
+    secret: TEST_JWT_ACCESS_SECRET
+    expiration: 43200000
+  refresh:
+    secret: TEST_JWT_REFRESH_SECRET
+    expiration: 2592000000
+
+mercadopago:
+  access:
+    token: TEST_MERCADOPAGO_ACCESS_TOKEN
+
+# Configuración del frontend para pruebas
+frontend:
+  url: http://localhost:5173
