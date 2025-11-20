@@ -12,6 +12,11 @@ export default function MisMascotas() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState(null);
 
+  // 🚀 Estados para modal de eliminación y mensaje de éxito
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [animalToDelete, setAnimalToDelete] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
   const fetchAnimals = async () => {
     if (authLoading || !token) {
       if (!token && !authLoading) {
@@ -36,20 +41,6 @@ export default function MisMascotas() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async (animalId) => {
-    if (!window.confirm("¿Estás seguro de que quieres borrar este animal? Esta acción es irreversible.")) return;
-
-    try {
-      await deleteAnimal(animalId, token);
-      setAnimals(prev => prev.filter(a => a.animal_id !== animalId));
-      console.log("Animal eliminado exitosamente.");
-    } catch (err) {
-      console.error("Error al eliminar animal:", err);
-      const errMsg = err.response?.data?.message || "Error al eliminar el animal.";
-      setError(`Error al eliminar: ${errMsg}`);
     }
   };
 
@@ -124,14 +115,14 @@ export default function MisMascotas() {
 
                   <div className="flex justify-end space-x-2 pt-4 border-t mt-4">
                     <button
-                      onClick={() => { setEditingAnimal(animal); setIsFormOpen(true); }}
+                      onClick={() => { setEditingAnimal({ ...animal, id: animal.animal_id }); setIsFormOpen(true); }}
                       className="text-[#316B7A] hover:text-[#FDB2A0] transition-colors p-2 rounded-full"
                       title="Editar Animal"
                     >
                       <Pencil className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(animal.animal_id)}
+                      onClick={() => { setAnimalToDelete(animal); setDeleteModalOpen(true); }}
                       className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-full"
                       title="Eliminar Animal"
                     >
@@ -158,6 +149,52 @@ export default function MisMascotas() {
           </div>
         )}
       </div>
+
+      {/* Modal de confirmación de eliminación */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg max-w-lg text-center">
+            <h2 className="text-xl font-bold mb-4 text-[#316B7A]">Confirmar eliminación</h2>
+            <p className="mb-6 text-gray-700">
+              ¿Estás seguro de que quieres borrar a la mascota <strong>{animalToDelete?.nombre}</strong>? Esta acción es irreversible.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="px-4 py-2 rounded-full bg-[#FFF7E6] text-[#316B7A] hover:bg-[#fde9c8] transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await deleteAnimal(animalToDelete.animal_id, token);
+                    setAnimals(prev => prev.filter(a => a.animal_id !== animalToDelete.animal_id));
+                    setSuccessMessage("Animal eliminado exitosamente.");
+                  } catch (err) {
+                    const errMsg = err.response?.data?.message || "Error al eliminar el animal.";
+                    setError(`Error al eliminar: ${errMsg}`);
+                  } finally {
+                    setDeleteModalOpen(false);
+                    setAnimalToDelete(null);
+                  }
+                }}
+                className="px-4 py-2 rounded-full bg-[#f79b87] text-white hover:bg-[#e06e5a] transition"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Mensaje de éxito */}
+      {successMessage && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white p-4 rounded-xl shadow-lg z-50 animate-fade-in-out">
+          {successMessage}
+        </div>
+      )}
 
       {isFormOpen && (
         <AnimalForm

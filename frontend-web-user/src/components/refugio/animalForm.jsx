@@ -38,8 +38,8 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
         compatibleOtrasMascotas: true,
         estaVacunado: true,
         estaEsterilizado: true,
-        temperamentosIds: [],
-        fotosUrls: [],
+        temperamentosNombres: [],
+        fotosUrls: [""],
         fotoPrincipalIndex: 0
     });
 
@@ -70,8 +70,13 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
                     estadosAdopcion,
                     tamanos,
                     nivelesEnergia,
-                    temperamentos
+                    temperamentos: temperamentos.map(t => ({
+                        id: t.id,
+                        nombre: t.nombreTemperamento || t.nombre_temperamento || t.nombre
+                    }))
                 });
+                console.log("Temperamentos LOOKUP NORMALIZADOS:", temperamentos);
+
 
             } catch (err) {
                 console.error("Error cargando lookups:", err);
@@ -84,8 +89,9 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
 
     // Cargar datos si es edición
     useEffect(() => {
-        if (isEditing && animal) {
-            setFormData({
+        if (isEditing && animal && lookups.temperamentos?.length > 0) {
+            setFormData(prev => ({
+                ...prev,
                 nombre: animal.nombre || '',
                 descripcionPersonalidad: animal.descripcionPersonalidad || '',
                 historialMedico: animal.historialMedico || '',
@@ -100,12 +106,14 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
                 compatibleOtrasMascotas: animal.compatibleOtrasMascotas ?? true,
                 estaVacunado: animal.estaVacunado ?? true,
                 estaEsterilizado: animal.estaEsterilizado ?? true,
-                temperamentosIds: animal.temperamentos?.map(t => t.id) || [],
-                fotosUrls: animal.fotos?.map(f => f.urlFoto) || [],
+                temperamentosNombres: animal.temperamentos?.map(
+                    t => t.nombreTemperamento ?? t.nombre_temperamento ?? t.nombre
+                ).filter(Boolean) || [],
+                fotosUrls: animal.fotos?.map(f => f.urlFoto) || [""],
                 fotoPrincipalIndex: animal.fotos?.findIndex(f => f.esPrincipal) ?? 0
-            });
+            }));
         }
-    }, [animal, isEditing]);
+    }, [animal, isEditing, lookups.temperamentos]);
 
     // Manejo de inputs
     const handleChange = e => {
@@ -122,14 +130,15 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
     };
 
     const handleTemperamentoChange = e => {
-        const id = parseInt(e.target.value);
+        const t = e.target.value;
         setFormData(prev => ({
             ...prev,
-            temperamentosIds: prev.temperamentosIds.includes(id)
-                ? prev.temperamentosIds.filter(t => t !== id)
-                : [...prev.temperamentosIds, id]
+            temperamentosNombres: prev.temperamentosNombres.includes(t)
+                ? prev.temperamentosNombres.filter(x => x !== t)
+                : [...prev.temperamentosNombres, t]
         }));
     };
+
 
     const handleFotoChange = (index, url) => {
         const copy = [...formData.fotosUrls];
@@ -165,9 +174,15 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
         if (!lookups.tamanos?.some(t => t.id === formData.tamanoId)) errors.push("Tamaño inválido");
         if (!lookups.nivelesEnergia?.some(n => n.id === formData.nivelEnergiaId)) errors.push("Nivel de energía inválido");
 
-        const invalidTemps = formData.temperamentosIds.filter(
-            id => !lookups.temperamentos?.some(t => t.id === id)
+        const validTempNames = (lookups.temperamentos || []).map(t => t.nombre);
+        console.log("temperamentosNombres a validar:", formData.temperamentosNombres);
+        console.log("validTempNames:", validTempNames);
+
+        const invalidTemps = formData.temperamentosNombres.filter(
+            t => !validTempNames.includes(t)
         );
+
+
         if (invalidTemps.length > 0) errors.push("Temperamentos inválidos: " + invalidTemps.join(", "));
         return errors;
     };
@@ -193,6 +208,9 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
         }
 
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        const temperamentosIds = formData.temperamentosNombres
+        .map(nombre => lookups.temperamentos.find(t => t.nombre === nombre)?.id)
+        .filter(Boolean);
 
         const dataToSend = {
             nombre: formData.nombre,
@@ -209,20 +227,27 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
             compatibleOtrasMascotas: formData.compatibleOtrasMascotas,
             estaVacunado: formData.estaVacunado,
             estaEsterilizado: formData.estaEsterilizado,
-            temperamentosIds: formData.temperamentosIds,
+            temperamentosIds,      // <- aquí van los IDs
             fotosUrls: formData.fotosUrls,
             fotoPrincipalIndex: formData.fotoPrincipalIndex
         };
+        console.log("Enviando datos al backend:", dataToSend);
+
+
 
         try {
             if (isEditing) {
+                if (!animal?.id) {
+                    setError("ID del animal no disponible para edición.");
+                    setLoading(false);
+                    return;
+                }
                 await updateAnimal(animal.id, dataToSend, token);
                 setFormStatus("Animal actualizado exitosamente.");
             } else {
                 await createAnimal(dataToSend, token);
                 setFormStatus("Animal registrado exitosamente.");
             }
-
             setTimeout(onSuccess, 600);
 
         } catch (err) {
@@ -314,24 +339,26 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
 
                         <label className="block mt-3 text-sm">Temperamentos</label>
                         {lookups.temperamentos?.map(t => (
-                            <label key={t.id} className="border px-2 py-1 rounded">
+                            <label key={t.id} className="border px-2 py-1 rounded inline-flex items-center gap-2">
                                 <input
                                     type="checkbox"
-                                    value={t.id}
-                                    checked={formData.temperamentosIds.includes(t.id)}
+                                    value={t.nombre}  // esto coincide con lo que validas
+                                    checked={formData.temperamentosNombres.includes(t.nombre)}
                                     onChange={handleTemperamentoChange}
-                                /> {t.nombre_temperamento}
+                                />
+                                {t.nombre}  {/* Mostrar el nombre correctamente */}
                             </label>
                         ))}
-
-
                     </div>
 
                     <div className="p-4 bg-[#FFF7E6] border rounded-lg">
                         <h3 className="text-xl font-semibold text-[#316B7A]">Fotos</h3>
                         {formData.fotosUrls.map((url, i) => (
                             <div key={i} className="flex items-center gap-2 mt-2">
-                                <input className="flex-1 border p-2 rounded" value={url} onChange={e => handleFotoChange(i, e.target.value)} placeholder="URL de foto" />
+                                <input className="flex-1 border p-2 rounded"
+                                    value={url || ""}
+                                    onChange={e => handleFotoChange(i, e.target.value)}
+                                    placeholder="URL de foto" />
                                 <button type="button" onClick={() => handleRemoveFoto(i)} className="bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
                                 <label className="flex items-center gap-1">
                                     <input type="radio" name="fotoPrincipal" checked={formData.fotoPrincipalIndex === i} onChange={() => setFormData(prev => ({ ...prev, fotoPrincipalIndex: i }))} />
