@@ -1,6 +1,6 @@
 import React from "react";
-import { 
-  PawPrint, ClipboardList, Gift, BarChart3, Clock, CheckCircle, MessageSquare 
+import {
+  PawPrint, ClipboardList, Gift, BarChart3, Clock, CheckCircle, MessageSquare
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -56,12 +56,15 @@ export default function DashboardHome() {
         {/* HEADER */}
         <header className="relative bg-[#316B7A] rounded-2xl overflow-hidden p-8 flex flex-col md:flex-row items-center justify-between text-white">
           <div>
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-2">¡Bienvenido, {user.nombreCompleto}!</h2>
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-2">
+              ¡Bienvenido, {`${user.nombre || ""} ${user.apellidoPaterno || ""} ${user.apellidoMaterno || ""}`.trim()}!
+            </h2>
+
             <p className="text-lg md:text-xl opacity-90">Gestiona tus mascotas, adopciones y donaciones desde un solo lugar.</p>
           </div>
-          <img src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=400&q=80" 
-               alt="Mascotas felices" 
-               className="mt-6 md:mt-0 w-64 h-40 object-cover rounded-xl shadow-lg"/>
+          <img src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=400&q=80"
+            alt="Mascotas felices"
+            className="mt-6 md:mt-0 w-64 h-40 object-cover rounded-xl shadow-lg" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-[#FDB2A0] rounded-full opacity-30 blur-3xl"></div>
           <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#407581] rounded-full opacity-30 blur-3xl"></div>
         </header>
