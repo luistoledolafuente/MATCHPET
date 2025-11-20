@@ -39,13 +39,12 @@ export default function MisMascotas() {
     }
   };
 
-  // DELETE: Elimina un animal
   const handleDelete = async (animalId) => {
     if (!window.confirm("¿Estás seguro de que quieres borrar este animal? Esta acción es irreversible.")) return;
 
     try {
-      await deleteAnimal(animalId, token); // <-- Se usa el token
-      setAnimals(prev => prev.filter(a => a.id !== animalId));
+      await deleteAnimal(animalId, token);
+      setAnimals(prev => prev.filter(a => a.animal_id !== animalId));
       console.log("Animal eliminado exitosamente.");
     } catch (err) {
       console.error("Error al eliminar animal:", err);
@@ -54,23 +53,20 @@ export default function MisMascotas() {
     }
   };
 
-  // Función de callback para actualizar la lista después de un POST/PUT exitoso
   const handleFormSubmitSuccess = () => {
     setIsFormOpen(false);
     setEditingAnimal(null);
     fetchAnimals();
   };
 
-  // Carga inicial
   useEffect(() => {
     if (token && !authLoading) {
       fetchAnimals();
     } else if (!authLoading && !token) {
       setLoading(false);
     }
-  }, [token, authLoading]); 
+  }, [token, authLoading]);
 
-  
   return (
     <div className="bg-[#FFF7E6] min-h-screen p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -89,16 +85,29 @@ export default function MisMascotas() {
           </button>
         </header>
 
-     
-        {(loading || authLoading) && (<div className="text-center p-8 text-[#316B7A]"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" />Cargando listado de animales...</div>)}
-        {error && (<div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg flex items-center"><XCircle className="w-5 h-5 mr-3" />{error}</div>)}
+        {(loading || authLoading) && (
+          <div className="text-center p-8 text-[#316B7A]">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" />
+            Cargando listado de animales...
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg flex items-center">
+            <XCircle className="w-5 h-5 mr-3" />
+            {error}
+          </div>
+        )}
 
         {!loading && !authLoading && animals.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {animals.map(animal => (
-              <div key={animal.id} className="bg-white rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-2xl">
+            {animals.map((animal, index) => (
+              <div
+                key={animal.animal_id ?? `temp-${index}`}
+                className="bg-white rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-2xl"
+              >
                 <img
-                  src={animal.fotos?.[0]?.urlFoto || "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"}
+                  src={animal.fotos?.[0] || "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"}
                   alt={`Foto de ${animal.nombre}`}
                   className="w-full h-48 object-cover"
                   onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"; }}
@@ -106,10 +115,13 @@ export default function MisMascotas() {
 
                 <div className="p-4">
                   <h2 className="text-2xl font-bold text-[#316B7A] mb-1">{animal.nombre}</h2>
-                  <p className="text-sm text-gray-500 mb-3">{animal.raza?.nombreRaza || 'Raza desconocida'} ({animal.genero?.nombre || 'Género Desconocido'})</p>
-                  <p className="text-sm text-gray-700"><span className="font-semibold">Estado:</span> {animal.estadoAdopcion?.nombre || 'N/A'}</p>
+                  <p className="text-sm text-gray-500 mb-3">
+                    {animal.raza || 'Raza desconocida'} ({animal.genero || 'Género Desconocido'})
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Estado:</span> {animal.estadoAdopcion || 'N/A'}
+                  </p>
 
-                  {/* Botones de Acción */}
                   <div className="flex justify-end space-x-2 pt-4 border-t mt-4">
                     <button
                       onClick={() => { setEditingAnimal(animal); setIsFormOpen(true); }}
@@ -119,7 +131,7 @@ export default function MisMascotas() {
                       <Pencil className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(animal.id)}
+                      onClick={() => handleDelete(animal.animal_id)}
                       className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-full"
                       title="Eliminar Animal"
                     >
@@ -147,13 +159,12 @@ export default function MisMascotas() {
         )}
       </div>
 
-      {/* Modal del Formulario */}
       {isFormOpen && (
         <AnimalForm
           animal={editingAnimal}
           onClose={() => { setIsFormOpen(false); setEditingAnimal(null); }}
           onSuccess={handleFormSubmitSuccess}
-          token={token} // <-- Pasar token al AnimalForm
+          token={token}
         />
       )}
     </div>

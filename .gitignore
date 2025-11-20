@@ -9,4 +9,4 @@ Archivos de React/Node
 /frontend-web-admin/dist
 
 Logs de depuración (si existen)
-*.log
+*.logbackend-user/src/main/resources/application-dev.yml

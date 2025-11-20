@@ -26,8 +26,9 @@ export async function createAnimal(payloadOrFormData, token) {
   const headers = buildAuthHeader(token);
   console.debug('createAnimal: axios.defaults.headers.common=', axios.defaults.headers?.common);
   console.debug('createAnimal: request headers=', headers, 'tokenPassed=', !!token);
-  const url = `${API_URL}/crear`; // o `${API_URL}` si tu backend usa ese endpoint
+  const url = `${API_URL}`;
   const res = await axios.post(url, payloadOrFormData, { headers: { ...headers } });
+
   return res.data;
 }
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import authService from "../services/authService"; // Importación corregida (sin .js)
-import axios from "axios"; // <-- agregado
+import authService from "../services/authService";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -17,21 +17,15 @@ const extractUserType = (profile) => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [userType, setUserType] = useState(null);
-    const [token, setToken] = useState(null); // <-- CLAVE: Nuevo estado para el token
+    const [token, setToken] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [error, setError] = useState(null);
 
     const loadProfile = async () => {
-        const currentToken = localStorage.getItem("userToken");
+        const currentToken = localStorage.getItem("accessToken");   // ⚡ unificado
 
-        // 1. Setear el token en el estado
         setToken(currentToken);
-
-        // NUEVO: si hay token en localStorage, asegurarse de que axios lo use
-        if (currentToken) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${currentToken}`;
-        }
 
         if (currentToken) {
             axios.defaults.headers.common["Authorization"] = `Bearer ${currentToken}`;
@@ -46,13 +40,14 @@ export const AuthProvider = ({ children }) => {
 
         try {
             const profile = await authService.getProfile();
-            setUser({ ...profile, refugio_id: profile.refugio_id });
+            console.log("💛 PROFILE RECIBIDO DEL BACK:", profile);
+            setUser(profile);
             setUserType(extractUserType(profile));
             setIsAuthenticated(true);
-        } catch (error) {
-            console.error("No se pudo obtener perfil o token expirado:", error);
+        } catch (err) {
+            console.error("No se pudo obtener perfil o token expirado:", err);
             authService.logout();
-            setToken(null); // Limpiar token al fallar
+            setToken(null);
             setUser(null);
             setUserType(null);
             setIsAuthenticated(false);
@@ -65,21 +60,20 @@ export const AuthProvider = ({ children }) => {
         loadProfile();
     }, []);
 
-    // --- Función de Login ---
     const login = async (email, password) => {
         setLoading(true);
         setError(null);
         try {
-            await authService.login(email, password);
-
-            // Si el login es exitoso, volvemos a cargar el perfil (y el nuevo token)
+            await authService.login(email, password);   // ⚡ token guardado automáticamente
+            const savedToken = localStorage.getItem("accessToken");
+            setToken(savedToken);
             await loadProfile();
-
         } catch (err) {
             console.error("Error en el login:", err);
             setError(err.response?.data?.message || "Credenciales inválidas o error de conexión.");
             setIsAuthenticated(false);
             setUser(null);
+            setToken(null);
         } finally {
             setLoading(false);
         }
@@ -95,27 +89,26 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         authService.logout();
-        setToken(null); // Limpiar el token del estado
+        setToken(null);
         setUser(null);
         setUserType(null);
         setIsAuthenticated(false);
         setError(null);
-        // NUEVO: limpiar header por defecto de axios al cerrar sesión
-        delete axios.defaults.headers.common['Authorization'];
+        delete axios.defaults.headers.common["Authorization"];
     };
 
     const value = useMemo(() => ({
         user,
         userType,
-        token, // <-- CLAVE: Exponer el token
+        token,
         isAuthenticated,
         loading,
         error,
         login,
         register,
         registerRefugio,
-        logout
-    }), [user, userType, token, isAuthenticated, loading, error]); // <-- Incluir token en dependencias
+        logout,
+    }), [user, userType, token, isAuthenticated, loading, error]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

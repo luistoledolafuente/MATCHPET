@@ -1,5 +1,6 @@
 package com.matchpet.backend_user.dto.solicitud;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -9,5 +10,6 @@ public class CreateSolicitudRequest {
     @NotNull(message = "El ID del animal es requerido")
     private Integer animalId;
 
-    // (Podríamos añadir un "mensaje" opcional aquí si quisiéramos)
+    @NotBlank(message = "El mensaje es obligatorio")
+    private String mensajeAdoptante; // En lugar de 'mensaje'
 }

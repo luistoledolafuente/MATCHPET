@@ -3,9 +3,16 @@ package com.matchpet.backend_user.service;
 import com.matchpet.backend_user.dto.animal.AnimalDTO;
 import com.matchpet.backend_user.dto.animal.CreateAnimalRequest;
 import com.matchpet.backend_user.dto.animal.UpdateAnimalRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+/**
+ * Interfaz de servicio para la gestión de Animales.
+ * Define las operaciones de negocio para los animales,
+ * asegurando la lógica de permisos por refugio.
+ */
 public interface AnimalService {
 
     /**
@@ -24,11 +31,18 @@ public interface AnimalService {
     AnimalDTO updateAnimal(Integer animalId, UpdateAnimalRequest request, String userEmail);
 
     /**
-     * ¡NUEVO MÉTODO PARA DELETE! [HU-06]
      * Elimina un animal, verificando que pertenezca al refugio.
-     *
-     * @param animalId El ID del animal a eliminar.
-     * @param userEmail El email del usuario (Refugio) que realiza la acción.
      */
     void deleteAnimal(Integer animalId, String userEmail);
+
+    /**
+     * Obtiene un animal por su ID.
+     */
+    AnimalDTO getAnimalById(Integer id);
+
+    /**
+     * Obtiene una lista paginada de todos los animales.
+     * (¡AÑADIDO! Faltaba en la interfaz)
+     */
+    Page<AnimalDTO> getAnimalesPaginados(Pageable pageable);
 }

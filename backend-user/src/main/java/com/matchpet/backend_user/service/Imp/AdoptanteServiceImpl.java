@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdoptanteServiceImpl implements AdoptanteService {
 
-    // Inyectamos todas las dependencias necesarias
     private final UserRepository userRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
@@ -36,8 +35,6 @@ public class AdoptanteServiceImpl implements AdoptanteService {
     @Override
     @Transactional
     public AuthResponse registerAdoptante(RegisterAdoptanteRequest request) {
-        // (Esta es la lógica exacta que movimos de AuthServiceImpl,
-        // usando el método 'new' que ya arreglamos)
 
         userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
             throw new RuntimeException("El email ya está registrado");
@@ -47,23 +44,37 @@ public class AdoptanteServiceImpl implements AdoptanteService {
         Set<RolModel> roles = new HashSet<>();
         roles.add(defaultRole);
 
+        // 1. Crear Entidades
         UserModel user = new UserModel();
         PerfilAdoptante nuevoPerfilAdoptante = new PerfilAdoptante();
 
+        // 2. Llenar datos de UserModel
         user.setEmail(request.getEmail());
         user.setHashContrasena(passwordEncoder.encode(request.getPassword()));
-        user.setNombreCompleto(request.getNombreCompleto());
+        user.setNombre(request.getNombre());
+        user.setApellidoPaterno(request.getApellidoPaterno());
+        user.setApellidoMaterno(request.getApellidoMaterno());
         user.setTelefono(request.getTelefono());
         user.setRoles(roles);
         user.setEstaActivo(true);
         user.setFechaCreacionPerfil(new Timestamp(System.currentTimeMillis()));
         user.setFechaActualizacion(new Timestamp(System.currentTimeMillis()));
 
+        // 3. Llenar datos de PerfilAdoptante (Lógica de Mapeo)
+        // ESTAS LÍNEAS SON CRÍTICAS Y YA ESTÁN CORRECTAS EN EL SERVICIO.
+        nuevoPerfilAdoptante.setFechaNacimiento(request.getFechaNacimiento());
+        nuevoPerfilAdoptante.setDireccion(request.getDireccion());
+        nuevoPerfilAdoptante.setCiudad(request.getCiudad());
+        nuevoPerfilAdoptante.setPais(request.getPais());
+
+        // 4. Vincular ambas entidades
         user.setAdoptante(nuevoPerfilAdoptante);
         nuevoPerfilAdoptante.setUser(user);
 
+        // 5. Guardar (JPA guardará ambas entidades gracias a la cascada)
         userRepository.save(user);
 
+        // 6. Generar Tokens
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
@@ -76,37 +87,44 @@ public class AdoptanteServiceImpl implements AdoptanteService {
     @Override
     @Transactional
     public UserProfileResponse updateAdoptante(Integer usuarioId, UpdateAdoptanteRequest request) {
-        // 1. Encontrar el Usuario (que es el "dueño" de todo)
+
         UserModel user = userRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + usuarioId));
 
-        // 2. Encontrar el Perfil del Adoptante
         PerfilAdoptante perfil = adoptanteRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Perfil de adoptante no encontrado para el usuario: " + usuarioId));
 
-        // 3. Actualizar los campos del UserModel
-        user.setNombreCompleto(request.getNombreCompleto());
+        // Actualizar campos de UserModel
+        user.setNombre(request.getNombre());
+        user.setApellidoPaterno(request.getApellidoPaterno());
+        user.setApellidoMaterno(request.getApellidoMaterno());
         user.setTelefono(request.getTelefono());
+        user.setFechaActualizacion(new Timestamp(System.currentTimeMillis()));
 
-        // 4. Actualizar los campos del PerfilAdoptante
+        // Actualizar campos del PerfilAdoptante
         perfil.setFechaNacimiento(request.getFechaNacimiento());
         perfil.setDireccion(request.getDireccion());
         perfil.setCiudad(request.getCiudad());
+        perfil.setPais(request.getPais());
 
-        // 5. Guardar el UserModel (guardará PerfilAdoptante por cascada)
-        UserModel updatedUser = userRepository.save(user);
+        PerfilAdoptante updatedPerfil = adoptanteRepository.save(perfil);
+        UserModel updatedUser = updatedPerfil.getUser();
 
-        // 6. Devolver el DTO de perfil actualizado (igual que en UserServiceImp)
+        // Devolver el DTO de perfil con campos separados
         return UserProfileResponse.builder()
                 .usuarioId(updatedUser.getId())
                 .email(updatedUser.getEmail())
-                .nombreCompleto(updatedUser.getNombreCompleto())
+                .nombre(updatedUser.getNombre())
+                .apellidoPaterno(updatedUser.getApellidoPaterno())
+                .apellidoMaterno(updatedUser.getApellidoMaterno())
                 .telefono(updatedUser.getTelefono())
                 .roles(updatedUser.getRoles().stream()
                         .map(RolModel::getNombreRol)
                         .collect(Collectors.toSet()))
-                .refugio(updatedUser.getRefugio())
-                .adoptante(updatedUser.getAdoptante())
+                .fechaNacimiento(updatedPerfil.getFechaNacimiento())
+                .direccion(updatedPerfil.getDireccion())
+                .ciudad(updatedPerfil.getCiudad())
+                .pais(updatedPerfil.getPais())
                 .build();
     }
 }
