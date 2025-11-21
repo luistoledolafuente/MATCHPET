@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS Usuarios (
     nombre VARCHAR(100) NOT NULL,
     apellido_paterno VARCHAR(100) NOT NULL,
     apellido_materno VARCHAR(100) NOT NULL,
-    telefono VARCHAR(20) NOT NULL,
+    telefono VARCHAR(30) NOT NULL,
     fecha_creacion_perfil TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     esta_activo BOOLEAN NOT NULL DEFAULT true

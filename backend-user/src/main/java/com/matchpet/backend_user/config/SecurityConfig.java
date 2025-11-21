@@ -6,11 +6,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,62 +23,85 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authz -> authz
-                        // --- Swagger (Público) ---
-                        .requestMatchers("/swagger-ui.html").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**").permitAll()
+                // CSRF OFF
+                .csrf(AbstractHttpConfigurer::disable)
 
-                        // --- Rutas Públicas ---
+                // CORS
+                .cors(Customizer.withDefaults())
+
+                // Devuelve 401 si no hay token
+                .exceptionHandling(e ->
+                        e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+
+                // AUTORIZACIONES
+                .authorizeHttpRequests(auth -> auth
+                        // Swagger
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                        .permitAll()
+
+                        // Ruta protegida obligatoria
+                        .requestMatchers("/api/user/profile").authenticated()
+
+                        // RUTAS PÚBLICAS
                         .requestMatchers(
-                                "/api/auth/**",              // Login, refresh, forgot-password
-                                "/api/adoptantes/register",  // Registro de adoptantes
-                                "/api/refugios/register",    // Registro de refugios
-                                "/api/lookups/**",           // Listas para formularios
-                                "/api/donaciones/checkout",  // Permitir donaciones anónimas
-
-
-                                "/login/oauth2/**", "/", "/error"
+                                "/api/auth/**",
+                                "/api/adoptantes/register",
+                                "/api/refugios/register",
+                                "/api/lookups/**",
+                                "/api/donaciones/checkout",
+                                "/login/oauth2/**",
+                                "/",
+                                "/error"
                         ).permitAll()
-                        // --- Fin de Rutas Públicas ---
 
-                        // Todo lo demás sigue protegido (ej: /api/donaciones/recibidas)
+                        // Todo lo demás protegerlo
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                )
-                .oauth2Login(oauth2 ->
-                        oauth2.successHandler(oAuth2LoginSuccessHandler)
-                )
-                .authenticationProvider(authenticationProvider) // Usamos el provider inyectado
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+                // sesión STATELESS
+                .sessionManagement(sess ->
+                        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // OAuth2
+                .oauth2Login(oauth ->
+                        oauth.successHandler(oAuth2LoginSuccessHandler))
+
+                // provider
+                .authenticationProvider(authenticationProvider())
+
+                // filtro JWT
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // limpiar contexto al hacer logout
+                .logout(l -> l.logoutSuccessHandler(
+                        (request, response, authentication) -> SecurityContextHolder.clearContext()
+                ));
 
         return http.build();
     }
 
-
     @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(passwordEncoder);
-        authProvider.setUserDetailsService(userDetailsService);
-        return authProvider;
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 
     @Bean
@@ -83,16 +109,21 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:5173");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
+        config.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://localhost:3000"
+        ));
+        config.setAllowedMethods(Arrays.asList("*"));
+        config.setAllowedHeaders(Arrays.asList("*"));
+
+        // PARA LEER EL TOKEN
+        config.setExposedHeaders(Arrays.asList("Authorization"));
 
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

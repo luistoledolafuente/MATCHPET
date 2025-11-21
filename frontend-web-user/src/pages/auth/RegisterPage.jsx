@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 
-// ✅ Componente de input reutilizable
+// Input reutilizable
 const InputField = ({ id, label, placeholder, type = 'text', className = '', value, onChange }) => (
   <div className={`flex flex-col min-w-0 ${className}`}>
     <label htmlFor={id} className="block text-md font-medium text-gray-700">
@@ -24,16 +24,20 @@ const InputField = ({ id, label, placeholder, type = 'text', className = '', val
 export default function RegisterPage() {
   const [userType, setUserType] = useState('adoptante');
   const [formData, setFormData] = useState({
+    // Adoptante
     nombreCompleto: '',
-    nombreRefugio: '',
     email: '',
     password: '',
     confirmPassword: '',
     telefono: '',
-    personaContacto: '',
     fechaNacimiento: '',
     ciudad: '',
     direccion: '',
+    pais: '', // se puede eliminar si no lo usas
+
+    // Refugio
+    nombreRefugio: '',
+    personaContacto: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -47,51 +51,58 @@ export default function RegisterPage() {
   }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    setLoading(true);
+  e.preventDefault();
+  setError('');
+  setSuccess('');
+  setLoading(true);
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      setLoading(false);
-      return;
+  if (formData.password !== formData.confirmPassword) {
+    setError('Las contraseñas no coinciden');
+    setLoading(false);
+    return;
+  }
+
+  try {
+    if (userType === 'adoptante') {
+      const [nombre, apellidoPaterno, apellidoMaterno] = formData.nombreCompleto.split(' ');
+      await authService.register({
+        email: formData.email,
+        password: formData.password,
+        nombre: nombre || '',
+        apellidoPaterno: apellidoPaterno || '',
+        apellidoMaterno: apellidoMaterno || '',
+        telefono: formData.telefono,
+        fechaNacimiento: formData.fechaNacimiento,
+        direccion: formData.direccion,
+        ciudad: formData.ciudad,
+        pais: formData.pais || 'Perú',
+      });
+      setSuccess('¡Adoptante registrado exitosamente!');
+    } else {
+      await authService.registerRefugio({
+        emailLogin: formData.email,
+        password: formData.password,
+        nombreRefugio: formData.nombreRefugio,
+        descripcion: formData.descripcion || 'Refugio en MatchPet',
+        direccion: formData.direccion,
+        ciudad: formData.ciudad,
+        pais: formData.pais || 'Perú',
+        emailRefugio: formData.email,
+        personaContacto: formData.personaContacto,
+        telefonoContacto: formData.telefono,
+        urlSitioWeb: formData.urlSitioWeb || '',
+      });
+      setSuccess('¡Refugio registrado exitosamente!');
     }
+    setTimeout(() => navigate('/login'), 2000);
+  } catch (err) {
+    console.error('Error API:', err.response ? err.response.data : err.message);
+    setError(err.response?.data?.message || 'Error en el registro. Revisa los datos.');
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      if (userType === 'adoptante') {
-        await authService.register({
-          nombreCompleto: formData.nombreCompleto,
-          email: formData.email,
-          password: formData.password,
-          telefono: formData.telefono,
-          fechaNacimiento: formData.fechaNacimiento,
-          ciudad: formData.ciudad,
-          direccion: formData.direccion,
-        });
-      } else {
-        // Refugio
-        await authService.registerRefugio({
-          nombreRefugio: formData.nombreRefugio,
-          emailLogin: formData.email,   // Email para login
-          emailRefugio: formData.email, // Email de contacto
-          password: formData.password,
-          telefonoContacto: formData.telefono,
-          personaContacto: formData.personaContacto,
-          ciudad: formData.ciudad,
-          direccion: formData.direccion,
-        });
-      }
-
-      setSuccess('¡Registro exitoso! Redirigiendo al inicio de sesión...');
-      setTimeout(() => navigate('/login'), 2000);
-    } catch (err) {
-      console.error('Error API:', err.response ? err.response.data : err.message);
-      setError(err.response?.data?.message || err.message || 'Error en el registro. Por favor, intenta de nuevo.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#FFF7E6] flex items-center justify-center">

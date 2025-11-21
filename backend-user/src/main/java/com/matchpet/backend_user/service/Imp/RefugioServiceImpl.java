@@ -38,9 +38,13 @@ public class RefugioServiceImpl implements RefugioService {
         userRepository.findByEmail(request.getEmailLogin()).ifPresent(user -> {
             throw new RuntimeException("El email de login ya está registrado");
         });
-        refugioRepository.findByEmail(request.getEmailRefugio()).ifPresent(refugio -> {
-            throw new RuntimeException("El email del refugio ya está registrado");
+        UserModel usuario = userRepository.findByEmail(request.getEmailLogin())
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        refugioRepository.findByUser(usuario).ifPresent(r -> {
+            throw new RuntimeException("El refugio ya está registrado para este usuario");
         });
+
+        
         RolModel refugioRole = rolRepository.findByNombreRol("Refugio")
                 .orElseThrow(() -> new RuntimeException("Error: Rol 'Refugio' no encontrado."));
 
