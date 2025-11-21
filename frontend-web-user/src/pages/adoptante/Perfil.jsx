@@ -1,240 +1,289 @@
-import React, { useState, useEffect } from "react";
-import {
-  User, Mail, Phone, Edit, Save, Lock, Send, RefreshCw,
-  AlertCircle, CheckCircle,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { User, Mail, Phone, Home, MapPin, Calendar, Edit, Save, Info, Key } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
 const BASE_URL = "http://localhost:8081";
 
 const StatusMessage = ({ type, text }) => {
   if (!text) return null;
-  const styles = type === "error"
-    ? "bg-red-100 text-red-700 border-red-400"
-    : "bg-green-100 text-green-700 border-green-400";
-  const Icon = type === "error" ? AlertCircle : CheckCircle;
+  const styles =
+    type === "error"
+      ? "bg-red-100 text-red-700 border-red-300"
+      : "bg-green-100 text-green-700 border-green-300";
   return (
-    <div className={`flex items-center p-3 mb-4 rounded-xl border ${styles} font-medium shadow-sm`}>
-      <Icon className="w-5 h-5 mr-3" />
-      <p className="text-sm">{text}</p>
+    <div className={`flex items-center p-4 mb-6 rounded-xl border ${styles} shadow`}>
+      <Info className="w-5 h-5 mr-3" />
+      <p className="text-sm font-medium">{text}</p>
     </div>
   );
 };
 
-export default function Perfil() {
-  const { user, userType, logout } = useAuth();
+export default function PerfilAdoptante() {
+  const { user, token } = useAuth();
+
   const [editMode, setEditMode] = useState(false);
+  const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState(null);
+
   const [formData, setFormData] = useState({
-    nombreCompleto: "",
+    nombre: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
     telefono: "",
+    fechaNacimiento: "",
+    direccion: "",
+    ciudad: "",
+    pais: "",
+    email: "",
   });
 
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [resetData, setResetData] = useState({ token: "", newPassword: "" });
-  const [status, setStatus] = useState(null);
-
+  // Inicializa formData desde user
   useEffect(() => {
-    if (user) {
-      setFormData({
-        nombreCompleto: user.nombreCompleto || "",
-        telefono: user.telefono || "",
-      });
-    }
+    if (!user) return;
+
+    setFormData({
+      nombre: user.nombre ?? "",
+      apellidoPaterno: user.apellidoPaterno ?? "",
+      apellidoMaterno: user.apellidoMaterno ?? "",
+      telefono: user.telefono ?? "",
+      fechaNacimiento: user.fechaNacimiento ?? "",
+      direccion: user.direccion ?? "",
+      ciudad: user.ciudad ?? "",
+      pais: user.pais ?? "",
+      email: user.email ?? "",
+    });
   }, [user]);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSave = async () => {
+    if (!user?.usuarioId) return;
+
     setLoading(true);
     setStatus(null);
+
     try {
-      // Cambié user.id por user.usuario_id
-      const response = await fetch(`${BASE_URL}/api/adoptantes/${user.adoptante.id}`, {
+      const response = await fetch(`${BASE_URL}/api/adoptantes/${user.usuarioId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        setStatus({ type: "success", text: "¡Perfil actualizado exitosamente!" });
+        setStatus({ type: "success", text: "Perfil actualizado exitosamente." });
         setEditMode(false);
       } else {
-        const data = await response.json();
-        setStatus({ type: "error", text: data.message || "Error al guardar cambios." });
+        const err = await response.json();
+        setStatus({
+          type: "error",
+          text: err.message || "Error al actualizar.",
+        });
       }
     } catch {
-      setStatus({ type: "error", text: "Error de conexión con el servidor." });
+      setStatus({ type: "error", text: "Error de conexión." });
     } finally {
       setLoading(false);
     }
   };
 
+  const sendPasswordReset = async () => {
+    setPasswordLoading(true);
+    setPasswordStatus(null);
 
-  const handleForgotPassword = async () => {
-    setLoading(true);
-    setStatus(null);
     try {
       const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotEmail || user.email }),
+        body: JSON.stringify({ email: formData.email }),
       });
+
       if (response.ok) {
-        setStatus({ type: "success", text: "Email enviado. Revisa tu correo para el token." });
+        setPasswordStatus({
+          type: "success",
+          text: "Se ha enviado un enlace a tu correo para cambiar tu contraseña.",
+        });
       } else {
-        setStatus({ type: "error", text: "No se pudo enviar el email. Verifica tu dirección." });
+        const err = await response.json();
+        setPasswordStatus({
+          type: "error",
+          text: err.message || "No se pudo enviar el enlace.",
+        });
       }
     } catch {
-      setStatus({ type: "error", text: "Error de conexión con el servidor." });
+      setPasswordStatus({
+        type: "error",
+        text: "Error de conexión con el servidor.",
+      });
     } finally {
-      setLoading(false);
+      setPasswordLoading(false);
     }
   };
 
-  const handleResetPassword = async () => {
-    if (resetData.newPassword.length < 6) {
-      setStatus({ type: "error", text: "La contraseña debe tener al menos 6 caracteres." });
-      return;
-    }
-    setLoading(true);
-    setStatus(null);
-    try {
-      const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(resetData),
-      });
-      if (response.ok) {
-        setStatus({ type: "success", text: "Contraseña cambiada correctamente. 🎉" });
-        setResetData({ token: "", newPassword: "" });
-      } else {
-        setStatus({ type: "error", text: "Token inválido o expirado." });
-      }
-    } catch {
-      setStatus({ type: "error", text: "Error al conectar con el servidor." });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!user) return <div className="text-center p-10">Cargando perfil...</div>;
+  if (!user) {
+    return (
+      <div className="p-10 text-center text-gray-600">Cargando perfil...</div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#BAE6FD] to-[#FFF7E6] py-10 px-6 font-sans relative overflow-hidden">
-      <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-10 grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#dff3ff] to-[#fde8e4] py-4 px-10">
+      <div className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-xl rounded-3xl p-10 border border-white">
+        <h2 className="text-2xl font-bold text-[#316B7A] mb-6 flex items-center gap-2">
+          <User className="w-6 h-6 text-[#FDB2A0]" />
+          Mi Perfil
+        </h2>
 
-        {/* 🧍 IZQUIERDA — DATOS PERSONALES */}
-        <div>
-          <h1 className="text-3xl font-extrabold text-[#316B7A] mb-6 flex items-center">
-            <User className="w-7 h-7 mr-3 text-[#FDB2A0]" />
-            Datos Personales
-          </h1>
+        {status && <StatusMessage type={status.type} text={status.text} />}
 
-          {status && <StatusMessage type={status.type} text={status.text} />}
-
-          <div className="space-y-5">
-            <Input label="Nombre Completo" name="nombreCompleto" value={formData.nombreCompleto} onChange={handleChange} disabled={!editMode} icon={User} />
-            <Input label="Correo Electrónico" value={user.email} disabled icon={Mail} />
-            <Input label="Teléfono" name="telefono" value={formData.telefono} onChange={handleChange} disabled={!editMode} icon={Phone} />
-          </div>
-
-          <div className="flex justify-between items-center mt-8 border-t border-gray-200 pt-5">
-            {!editMode ? (
-              <button
-                onClick={() => setEditMode(true)}
-                className="px-6 py-2 bg-[#FDB2A0] text-white font-semibold rounded-xl hover:bg-[#fa8c7a] shadow-md flex items-center"
-              >
-                <Edit className="w-4 h-4 mr-2" /> Editar
-              </button>
-            ) : (
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSave}
-                  className="px-6 py-2 bg-[#407581] text-white font-semibold rounded-xl hover:bg-[#316B7A] shadow-md flex items-center"
-                >
-                  <Save className="w-4 h-4 mr-2" /> Guardar
-                </button>
-                <button
-                  onClick={() => setEditMode(false)}
-                  className="px-6 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100"
-                >
-                  Cancelar
-                </button>
-              </div>
-            )}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputField
+            label="Nombre"
+            name="nombre"
+            icon={User}
+            value={formData.nombre}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="Apellido Paterno"
+            name="apellidoPaterno"
+            icon={User}
+            value={formData.apellidoPaterno}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="Apellido Materno"
+            name="apellidoMaterno"
+            icon={User}
+            value={formData.apellidoMaterno}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="Teléfono"
+            name="telefono"
+            icon={Phone}
+            value={formData.telefono}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="Fecha de Nacimiento"
+            name="fechaNacimiento"
+            icon={Calendar}
+            value={formData.fechaNacimiento}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="Dirección"
+            name="direccion"
+            icon={Home}
+            value={formData.direccion}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="Ciudad"
+            name="ciudad"
+            icon={MapPin}
+            value={formData.ciudad}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="País"
+            name="pais"
+            icon={Home}
+            value={formData.pais}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+          <InputField
+            label="Email"
+            name="email"
+            icon={Mail}
+            value={formData.email}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
         </div>
 
-        {/* 🔐 DERECHA — CONTRASEÑA + IMAGEN */}
-        <div>
-          <div className="flex justify-center mb-8">
-            <div className="relative w-40 h-40 rounded-full bg-gradient-to-tr from-[#BAE6FD] to-[#FDB2A0] p-[3px] shadow-xl">
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                <img
-                  src="/src/assets/images/luna.png"
-                  alt="Foto de perfil"
-                  className="w-full h-full object-cover rounded-full transform transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-              <div className="absolute bottom-1 right-1 bg-[#407581] text-white p-2 rounded-full shadow-md hover:bg-[#316B7A] cursor-pointer transition-colors duration-300">
-                <Edit className="w-4 h-4" />
-              </div>
+        <div className="flex gap-3 justify-end mt-6">
+          {!editMode ? (
+            <button
+              onClick={() => setEditMode(true)}
+              className="px-6 py-2 bg-[#FDB2A0] text-white rounded-2xl shadow-lg hover:bg-[#fa8c7a] text-sm font-semibold flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              Editar
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setEditMode(false)}
+                className="px-4 py-2 border border-gray-300 rounded-2xl text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={loading}
+                className="px-6 py-2 bg-[#407581] text-white rounded-2xl shadow-lg hover:bg-[#316B7A] text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                Guardar
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* CAMBIO DE CONTRASEÑA */}
+        <div className="mt-10 bg-white/80 border border-gray-200 rounded-3xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold text-[#316B7A] mb-3 flex items-center gap-2">
+            <Key className="w-5 h-5 text-[#FDB2A0]" />
+            Cambiar contraseña
+          </h3>
+          <p className="text-gray-600 mb-4 text-sm">
+            Te enviaremos un enlace a tu correo para cambiar tu contraseña.
+          </p>
+
+          {passwordStatus && (
+            <StatusMessage type={passwordStatus.type} text={passwordStatus.text} />
+          )}
+
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Correo
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full pl-12 pr-4 py-3 rounded-xl border bg-white border-gray-300 focus:ring-2 focus:ring-[#FDB2A0]"
+              />
             </div>
           </div>
 
-
-          <h2 className="text-2xl font-extrabold text-[#316B7A] mb-4 flex items-center">
-            <Lock className="w-6 h-6 mr-3 text-[#FDB2A0]" />
-            Gestión de Contraseña
-          </h2>
-
-          <div className="mb-6 p-4 bg-[#F8F9FA] rounded-xl border border-[#BAE6FD] shadow-inner">
-            <h3 className="font-semibold text-[#407581] mb-2 flex items-center">
-              <Send className="w-4 h-4 mr-2" /> Solicitar Token
-            </h3>
-            <input
-              type="email"
-              placeholder={`Tu email (${user.email})`}
-              value={forgotEmail}
-              onChange={(e) => setForgotEmail(e.target.value)}
-              className="w-full mb-3 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#407581] outline-none"
-            />
+          <div className="flex justify-end mt-2">
             <button
-              onClick={handleForgotPassword}
-              className="w-full bg-[#407581] hover:bg-[#316B7A] text-white font-semibold py-2 rounded-lg flex items-center justify-center"
+              onClick={sendPasswordReset}
+              disabled={passwordLoading}
+              className="px-6 py-2 bg-[#407581] text-white rounded-xl shadow hover:bg-[#316B7A] flex items-center gap-2 disabled:opacity-50"
             >
-              <Send className="w-4 h-4 mr-2" /> Enviar Email
-            </button>
-          </div>
-
-          <div className="p-4 bg-[#F8F9FA] rounded-xl border border-[#BAE6FD] shadow-inner">
-            <h3 className="font-semibold text-[#407581] mb-2 flex items-center">
-              <RefreshCw className="w-4 h-4 mr-2" /> Cambiar Contraseña
-            </h3>
-            <input
-              type="text"
-              placeholder="Token recibido"
-              value={resetData.token}
-              onChange={(e) => setResetData({ ...resetData, token: e.target.value })}
-              className="w-full mb-3 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#407581] outline-none"
-            />
-            <input
-              type="password"
-              placeholder="Nueva contraseña"
-              value={resetData.newPassword}
-              onChange={(e) => setResetData({ ...resetData, newPassword: e.target.value })}
-              className="w-full mb-3 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#407581] outline-none"
-            />
-            <button
-              onClick={handleResetPassword}
-              className="w-full bg-[#FDB2A0] hover:bg-[#fa8c7a] text-white font-semibold py-2 rounded-lg flex items-center justify-center"
-            >
-              <Lock className="w-4 h-4 mr-2" /> Cambiar
+              {passwordLoading && (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              Enviar enlace
             </button>
           </div>
         </div>
@@ -243,21 +292,21 @@ export default function Perfil() {
   );
 }
 
-const Input = ({ label, name, value, onChange, disabled, icon: Icon, type = "text" }) => (
+const InputField = ({ label, name, value, onChange, disabled, icon: Icon }) => (
   <div>
-    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
     <div className="relative">
-      {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />}
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
       <input
-        id={name}
         name={name}
-        type={type}
         value={value}
         onChange={onChange}
         disabled={disabled}
-        className={`w-full px-4 py-3 border rounded-xl outline-none transition-all
-        ${disabled ? "bg-gray-100 border-gray-200 cursor-not-allowed" : "bg-white border-gray-300 focus:ring-2 focus:ring-[#FDB2A0]"}`}
-        style={{ paddingLeft: Icon ? "2.2rem" : "1rem" }}
+        className={`w-full pl-12 pr-4 py-3 rounded-xl border shadow-sm text-lg ${
+          disabled
+            ? "bg-gray-100 border-gray-200"
+            : "bg-white border-gray-300 focus:ring-2 focus:ring-[#FDB2A0]"
+        }`}
       />
     </div>
   </div>
