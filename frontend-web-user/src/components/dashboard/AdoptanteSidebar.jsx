@@ -18,6 +18,7 @@ export default function AdoptanteSidebar() {
     { to: "/dashboard/adoptante/favoritos", icon: Heart, label: "Favoritos" },
     { to: "/dashboard/adoptante/donaciones", icon: Gift, label: "Donaciones" },
     { to: "/dashboard/adoptante/perfil", icon: User, label: "Mi Perfil" },
+    {to: "/dashboard/adoptante/mis-solicitudes", icon: Heart, label: "Mis Solicitudes"},
   ];
 
   return (
@@ -53,12 +54,12 @@ export default function AdoptanteSidebar() {
 
       {/* Footer con logout */}
       <div className="px-6 py-4 border-t border-[#407581]">
-        {user?.nombreCompleto && (
-          <span className="flex items-center text-[#407581] font-semibold mb-3 truncate">
-            <User className="w-5 h-5 mr-2" />
-            {user.nombreCompleto}
-          </span>
-        )}
+        {user && (
+                  <span className="flex items-center text-[#407581] font-semibold mb-3 truncate">
+                    <User className="w-5 h-5 mr-2" />
+                    {`${user.nombre} ${user.apellidoPaterno || ""} ${user.apellidoMaterno || ""}`.trim()}
+                  </span>
+                )}
         <button
           onClick={handleLogout}
           className="w-full flex items-center justify-center bg-[#407581] text-white px-4 py-2 rounded-lg hover:bg-[#2e5d6e] transition duration-200 font-semibold shadow-md"
