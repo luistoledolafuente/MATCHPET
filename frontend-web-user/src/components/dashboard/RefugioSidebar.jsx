@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { Home, PawPrint, FileText, Gift, User, LogOut } from "lucide-react";
+import { Home, Dog, FileText, Gift, User, LogOut, List } from "lucide-react";
 
 export default function RefugioSidebar() {
   const { user, logout } = useAuth();
@@ -14,10 +14,11 @@ export default function RefugioSidebar() {
 
   const links = [
     { to: "/dashboard/refugio", icon: Home, label: "Home" },
-    { to: "/dashboard/refugio/mis-mascotas", icon: PawPrint, label: "Mis Mascotas" },
+    { to: "/dashboard/refugio/mis-mascotas", icon: Dog, label: "Mis Mascotas" },
     { to: "/dashboard/refugio/solicitudes", icon: FileText, label: "Solicitudes" },
     { to: "/dashboard/refugio/donaciones", icon: Gift, label: "Donaciones" },
-    { to: "/dashboard/refugio/perfil", icon: User, label: "Mi Perfil" }
+    { to: "/dashboard/refugio/perfil", icon: User, label: "Mi Perfil" },
+    { to: "/dashboard/refugio/historial", icon: List, label: "Historial" },
   ];
 
   return (

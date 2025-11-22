@@ -3,6 +3,7 @@ import { PawPrint, PlusCircle, Pencil, Trash2, Loader2, XCircle } from 'lucide-r
 import { getMisAnimales, deleteAnimal } from '../../services/animalService';
 import AnimalForm from "../../components/refugio/animalForm";
 import { useAuth } from '../../contexts/AuthContext';
+import { getRazas } from '../../services/lookupsService';
 
 export default function MisMascotas() {
   const { isAuthenticated, token, loading: authLoading } = useAuth();
@@ -11,11 +12,10 @@ export default function MisMascotas() {
   const [error, setError] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState(null);
-
-  // 🚀 Estados para modal de eliminación y mensaje de éxito
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [animalToDelete, setAnimalToDelete] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [razas, setRazas] = useState([]);
 
   const fetchAnimals = async () => {
     if (authLoading || !token) {
@@ -24,7 +24,6 @@ export default function MisMascotas() {
       }
       return;
     }
-
     setLoading(true);
     setError(null);
     try {
@@ -33,7 +32,6 @@ export default function MisMascotas() {
     } catch (err) {
       console.error("Error al cargar animales:", err);
       const errMsg = err.response?.data?.message || err.message || "Error de conexión o permisos.";
-
       if (err.response?.status === 401) {
         setError("Sesión expirada o permisos insuficientes. Por favor, vuelve a iniciar sesión.");
       } else {
@@ -44,6 +42,16 @@ export default function MisMascotas() {
     }
   };
 
+  const fetchRazas = async () => {
+    if (!token) return;
+    try {
+      const data = await getRazas(token);
+      setRazas(data);
+    } catch (err) {
+      console.error("Error al cargar razas:", err);
+    }
+  };
+
   const handleFormSubmitSuccess = () => {
     setIsFormOpen(false);
     setEditingAnimal(null);
@@ -51,12 +59,13 @@ export default function MisMascotas() {
   };
 
   useEffect(() => {
-    if (token && !authLoading) {
-      fetchAnimals();
-    } else if (!authLoading && !token) {
-      setLoading(false);
-    }
+    fetchRazas();
+  }, [token]);
+
+  useEffect(() => {
+    fetchAnimals();
   }, [token, authLoading]);
+
 
   return (
     <div className="bg-[#FFF7E6] min-h-screen p-8 font-sans">
@@ -91,47 +100,68 @@ export default function MisMascotas() {
         )}
 
         {!loading && !authLoading && animals.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {animals.map((animal, index) => (
-              <div
-                key={animal.animal_id ?? `temp-${index}`}
-                className="bg-white rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-2xl"
-              >
-                <img
-                  src={animal.fotos?.[0] || "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"}
-                  alt={`Foto de ${animal.nombre}`}
-                  className="w-full h-48 object-cover"
-                  onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"; }}
-                />
-
-                <div className="p-4">
-                  <h2 className="text-2xl font-bold text-[#316B7A] mb-1">{animal.nombre}</h2>
-                  <p className="text-sm text-gray-500 mb-3">
-                    {animal.raza || 'Raza desconocida'} ({animal.genero || 'Género Desconocido'})
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold">Estado:</span> {animal.estadoAdopcion || 'N/A'}
-                  </p>
-
-                  <div className="flex justify-end space-x-2 pt-4 border-t mt-4">
-                    <button
-                      onClick={() => { setEditingAnimal({ ...animal, id: animal.animal_id }); setIsFormOpen(true); }}
-                      className="text-[#316B7A] hover:text-[#FDB2A0] transition-colors p-2 rounded-full"
-                      title="Editar Animal"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {animals.map((animal, index) => {
+              const razaNombre = razas.find(r => r.id === animal.razaId)?.nombreRaza || "Raza desconocida";
+              return (
+                <div
+                  key={animal.animal_id ?? `temp-${index}`}
+                  className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer transition-shadow hover:shadow-lg"
+                >
+                  <div className="relative">
+                    <img
+                      src={animal.fotos?.[0] || "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"}
+                      alt={`Foto de ${animal.nombre}`}
+                      className="w-full h-48 object-cover rounded-t-2xl"
+                      onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"; }}
+                    />
+                    <span
+                      className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold
+                        ${animal.estadoAdopcion === "Aprobada" ? "bg-green-100 text-green-800" :
+                          animal.estadoAdopcion === "En Revisión" ? "bg-blue-100 text-blue-800" :
+                            "bg-red-100 text-red-800"
+                        }
+                      `}
                     >
-                      <Pencil className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => { setAnimalToDelete(animal); setDeleteModalOpen(true); }}
-                      className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-full"
-                      title="Eliminar Animal"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                      {animal.estadoAdopcion || "Sin estado"}
+                    </span>
+                  </div>
+
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-[#316B7A]">{animal.nombre}</h3>
+                    <p className="text-sm text-gray-600 mb-1">{animal.refugio || "Refugio desconocido"}</p>
+
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-4">
+                      <span className="flex items-center gap-1">
+                        <PawPrint className="w-4 h-4" />
+                        {animal.raza}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        🕒 {animal.tamano}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        {animal.genero === "Macho" ? "♂ Macho" : animal.genero === "Hembra" ? "♀ Hembra" : "Género desconocido"}
+                      </span>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => { setEditingAnimal({ ...animal, id: animal.animal_id }); setIsFormOpen(true); }}
+                        className="flex-1 bg-[#316B7A] text-white py-2 rounded-lg hover:bg-[#264f5b] transition"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => { setAnimalToDelete(animal); setDeleteModalOpen(true); }}
+                        className="flex-1 bg-[#E3E3E3] text-[#316B7A] py-2 rounded-lg hover:bg-[#d0d0d0] transition"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
@@ -153,7 +183,7 @@ export default function MisMascotas() {
       {/* Modal de confirmación de eliminación */}
       {deleteModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-lg text-center">
+          <div className="bg-white p-6 rounded-2xl shadow-lg max-w-lg text-center">
             <h2 className="text-xl font-bold mb-4 text-[#316B7A]">Confirmar eliminación</h2>
             <p className="mb-6 text-gray-700">
               ¿Estás seguro de que quieres borrar a la mascota <strong>{animalToDelete?.nombre}</strong>? Esta acción es irreversible.
@@ -188,10 +218,9 @@ export default function MisMascotas() {
         </div>
       )}
 
-
       {/* Mensaje de éxito */}
       {successMessage && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white p-4 rounded-xl shadow-lg z-50 animate-fade-in-out">
+        <div className="fixed top-5 right-5 bg-green-500 text-white p-4 rounded-xl shadow-lg z-50 animate-fade-in-out">
           {successMessage}
         </div>
       )}
