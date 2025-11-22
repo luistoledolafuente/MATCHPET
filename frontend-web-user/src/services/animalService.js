@@ -55,9 +55,18 @@ export const deleteAnimal = async (id, token) => {
   return response.data;
 };
 
+// Obtener últimos eventos de bitácora
+export const getBitacora = async (token) => {
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const response = await axios.get(`${API_URL}/bitacora`, { headers });
+  return response.data;
+};
+
+
 export default {
   getMisAnimales,
   createAnimal,
   updateAnimal,
-  deleteAnimal
+  deleteAnimal,
+  getBitacora
 };

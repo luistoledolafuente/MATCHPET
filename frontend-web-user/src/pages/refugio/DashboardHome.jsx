@@ -1,97 +1,178 @@
-import React from "react";
-import {
-  PawPrint, ClipboardList, Gift, BarChart3, Clock, CheckCircle, MessageSquare
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { PawPrint, BarChart3, Clock, CheckCircle, Gift, List, UserCheck } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { getMisAnimales, getBitacora } from "../../services/animalService";
 
-const mockStats = {
-  mascotasEnAdopcion: 18,
-  solicitudesPendientes: 5,
-  adopcionesEsteMes: 3,
-  donacionesUltimaSemana: 450,
-};
-
-const navCards = [
-  { title: "Gestionar Mascotas", description: "Agrega, edita o elimina perfiles de mascotas.", Icon: PawPrint, color: "from-[#FDB2A0] to-[#FD7E6A]" },
-  { title: "Revisar Solicitudes", description: "Evalúa procesos de adopción pendientes.", Icon: ClipboardList, color: "from-[#407581] to-[#316B7A]" },
-  { title: "Control de Donaciones", description: "Administra las donaciones recibidas.", Icon: Gift, color: "from-[#BAE6FD] to-[#407581]" },
-  { title: "Comunidad y Contacto", description: "Responde mensajes de adoptantes.", Icon: MessageSquare, color: "from-[#FFD6BA] to-[#FDB2A0]" },
-];
-
-const StatCard = ({ title, value, Icon, unit }) => (
-  <div className="p-6 rounded-2xl shadow-md flex flex-col justify-between bg-white hover:scale-[1.03] transition-transform">
-    <div className="flex items-center justify-between">
-      <Icon className="w-10 h-10 text-[#316B7A]" />
-      <span className="text-3xl md:text-4xl font-extrabold text-[#316B7A]">
-        {value} <span className="text-base font-semibold">{unit}</span>
-      </span>
+const StatCard = ({ title, value, Icon, unit, colorClass, gradientClass }) => (
+  <div className={`p-3 rounded-xl shadow-md border border-white/30 backdrop-blur-sm ${gradientClass} transition-all hover:shadow-lg h-28 flex flex-col justify-between`}>
+    <div className="flex items-center gap-2">
+      <Icon className={`w-7 h-7 ${colorClass} drop-shadow-md`} />
+      <p className={`text-sm font-semibold text-[#316B7A] text-opacity-90`}>{title}</p>
     </div>
-    <p className="mt-4 text-[#407581] font-semibold">{title}</p>
+    <div className="mt-1 flex items-baseline gap-1">
+      <span className={`text-xl font-extrabold ${colorClass} drop-shadow-md`}>{value}</span>
+      <span className="text-sm font-semibold text-[#407581]">{unit}</span>
+    </div>
   </div>
 );
 
-const NavCard = ({ title, description, Icon, color }) => (
-  <div className={`flex flex-col md:flex-row justify-between rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:scale-[1.02] transition-transform bg-gradient-to-br ${color}`}>
-    <div className="p-6 md:w-2/3 text-white">
-      <h3 className="text-2xl font-bold mb-2">{title}</h3>
-      <p className="opacity-90">{description}</p>
-      <button className="mt-4 py-2 px-4 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors text-sm font-bold">
-        Ir a {title}
-      </button>
-    </div>
-    <div className="md:w-1/3 flex justify-center items-center p-4 bg-white/10">
-      <Icon className="w-16 h-16 opacity-90 text-white" />
-    </div>
+const LastAnimalCard = ({ animal }) => (
+  <div className="bg-white/90 p-3 rounded-2xl shadow-md border border-gray-100 transition-all hover:shadow-lg cursor-pointer">
+    <img
+      src={animal.fotos?.[0] || "https://placehold.co/200x150?text=Pet"}
+      alt={animal.nombre}
+      className="w-full h-24 object-cover rounded-xl mb-3 shadow-inner"
+    />
+    <h3 className="text-base font-bold text-[#007C91] truncate">{animal.nombre}</h3>
+    <p className="text-xs text-gray-500">{animal.raza || "Desconocida"}</p>
   </div>
 );
 
 export default function DashboardHome() {
-  const { user } = useAuth();
+  const { user, token, isAuthenticated } = useAuth();
+  const [animalCount, setAnimalCount] = useState(0);
+  const [loadingAnimals, setLoadingAnimals] = useState(true);
+  const [errorAnimals, setErrorAnimals] = useState(null);
+  const [lastAnimals, setLastAnimals] = useState([]);
+  const [bitacora, setBitacora] = useState([]);
+
+  useEffect(() => {
+    const fetchAnimals = async () => {
+      if (!token || !isAuthenticated) return;
+      try {
+        const data = await getMisAnimales(token);
+        setAnimalCount(data.length);
+        setLastAnimals(data.slice(-4).reverse());
+      } catch (err) {
+        console.error("Error cargando mascotas:", err);
+        setErrorAnimals("No se pudo cargar el número de mascotas.");
+      } finally {
+        setLoadingAnimals(false);
+      }
+    };
+
+    const fetchBitacora = async () => {
+      if (!token || !isAuthenticated) return;
+      try {
+        const data = await getBitacora(token);
+        // Ordenar por fecha descendente y tomar últimos 5
+        setBitacora(data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).slice(0, 5));
+      } catch (err) {
+        console.error("Error cargando bitácora:", err);
+      }
+    };
+
+    fetchAnimals();
+    fetchBitacora();
+  }, [token, isAuthenticated]);
+
+  const fullName = `${user?.nombre || ""} ${user?.apellidoPaterno || ""} ${user?.apellidoMaterno || ""}`.trim();
+
+  const PRIMARY_COLOR = "text-[#007C91]";
+  const SECONDARY_COLOR = "text-[#407581]";
+  const ACCENT_COLOR = "text-[#FDB2A0]";
 
   return (
-    <div className="bg-gradient-to-b from-[#FFF7E6] to-[#FFE8C4] min-h-screen md:pl-72 p-8 font-sans">
-      {/* Contenedor blanco central */}
-      <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-xl p-8 space-y-12">
-
-        {/* HEADER */}
-        <header className="relative bg-[#316B7A] rounded-2xl overflow-hidden p-8 flex flex-col md:flex-row items-center justify-between text-white">
-          <div>
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-2">
-              ¡Bienvenido, {`${user.nombre || ""} ${user.apellidoPaterno || ""} ${user.apellidoMaterno || ""}`.trim()}!
-            </h2>
-
-            <p className="text-lg md:text-xl opacity-90">Gestiona tus mascotas, adopciones y donaciones desde un solo lugar.</p>
+    <div className="min-h-screen bg-gradient-to-br from-[#dff3ff] to-[#e8e8e8] p-10">
+      <div className="max-w-[1700px] min-h-[80vh] mx-auto bg-white/90 backdrop-blur-2xl shadow-[0_10px_60px_rgba(0,0,0,0.15)] border border-white rounded-3xl overflow-hidden p-8 space-y-8">
+        <header className="bg-gradient-to-r from-[#dff3ff]/80 to-[#a8d8e0]/80 border border-white/70 shadow-xl rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between relative overflow-hidden h-auto min-h-[200px]">
+          <div className="z-10 flex-grow">
+            <h1 className="text-4xl font-extrabold text-[#007C91]">
+              ¡Bienvenido, {fullName}!
+            </h1>
+            <p className="text-[#407581] text-lg mt-2 font-medium">
+              Dashboard de Gestión del Refugio
+            </p>
           </div>
-          <img src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=400&q=80"
-            alt="Mascotas felices"
-            className="mt-6 md:mt-0 w-64 h-40 object-cover rounded-xl shadow-lg" />
-          <div className="absolute -top-10 -right-10 w-48 h-48 bg-[#FDB2A0] rounded-full opacity-30 blur-3xl"></div>
-          <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#407581] rounded-full opacity-30 blur-3xl"></div>
+          <div className="absolute -top-10 -right-10 w-56 h-56 bg-[#B2EBF2] rounded-full opacity-30 blur-3xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#007C91] rounded-full opacity-10 blur-3xl"></div>
         </header>
 
-        {/* ESTADÍSTICAS */}
-        <section>
-          <h2 className="text-3xl font-bold text-[#407581] mb-6 flex items-center">
-            <BarChart3 className="w-7 h-7 mr-3 text-[#FDB2A0]" /> Resumen de Actividad
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard title="Mascotas Disponibles" value={mockStats.mascotasEnAdopcion} unit="animales" Icon={PawPrint} />
-            <StatCard title="Solicitudes Pendientes" value={mockStats.solicitudesPendientes} unit="pendientes" Icon={Clock} />
-            <StatCard title="Adopciones (Mes)" value={mockStats.adopcionesEsteMes} unit="éxitos" Icon={CheckCircle} />
-            <StatCard title="Donaciones (Semana)" value={mockStats.donacionesUltimaSemana} unit="$" Icon={Gift} />
-          </div>
-        </section>
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-8">
 
-        {/* NAV CARDS */}
-        <section>
-          <h2 className="text-3xl font-bold text-[#407581] mb-6">Funciones Principales</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {navCards.map((card, idx) => (
-              <NavCard key={idx} {...card} />
-            ))}
-          </div>
-        </section>
+          {/* Estadísticas y Últimas Mascotas */}
+          <section className="lg:col-span-3 xl:col-span-4 space-y-8">
+            <h2 className="text-2xl font-bold text-[#007C91] flex items-center gap-2">
+              <BarChart3 className={`w-6 h-6 ${ACCENT_COLOR}`} />
+              Resumen de Actividad
+            </h2>
 
+            <div className="grid grid-cols-2 gap-6">
+              <StatCard
+                title="Mascotas Disponibles"
+                value={loadingAnimals ? "..." : animalCount}
+                unit="animales"
+                Icon={PawPrint}
+                colorClass={PRIMARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#FFF7E6] to-[#FFE0B2]"
+              />
+              <StatCard
+                title="Solicitudes Pendientes"
+                value={0}
+                unit="pendientes"
+                Icon={Clock}
+                colorClass={SECONDARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#D6F0E0] to-[#407581]/30"
+              />
+              <StatCard
+                title="Adopciones (Mes)"
+                value={0}
+                unit="éxitos"
+                Icon={CheckCircle}
+                colorClass={PRIMARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#DFF3FF] to-[#A8D8E0]"
+              />
+              <StatCard
+                title="Donaciones (Semana)"
+                value={0}
+                unit="$"
+                Icon={Gift}
+                colorClass={SECONDARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#FFE0E0] to-[#FDB2A0]"
+              />
+            </div>
+
+            <div className="bg-white/80 p-6 rounded-3xl shadow-lg border border-white/50">
+              <h2 className="text-xl font-bold text-[#007C91] mb-4">Últimas Mascotas Agregadas</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {lastAnimals.length > 0 ? (
+                  lastAnimals.map((animal) => (
+                    <LastAnimalCard key={animal.animal_id} animal={animal} />
+                  ))
+                ) : (
+                  <p className="text-gray-500 col-span-full">Aún no hay mascotas registradas.</p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Bitácora */}
+          <section className="lg:col-span-1 xl:col-span-1 space-y-6">
+            <div className="bg-white/90 p-6 rounded-3xl shadow-lg border border-white/70 h-full">
+              <h3 className="text-xl font-bold text-[#007C91] mb-4 flex items-center gap-2">
+                <List className={`w-5 h-5 ${ACCENT_COLOR}`} />
+                Bitácora de Actividad Reciente
+              </h3>
+              <ul className="space-y-4 text-sm">
+                {bitacora.length > 0 ? bitacora.map((activity, index) => (
+                  <li key={index} className="flex items-start gap-3 border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+                    <PawPrint className={`w-4 h-4 mt-1 ${ACCENT_COLOR}`} />
+                    <div>
+                      <p className="font-semibold text-[#407581]">{activity.descripcion}</p>
+                      <p className="text-xs text-gray-500">{new Date(activity.fecha).toLocaleString()}</p>
+                    </div>
+                  </li>
+                )) : (
+                  <p className="text-gray-500">No hay actividad reciente.</p>
+                )}
+              </ul>
+              <button className="mt-6 w-full bg-[#007C91] text-white py-2 rounded-xl font-semibold hover:bg-[#007C9180] transition">
+                Ver Historial Completo
+              </button>
+            </div>
+          </section>
+
+        </div>
       </div>
     </div>
   );

@@ -209,8 +209,8 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
 
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         const temperamentosIds = formData.temperamentosNombres
-        .map(nombre => lookups.temperamentos.find(t => t.nombre === nombre)?.id)
-        .filter(Boolean);
+            .map(nombre => lookups.temperamentos.find(t => t.nombre === nombre)?.id)
+            .filter(Boolean);
 
         const dataToSend = {
             nombre: formData.nombre,
@@ -359,16 +359,20 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
                                     value={url || ""}
                                     onChange={e => handleFotoChange(i, e.target.value)}
                                     placeholder="URL de foto" />
-                                <button type="button" onClick={() => handleRemoveFoto(i)} className="bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
+                                <button type="button" onClick={() => handleRemoveFoto(i)} className="bg-[#93C5FD] text-black px-3 py-1 rounded hover:bg-[#60A5FA] transition">
+                                    Eliminar
+                                </button>
+
                                 <label className="flex items-center gap-1">
                                     <input type="radio" name="fotoPrincipal" checked={formData.fotoPrincipalIndex === i} onChange={() => setFormData(prev => ({ ...prev, fotoPrincipalIndex: i }))} />
                                     Principal
                                 </label>
                             </div>
                         ))}
-                        <button type="button" onClick={handleAddFoto} className="mt-3 bg-green-600 text-white px-3 py-2 rounded">
+                        <button type="button" onClick={handleAddFoto} className="mt-3 bg-[#FDB2A0] text-black px-3 py-2 rounded hover:bg-[#fca18b] transition">
                             Agregar Foto
                         </button>
+
                     </div>
 
                     <button
