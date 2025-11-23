@@ -5,5 +5,7 @@ data class UserProfileResponse(
     val nombreCompleto: String,
     val email: String,
     val telefono: String?,
-    val role: String
+    // ✅ CORRECCIÓN: Ahora se espera una lista llamada 'roles'
+    val roles: List<String>,
+    // Otros campos
 )

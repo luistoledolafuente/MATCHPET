@@ -6,14 +6,19 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    // ✅ Nuevo endpoint
+    // 🛑 Anteriormente solo tenías el de adoptantes, ¡ahora agregamos ambos!
+
     @POST("/api/adoptantes/register")
-    suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
+    suspend fun registerAdoptante(@Body request: AdopterRegisterRequest): Response<AuthResponse>
+
+    @POST("/api/refugios/register")
+    suspend fun registerRefugio(@Body request: ShelterRegisterRequest): Response<AuthResponse>
 
 
     @POST("/api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<AuthResponse>
 
+    // 🔑 El token debe incluir el prefijo 'Bearer '
     @GET("/api/user/profile")
     suspend fun getProfile(@Header("Authorization") token: String): Response<UserProfileResponse>
 }

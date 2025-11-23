@@ -5,11 +5,13 @@ enum class UserRole(val displayName: String) {
     SHELTER("Refugio");
 
     companion object {
-        fun fromString(value: String): UserRole {
-            return when (value.uppercase()) {
+        // ✅ CORRECCIÓN: Aceptar String? (nulo) y manejarlo.
+        fun fromString(value: String?): UserRole {
+            return when (value?.uppercase()) { // Usamos ?.uppercase() para seguridad contra null
                 "ADOPTER", "ADOPTANTE" -> ADOPTER
                 "SHELTER", "REFUGIO" -> SHELTER
-                else -> throw IllegalArgumentException("Unknown role: $value")
+                // 💡 Si el valor es null o desconocido, lanzamos la excepción
+                else -> throw IllegalArgumentException("Unknown or null role: $value")
             }
         }
     }
