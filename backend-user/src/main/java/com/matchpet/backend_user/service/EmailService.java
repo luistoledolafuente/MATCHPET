@@ -14,7 +14,7 @@ public class EmailService {
     // Método para enviar el correo de restablecimiento de contraseña
     public void sendPasswordResetEmail(String to, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("luis.tlf.2006@gmail.com");  // Tu correo de Gmail
+        message.setFrom("luismiguel.tlf@gmail.com");  // Tu correo de Gmail
         message.setTo(to);
         message.setSubject("Reseteo de Contraseña");
 

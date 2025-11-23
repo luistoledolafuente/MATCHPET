@@ -41,11 +41,9 @@ DROP TABLE IF EXISTS Niveles_Energia;
 DROP TABLE IF EXISTS Tamanos;
 DROP TABLE IF EXISTS Generos;
 
-
 -- ===============================================
 -- 1. TABLAS DE CONSULTA (Reemplazo de ENUMs)
 -- ===============================================
-
 CREATE TABLE IF NOT EXISTS Generos (
                                        genero_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                                        nombre VARCHAR(50) NOT NULL UNIQUE
@@ -81,13 +79,23 @@ CREATE TABLE IF NOT EXISTS Roles (
                                      nombre_rol VARCHAR(50) NOT NULL UNIQUE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
 -- ===============================================
 -- 2. TABLAS PRINCIPALES DEL SISTEMA
 -- ===============================================
 
 -- ===============================================
--- TABLE: Usuarios (CORREGIDO: Nombres y Teléfono)
+-- TABLE: Refugios
+-- ===============================================
+CREATE TABLE IF NOT EXISTS Refugios (
+                                        refugio_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                        nombre_refugio VARCHAR(255) NOT NULL UNIQUE,
+    direccion VARCHAR(255) NOT NULL,
+    ciudad VARCHAR(100) NOT NULL,
+    pais VARCHAR(100) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ===============================================
+-- TABLE: Usuarios
 -- ===============================================
 CREATE TABLE IF NOT EXISTS Usuarios (
                                         usuario_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
