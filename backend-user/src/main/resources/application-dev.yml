@@ -2,7 +2,8 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/db_matchpet
     username: root
-    password: Lmtlf1620*
+    password: ${DB_PASSWORD}   # <- protegido
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,25 +16,25 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: luis.tlf.2006@gmail.com
-    password: Lmtlf1620*
+    password: ${MAIL_PASSWORD}     # <- protegido
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
       mail.debug: true
 
-  # Configuración de seguridad OAuth2 (sin valores de cliente secretos)
+  # Configuración de seguridad OAuth2
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: ${PROD_GOOGLE_CLIENT_ID}
-            client-secret: ${PROD_GOOGLE_CLIENT_SECRET}
+            client-id: ${GOOGLE_CLIENT_ID}      # <- protegido
+            client-secret: ${GOOGLE_CLIENT_SECRET}   # <- protegido
             scope: openid, email, profile
 
 google:
   api:
-    key: ${GOOGLE_API_KEY} # Se carga de una variable de entorno
+    key: ${GOOGLE_API_KEY}     # <- ya estaba protegido
 
 gemini:
   model:
@@ -41,16 +42,16 @@ gemini:
 
 jwt:
   access:
-    secret: ${PROD_JWT_ACCESS_SECRET}
+    secret: ${JWT_ACCESS_SECRET}      # <- protegido
     expiration: 43200000
   refresh:
-    secret: ${PROD_JWT_REFRESH_SECRET}
+    secret: ${JWT_REFRESH_SECRET}     # <- protegido
     expiration: 2592000000
 
 # Configuración de MercadoPago en desarrollo
 mercadopago:
   access:
-    token: ${MERCADOPAGO_ACCESS_TOKEN}
+    token: ${MERCADOPAGO_ACCESS_TOKEN}  # <- protegido
 
 # Configuración del frontend
 frontend:
