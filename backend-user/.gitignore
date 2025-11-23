@@ -5,6 +5,7 @@
 # 1. Archivos de Secretos y Configuración Local
 # ¡IMPORTANTE! Ignora el archivo de propiedades para no subir contraseñas.
 application.properties
+application-dev.yml
 
 # 2. Artefactos de Build y Compilación
 # Ignora la carpeta principal de compilación de Maven.

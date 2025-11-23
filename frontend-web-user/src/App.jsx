@@ -1,57 +1,65 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+// Note: Elimino el useEffect sin usar, ya que no se utiliza en este componente
+// import { useEffect } from "react"; 
 
 // --- Páginas Públicas ---
-import HomePage from "./pages/HomePage";
-import NosotrosPage from "./pages/StaticPages/NosotrosPage";
-import Blog from "./pages/StaticPages/Blog";
-import Ayuda from "./pages/StaticPages/Ayuda";
-import TerminosServicio from "./pages/StaticPages/TerminosServicio";
-import PoliticaPrivacidad from "./pages/StaticPages/PoliticaPrivacidad";
-import UnderConstructionPage from "./pages/UnderConstructionPage";
+import HomePage from "./pages/HomePage.jsx";
+import NosotrosPage from "./pages/StaticPages/NosotrosPage.jsx";
+import Blog from "./pages/StaticPages/Blog.jsx";
+import Ayuda from "./pages/StaticPages/Ayuda.jsx";
+import TerminosServicio from "./pages/StaticPages/TerminosServicio.jsx";
+import PoliticaPrivacidad from "./pages/StaticPages/PoliticaPrivacidad.jsx";
+import UnderConstructionPage from "./pages/UnderConstructionPage.jsx";
 
 // --- Autenticación ---
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
+import LoginPage from "./pages/auth/LoginPage.jsx";
+import RegisterPage from "./pages/auth/RegisterPage.jsx";
 
 // --- Dashboards Adoptante ---
-import DashboardHomePage from "./pages/adoptante/DashboardHomePage";
-import MascotasPage from "./pages/adoptante/MascotasPage";
-import Favoritos from "./pages/adoptante/Favoritos";
-import PerfilAdoptante from "./pages/adoptante/Perfil";
-import Donaciones from "./pages/adoptante/Donaciones";
+import DashboardHomePage from "./pages/adoptante/DashboardHomePage.jsx";
+import MascotasPage from "./pages/adoptante/MascotasPage.jsx";
+import Favoritos from "./pages/adoptante/Favoritos.jsx";
+import PerfilAdoptante from "./pages/adoptante/Perfil.jsx";
+import Donaciones from "./pages/adoptante/Donaciones.jsx";
+import MisSolicitudes from "./pages/adoptante/MisSolicitudes.jsx";
 
 // --- Dashboards Refugio ---
-import DashboardHomeRefugio from "./pages/refugio/DashboardHome";
-import MisMascotas from "./pages/refugio/MisMascotas";
-import DonacionesRecibidas from "./pages/refugio/DonacionesRecibidas";
-import PerfilRefugio from "./pages/refugio/Perfil";
+import DashboardHomeRefugio from "./pages/refugio/DashboardHome.jsx";
+import MisMascotas from "./pages/refugio/MisMascotas.jsx";
+import DonacionesRecibidas from "./pages/refugio/DonacionesRecibidas.jsx";
+import PerfilRefugio from "./pages/refugio/Perfil.jsx";
+import NuevaMascota from "./pages/refugio/NuevaMascota.jsx";
+import Historial from "./pages/refugio/Historial.jsx"
 
 // --- Layouts ---
-import MainLayout from "./layouts/MainLayout";
-import DashboardLayout from "./layouts/DashboardLayout";
+import MainLayout from "./layouts/MainLayout.jsx";
+import DashboardLayout from "./layouts/DashboardLayout.jsx";
 
 // --- Componentes de Seguridad ---
-import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuth } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import { useAuth } from "./contexts/AuthContext.jsx";
+import Solicitudes from "./pages/refugio/Solicitudes.jsx";
 
+
+// ------------------ DASHBOARD ROUTES ------------------
 function DashboardRoutes() {
-  // ✅ CORRECCIÓN: Usamos userType y loading
-  const { user, userType, loading } = useAuth(); 
+  const { user, userType, loading } = useAuth();
+
+  const navigateTo = userType === "refugio" ? "refugio" : "adoptante";
 
   if (loading) {
     return <p className="text-center mt-10 text-gray-600">Cargando tu perfil...</p>;
   }
 
-  // Si no hay usuario después de cargar, redirigir
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // El rol ya viene limpio ('adoptante' o 'refugio') desde AuthContext
-  const role = userType; 
-
   return (
     <Routes>
+      {/*         Esta es la ruta base /dashboard/*
+        El ProtectedRoute envuelve el layout y protege las subrutas.
+      */}
       <Route
         path="/"
         element={
@@ -60,18 +68,8 @@ function DashboardRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* Redirigir según el tipo de usuario */}
-        <Route
-          index
-          element={
-            // ✅ Redirige usando el 'role' simplificado
-            role === "refugio" ? (
-              <Navigate to="/dashboard/refugio" replace />
-            ) : (
-              <Navigate to="/dashboard/adoptante" replace />
-            )
-          }
-        />
+        <Route index element={<Navigate to={navigateTo} replace />} />
+
 
         {/* Adoptante */}
         <Route path="adoptante">
@@ -80,20 +78,26 @@ function DashboardRoutes() {
           <Route path="favoritos" element={<Favoritos />} />
           <Route path="perfil" element={<PerfilAdoptante />} />
           <Route path="donaciones" element={<Donaciones />} />
+          <Route path="mis-solicitudes" element={<MisSolicitudes />} />
         </Route>
 
         {/* Refugio */}
         <Route path="refugio">
           <Route index element={<DashboardHomeRefugio />} />
           <Route path="mis-mascotas" element={<MisMascotas />} />
+          <Route path="nueva-mascota" element={<NuevaMascota />} />
           <Route path="donaciones" element={<DonacionesRecibidas />} />
           <Route path="perfil" element={<PerfilRefugio />} />
+          <Route path="solicitudes" element={<Solicitudes />} />
+          <Route path="historial" element={<Historial/>} />
         </Route>
       </Route>
     </Routes>
   );
 }
 
+
+// ------------------ APP PRINCIPAL ------------------
 export default function App() {
   return (
     <Routes>

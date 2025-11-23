@@ -1,162 +1,179 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { faFacebook, faInstagram, faTwitter } from '@fortawesome/free-brands-svg-icons'; 
+import React, { useState, useEffect } from "react";
+import { PawPrint, BarChart3, Clock, CheckCircle, Gift, List, UserCheck } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaw, faUsers,faHandHoldingHeart,faChartLine,faHeart,faDog,} from "@fortawesome/free-solid-svg-icons";
+import { getMisAnimales, getBitacora } from "../../services/animalService";
+
+const StatCard = ({ title, value, Icon, unit, colorClass, gradientClass }) => (
+  <div className={`p-3 rounded-xl shadow-md border border-white/30 backdrop-blur-sm ${gradientClass} transition-all hover:shadow-lg h-28 flex flex-col justify-between`}>
+    <div className="flex items-center gap-2">
+      <Icon className={`w-7 h-7 ${colorClass} drop-shadow-md`} />
+      <p className={`text-sm font-semibold text-[#316B7A] text-opacity-90`}>{title}</p>
+    </div>
+    <div className="mt-1 flex items-baseline gap-1">
+      <span className={`text-xl font-extrabold ${colorClass} drop-shadow-md`}>{value}</span>
+      <span className="text-sm font-semibold text-[#407581]">{unit}</span>
+    </div>
+  </div>
+);
+
+const LastAnimalCard = ({ animal }) => (
+  <div className="bg-white/90 p-3 rounded-2xl shadow-md border border-gray-100 transition-all hover:shadow-lg cursor-pointer">
+    <img
+      src={animal.fotos?.[0] || "https://placehold.co/200x150?text=Pet"}
+      alt={animal.nombre}
+      className="w-full h-24 object-cover rounded-xl mb-3 shadow-inner"
+    />
+    <h3 className="text-base font-bold text-[#007C91] truncate">{animal.nombre}</h3>
+    <p className="text-xs text-gray-500">{animal.raza || "Desconocida"}</p>
+  </div>
+);
 
 export default function DashboardHome() {
-  const { user } = useAuth();
-  const refugioName = user?.nombreCompleto || "Refugio Amigable";
+  const { user, token, isAuthenticated } = useAuth();
+  const [animalCount, setAnimalCount] = useState(0);
+  const [loadingAnimals, setLoadingAnimals] = useState(true);
+  const [errorAnimals, setErrorAnimals] = useState(null);
+  const [lastAnimals, setLastAnimals] = useState([]);
+  const [bitacora, setBitacora] = useState([]);
 
-  // Datos simulados (hasta conectar a la API real :))
-  const stats = {
-    mascotasActivas: 12,
-    adopcionesAprobadas: 8,
-    donacionesRecientes: 550.0,
-  };
+  useEffect(() => {
+    const fetchAnimals = async () => {
+      if (!token || !isAuthenticated) return;
+      try {
+        const data = await getMisAnimales(token);
+        setAnimalCount(data.length);
+        setLastAnimals(data.slice(-4).reverse());
+      } catch (err) {
+        console.error("Error cargando mascotas:", err);
+        setErrorAnimals("No se pudo cargar el número de mascotas.");
+      } finally {
+        setLoadingAnimals(false);
+      }
+    };
+
+    const fetchBitacora = async () => {
+      if (!token || !isAuthenticated) return;
+      try {
+        const data = await getBitacora(token);
+        // Ordenar por fecha descendente y tomar últimos 5
+        setBitacora(data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).slice(0, 5));
+      } catch (err) {
+        console.error("Error cargando bitácora:", err);
+      }
+    };
+
+    fetchAnimals();
+    fetchBitacora();
+  }, [token, isAuthenticated]);
+
+  const fullName = `${user?.nombre || ""} ${user?.apellidoPaterno || ""} ${user?.apellidoMaterno || ""}`.trim();
+
+  const PRIMARY_COLOR = "text-[#007C91]";
+  const SECONDARY_COLOR = "text-[#407581]";
+  const ACCENT_COLOR = "text-[#FDB2A0]";
 
   return (
-    <div className="bg-gradient-to-b from-[#BAE6FD] to-[#FFF7E6] min-h-screen overflow-x-hidden">
-      <br />
-      <br />
-      <div className="text-center py-24 mb-12">
-        <div className="text-center mb-6 text-[#316B7A]">
-          <FontAwesomeIcon icon={faPaw} className="text-5xl" />
-        </div>
-
-        <h1 className="text-4xl md:text-5xl font-extrabold text-[#316B7A] mb-4">
-          ¡Bienvenido, {refugioName}! 
-        </h1>
-        <p className="text-gray-700 text-lg max-w-2xl mx-auto mb-10">
-          Este es tu panel de refugio. Desde aquí puedes gestionar tus mascotas,
-          revisar solicitudes y seguir el impacto que generas en MatchPet 
-        </p>
-
-      
-        <div className="flex justify-center gap-8 flex-wrap">
-          <Link
-            to="/dashboard/refugio/mascotas/nueva"
-            className="px-8 py-4 bg-[#316B7A] text-white rounded-xl hover:bg-teal-800 transition-colors text-lg"
-          >
-            Registrar Nueva Mascota
-          </Link>
-          <Link
-            to="/dashboard/refugio/estadisticas"
-            className="px-8 py-4 bg-[#FDB2A0] text-white rounded-xl hover:bg-[#fa8c7a] transition-colors text-lg"
-          >
-            Ver Estadísticas
-          </Link>
-        </div>
-      </div>
-
-     
-      <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen bg-white py-20 mb-20">
-        <div className="max-w-6xl mx-auto px-6 md:px-0">
-          <div className="text-center mb-16">
-            <h3 className="text-2xl font-extrabold text-[#316B7A] mb-4">
-              Nuestra misión en MatchPet
-            </h3>
-            <p className="text-gray-700 text-md max-w-2xl mx-auto">
-              En MatchPet, ayudamos a refugios como{" "}
-              <strong>{refugioName}</strong> a conectar animales con familias
-              responsables. Juntos promovemos la adopción responsable y el
-              bienestar animal.
+    <div className="min-h-screen bg-gradient-to-br from-[#dff3ff] to-[#e8e8e8] p-10">
+      <div className="max-w-[1700px] min-h-[80vh] mx-auto bg-white/90 backdrop-blur-2xl shadow-[0_10px_60px_rgba(0,0,0,0.15)] border border-white rounded-3xl overflow-hidden p-8 space-y-8">
+        <header className="bg-gradient-to-r from-[#dff3ff]/80 to-[#a8d8e0]/80 border border-white/70 shadow-xl rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between relative overflow-hidden h-auto min-h-[200px]">
+          <div className="z-10 flex-grow">
+            <h1 className="text-4xl font-extrabold text-[#007C91]">
+              ¡Bienvenido, {fullName}!
+            </h1>
+            <p className="text-[#407581] text-lg mt-2 font-medium">
+              Dashboard de Gestión del Refugio
             </p>
           </div>
+          <div className="absolute -top-10 -right-10 w-56 h-56 bg-[#B2EBF2] rounded-full opacity-30 blur-3xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#007C91] rounded-full opacity-10 blur-3xl"></div>
+        </header>
 
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <FeatureCard
-              icon={faDog}
-              title="Gestión de Mascotas"
-              text="Administra fácilmente las mascotas disponibles y mantenlas visibles para los adoptantes."
-            />
-            <FeatureCard
-              icon={faUsers}
-              title="Conecta con Adoptantes"
-              text="Revisa solicitudes, aprueba adopciones y da seguimiento a familias interesadas."
-            />
-            <FeatureCard
-              icon={faHandHoldingHeart}
-              title="Recibe Apoyo"
-              text="Consulta estadísticas e información sobre las donaciones que recibe tu refugio."
-            />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+
+          {/* Estadísticas y Últimas Mascotas */}
+          <section className="lg:col-span-3 xl:col-span-4 space-y-8">
+            <h2 className="text-2xl font-bold text-[#007C91] flex items-center gap-2">
+              <BarChart3 className={`w-6 h-6 ${ACCENT_COLOR}`} />
+              Resumen de Actividad
+            </h2>
+
+            <div className="grid grid-cols-2 gap-6">
+              <StatCard
+                title="Mascotas Disponibles"
+                value={loadingAnimals ? "..." : animalCount}
+                unit="animales"
+                Icon={PawPrint}
+                colorClass={PRIMARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#FFF7E6] to-[#FFE0B2]"
+              />
+              <StatCard
+                title="Solicitudes Pendientes"
+                value={0}
+                unit="pendientes"
+                Icon={Clock}
+                colorClass={SECONDARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#D6F0E0] to-[#407581]/30"
+              />
+              <StatCard
+                title="Adopciones (Mes)"
+                value={0}
+                unit="éxitos"
+                Icon={CheckCircle}
+                colorClass={PRIMARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#DFF3FF] to-[#A8D8E0]"
+              />
+              <StatCard
+                title="Donaciones (Semana)"
+                value={0}
+                unit="$"
+                Icon={Gift}
+                colorClass={SECONDARY_COLOR}
+                gradientClass="bg-gradient-to-br from-[#FFE0E0] to-[#FDB2A0]"
+              />
+            </div>
+
+            <div className="bg-white/80 p-6 rounded-3xl shadow-lg border border-white/50">
+              <h2 className="text-xl font-bold text-[#007C91] mb-4">Últimas Mascotas Agregadas</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {lastAnimals.length > 0 ? (
+                  lastAnimals.map((animal) => (
+                    <LastAnimalCard key={animal.animal_id} animal={animal} />
+                  ))
+                ) : (
+                  <p className="text-gray-500 col-span-full">Aún no hay mascotas registradas.</p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Bitácora */}
+          <section className="lg:col-span-1 xl:col-span-1 space-y-6">
+            <div className="bg-white/90 p-6 rounded-3xl shadow-lg border border-white/70 h-full">
+              <h3 className="text-xl font-bold text-[#007C91] mb-4 flex items-center gap-2">
+                <List className={`w-5 h-5 ${ACCENT_COLOR}`} />
+                Bitácora de Actividad Reciente
+              </h3>
+              <ul className="space-y-4 text-sm">
+                {bitacora.length > 0 ? bitacora.map((activity, index) => (
+                  <li key={index} className="flex items-start gap-3 border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+                    <PawPrint className={`w-4 h-4 mt-1 ${ACCENT_COLOR}`} />
+                    <div>
+                      <p className="font-semibold text-[#407581]">{activity.descripcion}</p>
+                      <p className="text-xs text-gray-500">{new Date(activity.fecha).toLocaleString()}</p>
+                    </div>
+                  </li>
+                )) : (
+                  <p className="text-gray-500">No hay actividad reciente.</p>
+                )}
+              </ul>
+              <button className="mt-6 w-full bg-[#007C91] text-white py-2 rounded-xl font-semibold hover:bg-[#007C9180] transition">
+                Ver Historial Completo
+              </button>
+            </div>
+          </section>
+
         </div>
-      </div>
-
-      {/* --- Sección de estadísticas (impacto visual) --- */}
-      <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 mb-20 px-6">
-        <StatCard
-          icon={faDog}
-          color="text-[#316B7A]"
-          title="Mascotas Activas"
-          value={stats.mascotasActivas}
-        />
-        <StatCard
-          icon={faHeart}
-          color="text-green-600"
-          title="Adopciones Exitosas"
-          value={stats.adopcionesAprobadas}
-        />
-        <StatCard
-          icon={faChartLine}
-          color="text-[#FDB2A0]"
-          title="Donaciones Recientes"
-          value={`$${stats.donacionesRecientes.toFixed(2)}`}
-        />
-      </div>
-
-      {/* --- Galería inspiracional --- */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-center max-w-6xl mx-auto mb-16 px-6">
-        <GalleryImage src="/src/assets/images/perro_dash.jpg" alt="Mascota 1" />
-        <GalleryImage src="/src/assets/images/abrazo.png" alt="Mascota 2" />
-        <GalleryImage src="/src/assets/images/familia.jpg" alt="Adopción" />
-        <GalleryImage src="/src/assets/images/vision.png" alt="Refugio" />
-      </div>
-      
-      <div className="mt-16 text-center text-gray-500 text-sm mb-8 space-y-2">
-        <p>
-          Términos de Servicio | Política de Privacidad | Contacto
-        </p>
-        <div className="flex justify-center gap-6 text-gray-500">
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faFacebook} className="text-lg hover:text-blue-600 transition-colors" />
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faInstagram} className="text-lg hover:text-pink-500 transition-colors" />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faTwitter} className="text-lg hover:text-blue-400 transition-colors" />
-          </a>
-        </div>
-        <p>© 2025 MatchPet. Todos los derechos reservados.</p>
       </div>
     </div>
   );
 }
-
-/* --- Tarjetas de características --- */
-const FeatureCard = ({ icon, title, text }) => (
-  <div className="p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow bg-[#FFF7E6] flex flex-col items-center">
-    <FontAwesomeIcon icon={icon} className="text-4xl mb-4 text-[#316B7A]" />
-    <h3 className="text-[#316B7A] text-xl font-semibold mb-4">{title}</h3>
-    <p className="text-gray-600">{text}</p>
-  </div>
-);
-
-/* --- Tarjetas de estadísticas --- */
-const StatCard = ({ icon, color, title, value }) => (
-  <div className="bg-white rounded-xl shadow-lg p-8 text-center hover:scale-[1.02] transition-transform border-t-4 border-gray-100">
-    <FontAwesomeIcon icon={icon} className={`text-3xl mb-4 ${color}`} />
-    <h3 className="text-3xl font-extrabold text-gray-800">{value}</h3>
-    <p className="text-gray-600 font-medium mt-2">{title}</p>
-  </div>
-);
-
-/* --- Imágenes de galería --- */
-const GalleryImage = ({ src, alt }) => (
-  <div className="h-60 bg-gray-200 rounded-lg border">
-    <img src={src} alt={alt} className="w-full h-full object-cover rounded-lg" />
-  </div>
-);

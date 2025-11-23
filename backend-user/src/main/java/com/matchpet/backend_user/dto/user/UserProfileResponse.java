@@ -1,4 +1,5 @@
 package com.matchpet.backend_user.dto.user;
+import java.util.Map;
 
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +29,6 @@ public class UserProfileResponse {
     private String pais;
 
     // (Puedes añadir más campos del perfil si los necesitas)
+    private Map<String, Object> refugio;
+
 }

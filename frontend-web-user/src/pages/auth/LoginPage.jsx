@@ -10,19 +10,17 @@ export default function LoginPage() {
   const { login, isAuthenticated, loading, error } = useAuth();
   const navigate = useNavigate();
 
-  //Para el inicio de sesión con Google
+  // Login con Google
   const handleGoogleLogin = () => {
-  window.location.href = "http://localhost:8081/oauth2/authorization/google";
-};
-
+    window.location.href = "http://localhost:8081/oauth2/authorization/google";
+  };
 
   useEffect(() => {
-  if (isAuthenticated) {
-    if (userType === 'Adoptante') navigate('/dashboard/adoptante');
-    else if (userType === 'Refugio') navigate('/dashboard/refugio');
-  }
-}, [isAuthenticated, navigate, userType]);
-
+    if (isAuthenticated) {
+      if (userType === 'Adoptante') navigate('/dashboard/adoptante');
+      else if (userType === 'Refugio') navigate('/dashboard/refugio');
+    }
+  }, [isAuthenticated, navigate, userType]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -32,6 +30,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#FFF7E6] flex items-center justify-center">
       <div className="flex w-full max-w-5xl min-h-[60vh] rounded-xl overflow-hidden shadow-lg bg-white/90">
+
         {/* Formulario */}
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="w-full max-w-md space-y-6">
@@ -40,27 +39,19 @@ export default function LoginPage() {
               <p className="mt-2 text-gray-500 text-lg">Únete a la comunidad MatchPet</p>
             </div>
 
-            {/* Adoptante / Refugio */}
+            {/* Botones Adoptante / Refugio */}
             <div className="flex w-full max-w-md mx-auto rounded-xl overflow-hidden shadow-md bg-[#2B677750] mb-6">
               <button
                 type="button"
                 onClick={() => setUserType('Adoptante')}
-                className={`flex-1 py-2 text-center text-lg font-semibold transition-all duration-300 rounded-l-xl ${
-                  userType === 'Adoptante'
-                    ? 'bg-white text-[#2B6777]'
-                    : 'text-black hover:bg-white hover:text-[#2B6777]'
-                }`}
+                className={`flex-1 py-2 text-center text-lg font-semibold transition-all duration-300 rounded-l-xl ${userType === 'Adoptante' ? 'bg-white text-[#2B6777]' : 'text-black hover:bg-white hover:text-[#2B6777]'}`}
               >
                 Adoptante
               </button>
               <button
                 type="button"
                 onClick={() => setUserType('Refugio')}
-                className={`flex-1 py-2 text-center text-lg font-semibold transition-all duration-300 rounded-r-xl ${
-                  userType === 'Refugio'
-                    ? 'bg-white text-[#2B6777]'
-                    : 'text-black hover:bg-white hover:text-[#2B6777]'
-                }`}
+                className={`flex-1 py-2 text-center text-lg font-semibold transition-all duration-300 rounded-r-xl ${userType === 'Refugio' ? 'bg-white text-[#2B6777]' : 'text-black hover:bg-white hover:text-[#2B6777]'}`}
               >
                 Refugio
               </button>
@@ -70,7 +61,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-md font-medium text-gray-700">
-                  Correo Electrónico del {userType} 
+                  Correo Electrónico del {userType}
                 </label>
                 <input
                   id="email"
@@ -114,7 +105,7 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {userType === 'Adoptante' ? (
+              {userType === 'Adoptante' && (
                 <>
                   <div className="flex items-center gap-4 my-4">
                     <div className="flex-grow border-t border-gray-300" />
@@ -135,8 +126,7 @@ export default function LoginPage() {
                     Inicia sesión con Google
                   </button>
                 </>
-              ) : null}
-            
+              )}
 
               <p className="text-center text-md text-gray-600 mt-2">
                 ¿No tienes una cuenta?{' '}
@@ -148,6 +138,7 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* Imagen lateral */}
         <div className="hidden lg:flex flex-1">
           <div
             className="w-full h-full bg-cover bg-center"
