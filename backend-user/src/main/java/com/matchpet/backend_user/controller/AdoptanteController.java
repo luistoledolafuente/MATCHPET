@@ -4,6 +4,7 @@ import com.matchpet.backend_user.dto.auth.AuthResponse;
 import com.matchpet.backend_user.dto.adoptante.RegisterAdoptanteRequest;
 import com.matchpet.backend_user.dto.adoptante.UpdateAdoptanteRequest;
 import com.matchpet.backend_user.dto.user.UserProfileResponse;
+import com.matchpet.backend_user.model.UserModel;
 import com.matchpet.backend_user.service.AdoptanteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -46,13 +48,20 @@ public class AdoptanteController {
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    @PutMapping("/{id}") // La URL será: PUT /api/adoptantes/{id}
+    @PutMapping("/{id}/profile")
     public ResponseEntity<UserProfileResponse> updateAdoptanteProfile(
-            @PathVariable Integer id,
+            @PathVariable Integer id,  // Aquí extraemos el id de la URL
+            @AuthenticationPrincipal UserModel userDetails,
             @Valid @RequestBody UpdateAdoptanteRequest request
     ) {
-        // TODO: Añadir seguridad para que un usuario solo pueda editar SU PROPIO perfil.
+        Integer authenticatedUserId = userDetails.getId();
+
+        if (!authenticatedUserId.equals(id)) {
+            return ResponseEntity.status(403).build(); // Responder con 403 si intenta modificar otro perfil
+        }
+
         UserProfileResponse updatedProfile = adoptanteService.updateAdoptante(id, request);
         return ResponseEntity.ok(updatedProfile);
     }
+
 }
