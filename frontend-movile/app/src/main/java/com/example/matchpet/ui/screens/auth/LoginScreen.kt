@@ -1,8 +1,10 @@
-package com.example.matchpet.ui.screens
+package com.example.matchpet.ui.screens.auth
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MailOutline
@@ -16,25 +18,51 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matchpet.data.model.UserRole
 import com.example.matchpet.ui.components.GoogleSignInButton
 import com.example.matchpet.ui.components.PrimaryButton
 import com.example.matchpet.ui.components.RoleSelector
 import com.example.matchpet.ui.theme.*
+import com.example.matchpet.viewmodel.AuthState
 import com.example.matchpet.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    viewModel: AuthViewModel = viewModel() // 🔑 Inyectar ViewModel
 ) {
+    val authState by viewModel.authState.collectAsState()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(UserRole.ADOPTER) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    // No necesitamos errorMessage local, usamos el estado del ViewModel (authState)
 
-    val viewModel = remember { AuthViewModel() }
+    // Manejo de la navegación y errores basado en el estado
+    LaunchedEffect(authState) {
+        when (val state = authState) {
+            is AuthState.Success -> {
+                // Navegación por rol
+                val destination = when (state.userRole) {
+                    UserRole.ADOPTER -> "adoptante/dashboard/${state.token}"
+                    UserRole.SHELTER -> "refugio/dashboard/${state.token}"
+                }
+                navController.navigate(destination) {
+                    // Limpiar la pila de navegación para que no puedan volver al login
+                    popUpTo("login") { inclusive = true }
+                }
+                viewModel.resetState() // Resetear estado
+            }
+            is AuthState.Error -> {
+                Log.e("LoginScreen", "Login Fallido: ${state.message}")
+                // El error se mostrará en el Text de abajo
+            }
+            else -> {}
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -67,6 +95,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Selector de Rol (aunque el login es universal, mantienes la UI)
                 RoleSelector(selectedRole = selectedRole, onRoleSelected = { selectedRole = it })
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -79,10 +108,12 @@ fun LoginScreen(
                     leadingIcon = { Icon(Icons.Filled.MailOutline, contentDescription = null, tint = PrimaryTeal) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
+                    // ✅ CORRECCIÓN: Usar OutlinedTextFieldDefaults.colors
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = BackgroundBeige,
                         unfocusedContainerColor = BackgroundBeige
-                    )
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -94,10 +125,11 @@ fun LoginScreen(
                     label = { Text("Contraseña") },
                     leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null, tint = PrimaryTeal) },
                     visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Password),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
+                    // ✅ CORRECCIÓN: Usar OutlinedTextFieldDefaults.colors
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = BackgroundBeige,
                         unfocusedContainerColor = BackgroundBeige
                     )
@@ -118,25 +150,18 @@ fun LoginScreen(
                 PrimaryButton(
                     text = "Iniciar Sesión",
                     onClick = {
-                        viewModel.login(
-                            email,
-                            password,
-                            onSuccess = {
-                                // Navegar al perfil cuando login es correcto
-                                navController.navigate("profile")
-                            },
-                            onError = { error ->
-                                errorMessage = error
-                            }
-                        )
-                    }
+                        viewModel.login(email, password)
+                    },
+                    isLoading = authState is AuthState.Loading,
+                    enabled = email.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading
                 )
 
+
                 // Mostrar error si hay
-                errorMessage?.let {
+                if (authState is AuthState.Error) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = it,
+                        text = (authState as AuthState.Error).message,
                         color = ErrorRed,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center

@@ -1,4 +1,4 @@
-package com.example.matchpet.ui.screens
+package com.example.matchpet.ui.screens.adoptante
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -42,7 +42,7 @@ fun ProfileScreen(token: String) {
                 Text("Nombre: ${profile!!.nombreCompleto}", style = MaterialTheme.typography.bodyLarge)
                 Text("Correo: ${profile!!.email}")
                 Text("Teléfono: ${profile!!.telefono ?: "Sin número"}")
-                Text("Rol: ${profile!!.role}")
+                Text("Rol: ${profile!!.roles}")
             }
         } else if (error != null) {
             Text("Error: $error", color = ErrorRed)
