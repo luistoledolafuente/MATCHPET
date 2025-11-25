@@ -61,6 +61,7 @@ public class SecurityConfig {
                         // RUTAS PÚBLICAS
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/api/animales/**",
                                 "/api/adoptantes/register",
                                 "/api/refugios/register",
                                 "/api/lookups/**",
