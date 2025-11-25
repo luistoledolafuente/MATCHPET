@@ -2,10 +2,15 @@ package com.example.matchpet.data.model
 
 data class UserProfileResponse(
     val usuarioId: Int,
-    val nombreCompleto: String,
     val email: String,
+    val nombre: String,
+    val apellidoPaterno: String,
+    val apellidoMaterno: String,
     val telefono: String?,
-    // ✅ CORRECCIÓN: Ahora se espera una lista llamada 'roles'
-    val roles: List<String>,
-    // Otros campos
+    val fechaNacimiento: String,
+    val direccion: String?,
+    val ciudad: String?,
+    val pais: String?,
+    val roles: List<String>
+    // Eliminado: refugio, porque NO existe RefugioData
 )

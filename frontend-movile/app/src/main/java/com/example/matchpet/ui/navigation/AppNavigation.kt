@@ -1,6 +1,5 @@
 package com.example.matchpet.ui.navigation
 
-
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,27 +18,33 @@ fun AppNavigation(navController: NavHostController) {
         startDestination = "splash"
     ) {
         composable("splash") { SplashScreen(navController) }
-        composable("welcome") { WelcomeScreen(
-            onAdoptClick = { navController.navigate("login") },
-            onDonateClick = { navController.navigate("register") },
-            onShelterClick = { navController.navigate("register") }
-        ) }
+
+        composable("welcome") {
+            WelcomeScreen(
+                onAdoptClick = { navController.navigate("login") },
+                onDonateClick = { navController.navigate("register") },
+                onShelterClick = { navController.navigate("register") }
+            )
+        }
+
         composable("login") {
             LoginScreen(
                 navController = navController,
                 onRegisterClick = { navController.navigate("register") }
             )
         }
+
         composable("register") {
             RegisterScreen(
                 navController = navController,
                 onLoginClick = { navController.navigate("login") }
             )
         }
+
         // Dashboard Adoptante
         composable("adoptante/dashboard/{token}") { backStackEntry ->
             val token = backStackEntry.arguments?.getString("token") ?: ""
-            DashboardScreen(token)
+            DashboardScreen(navController, token)
         }
 
         // Dashboard Refugio
@@ -48,7 +53,18 @@ fun AppNavigation(navController: NavHostController) {
             RefugioDashboardScreen(token)
         }
 
+        // Profile Adoptante
+        composable("profile/{token}") { backStackEntry ->
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+
+            ProfileScreen(
+                token = token,
+                onBack = {
+                    // Vuelve al dashboard adoptante
+                    navController.popBackStack()
+                }
+            )
+        }
+
     }
 }
-
-
