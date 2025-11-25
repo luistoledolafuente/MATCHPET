@@ -15,8 +15,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.matchpet.backend_user.service.StorageService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import com.matchpet.backend_user.service.RecomendacionService; // ¡NUEVO!
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.security.Principal;
 
 import java.security.Principal;
@@ -31,6 +42,7 @@ public class AnimalController {
 
     private final AnimalService animalService;
     private final RecomendacionService recomendacionService;
+    private final StorageService storageService;
 
 
     @Operation(
@@ -129,5 +141,52 @@ public class AnimalController {
         List<AnimalDTO> recomendaciones = recomendacionService.getRecomendaciones(adoptanteEmail);
 
         return ResponseEntity.ok(recomendaciones);
+    }
+
+    @Operation(summary = "Sube una imagen y devuelve su URL para usar en el registro o actualización")
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, String>> uploadPhoto(
+            // La imagen se recibe como un archivo multipart
+            @RequestParam("file") MultipartFile file
+    ) {
+        String relativeUrl = storageService.store(file);
+        return ResponseEntity.ok(Map.of("url", relativeUrl));
+    }
+
+    @Operation(summary = "Sirve un archivo de imagen estático guardado en el servidor")
+    @GetMapping("/files/{filename:.+}")
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+        Resource resource = storageService.loadAsResource(filename);
+
+        // Obtener el tipo de contenido (MIME Type) para el encabezado
+        String contentType = null;
+        try {
+            contentType = Files.probeContentType(resource.getFile().toPath());
+        } catch (IOException ex) {
+            // Se puede ignorar o poner un valor por defecto
+        }
+        if (contentType == null) {
+            contentType = "application/octet-stream"; // Tipo por defecto si no se reconoce
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    @Operation(
+            summary = "Obtiene la lista de todas las mascotas (para Adoptantes y público)",
+            description = "Devuelve una lista paginada de animales. No requiere rol específico."
+            // NOTA: Si quieres que cualquiera lo vea, quita security = @SecurityRequirement(name = "bearerAuth")
+            // Lo mantendremos sin seguridad por defecto para que sea público si la seguridad lo permite.
+    )
+    @GetMapping
+    public ResponseEntity<Page<AnimalDTO>> getAnimales(
+            // Spring Boot inyecta Pageable automáticamente a partir de los params (?page=0&size=10&sort=nombre,asc)
+            @PageableDefault(size = 10, sort = "id") Pageable pageable
+    ) {
+        Page<AnimalDTO> animales = animalService.getAnimalesPaginados(pageable);
+        return ResponseEntity.ok(animales);
     }
 }
