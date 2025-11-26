@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder; // <-- Import
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -71,13 +72,36 @@ public class AuthServiceImpl implements AuthService {
     public void forgotPassword(ForgotPasswordRequest request) {
         UserModel user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + request.getEmail()));
-        tokenRepository.findByUser(user).ifPresent(tokenRepository::delete);
+
+        // CAMBIO: Llama al nuevo método para crear y guardar el token en una transacción separada.
+        String tokenStr = this.createAndSaveToken(user);
+
+        // El email se envía. Si falla, el token ya está guardado.
+        emailService.sendPasswordResetEmail(user.getEmail(), tokenStr);
+    }
+
+    // --- NUEVO MÉTODO PRIVADO (Añadir al final de la clase) ---
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected String createAndSaveToken(UserModel user) {
+
+        // 1. Eliminar token anterior
+        tokenRepository.findByUser(user).ifPresent(token -> {
+            tokenRepository.delete(token);
+
+            // 🚨 FIX CRÍTICO: Forzar a JPA a enviar el DELETE a la DB inmediatamente.
+            tokenRepository.flush();
+        });
+
+        // 2. Crear nuevo token
         String tokenStr = UUID.randomUUID().toString();
         long expiryTime = System.currentTimeMillis() + 3600000;
         Timestamp expiryDate = new Timestamp(expiryTime);
         PasswordResetToken resetToken = new PasswordResetToken(tokenStr, expiryDate, user);
+
+        // 3. Guardar. El INSERT ya no encontrará un duplicado.
         tokenRepository.save(resetToken);
-        emailService.sendPasswordResetEmail(user.getEmail(), tokenStr);
+
+        return tokenStr;
     }
 
     @Override
