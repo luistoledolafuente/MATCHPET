@@ -114,7 +114,6 @@ fun RefugioDrawerContent(
             selected = false,
             onClick = {
                 closeDrawer()
-                // Navegación principal a Login, limpiando el back stack
                 mainNavController.navigate("login") {
                     popUpTo(mainNavController.graph.id) { inclusive = true }
                 }
