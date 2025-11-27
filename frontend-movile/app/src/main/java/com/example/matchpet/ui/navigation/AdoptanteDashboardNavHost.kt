@@ -9,7 +9,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.matchpet.ui.screens.adoptante.AdoptanteHomeScreen
-// import com.example.matchpet.ui.screens.adoptante.ProfileScreen ya no se necesita
 
 @Composable
 fun AdoptanteDashboardNavHost(
@@ -32,12 +31,12 @@ fun AdoptanteDashboardNavHost(
             )
         }
 
-        // 2. Pestaña de Favoritos (Ahora la segunda en la lista)
+        // 2. Pestaña de Favoritos
         composable("adoptante_favoritos") {
             Text("Pantalla de Favoritos (Contenido)", modifier.fillMaxSize())
         }
 
-        // 3. Pestaña de Mascotas (Ahora la tercera, en el centro)
+        // 3. Pestaña de Mascotas
         composable("adoptante_mascotas") {
             Text("Pantalla de Mascotas para Adopción (Contenido)", modifier.fillMaxSize())
         }
@@ -51,6 +50,8 @@ fun AdoptanteDashboardNavHost(
         composable("adoptante_solicitudes") {
             Text("Pantalla de Solicitudes (Contenido)", modifier.fillMaxSize())
         }
+
+        // Nota: adoptante_perfil ahora es una ruta global en AppNavigation (sin navbar)
 
     }
 }

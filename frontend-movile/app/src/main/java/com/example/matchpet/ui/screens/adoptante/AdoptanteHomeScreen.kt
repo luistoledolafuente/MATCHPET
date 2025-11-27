@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -53,41 +51,22 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
         // HEADER
         // -------------------------
         item {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp), // Aplicar padding horizontal
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 16.dp) // Aplicar padding horizontal
             ) {
-                Column {
-                    Text(
-                        text = "¡Hola, Adoptante! 🐾",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF244B57)
-                    )
-                    Text(
-                        text = "Estas mascotas podrían ser tu pareja ideal 💛",
-                        fontSize = 13.sp,
-                        color = Color(0xFF6F6F6F)
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        // Navegación interna a la ruta "adoptante_perfil"
-                        navController.navigate("adoptante_perfil")
-                    },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(Color(0xFF89CFBD), CircleShape)
-                ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Editar perfil",
-                        tint = Color.White
-                    )
-                }
+                Text(
+                    text = "¡Hola, Adoptante! 🐾",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF244B57)
+                )
+                Text(
+                    text = "Estas mascotas podrían ser tu pareja ideal 💛",
+                    fontSize = 13.sp,
+                    color = Color(0xFF6F6F6F)
+                )
             }
         }
 

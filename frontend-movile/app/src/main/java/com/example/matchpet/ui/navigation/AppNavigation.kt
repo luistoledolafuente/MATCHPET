@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.matchpet.ui.screens.*
 import com.example.matchpet.ui.screens.adoptante.DashboardScreen
-import com.example.matchpet.ui.screens.adoptante.ProfileScreen // Se mantiene la importación si la usas en otro sitio
+import com.example.matchpet.ui.screens.adoptante.ProfileScreen
 import com.example.matchpet.ui.screens.auth.LoginScreen
 import com.example.matchpet.ui.screens.auth.RegisterScreen
 import com.example.matchpet.ui.screens.refugio.RefugioDashboardScreen
@@ -62,6 +62,15 @@ fun AppNavigation(navController: NavHostController) {
 
         composable("settings") {
             SettingsScreen(navController = navController)
+        }
+
+        // Perfil de Adoptante (ruta global sin navbar)
+        composable("adoptante_perfil/{token}") { backStackEntry ->
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+            ProfileScreen(
+                token = token,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

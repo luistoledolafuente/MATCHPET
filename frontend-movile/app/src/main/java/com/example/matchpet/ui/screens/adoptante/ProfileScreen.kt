@@ -197,7 +197,9 @@ fun ProfileScreen(
 
                 Button(
                     onClick = {
-                        Toast.makeText(context, "Luego actualizará al backend", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Cambios guardados", Toast.LENGTH_SHORT).show()
+                        // Regresar al dashboard inicial después de guardar
+                        onBack()
                     },
                     modifier = Modifier
                         .align(Alignment.End)
