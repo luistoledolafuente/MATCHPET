@@ -54,19 +54,14 @@ fun RefugioDashboardScreen(
         }
     ) {
         Scaffold(
-            // -------------------------------------------------------------
-            // TOP BAR DINÁMICA: Determina si es Menú (☰) o Volver (<-)
-            // -------------------------------------------------------------
             topBar = {
                 TopAppBar(
                     title = {
-                        // Título dinámico
                         val titleText = if (currentRoute == profileRoute) "Mi Perfil" else "MatchPet - Refugio"
                         Text(titleText, color = PrimaryTeal)
                     },
                     navigationIcon = {
                         if (shouldShowBackButton) {
-                            // RUTA DE PERFIL: Muestra flecha de volver (<-)
                             IconButton(onClick = { dashboardNavController.popBackStack() }) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = PrimaryTeal)
                             }
@@ -80,12 +75,8 @@ fun RefugioDashboardScreen(
                 )
             },
 
-            // -------------------------------------------------------------
-            // BOTTOM BAR CONDICIONAL: Solo visible en rutas principales
-            // -------------------------------------------------------------
             bottomBar = {
                 if (isMainRoute) {
-                    // SOLO se muestra en rutas de la barra inferior.
                     BottomNavBar(navController = dashboardNavController, navItems = refugioNavItems)
                 }
             }

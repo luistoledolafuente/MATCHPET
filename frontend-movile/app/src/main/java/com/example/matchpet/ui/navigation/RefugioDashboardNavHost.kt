@@ -8,8 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.matchpet.ui.screens.refugio.ProfileScreen
+import com.example.matchpet.ui.screens.adoptante.ProfileScreen
 import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen // Tu pantalla de contenido principal
+import com.example.matchpet.ui.screens.refugio.RefugioProfileScreen
 
 @Composable
 fun RefugioDashboardNavHost(
@@ -53,12 +54,11 @@ fun RefugioDashboardNavHost(
 
         // 6. PERFIL
         composable("refugio_perfil") {
-            ProfileScreen(
+            RefugioProfileScreen(
                 token = token,
-                onBack = {
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() }
             )
         }
+
     }
 }
