@@ -2,11 +2,15 @@ package com.example.matchpet.ui.components
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -119,17 +123,16 @@ fun RowScope.AddItem(
 val adoptanteNavItems = listOf(
     // Rutas para Adoptante
     NavItem(route = "adoptante_home", icon = Icons.Default.Home, label = "Inicio"),
-    NavItem(route = "adoptante_mascotas", icon = Icons.Default.Pets, label = "Mascotas"),
     NavItem(route = "adoptante_favoritos", icon = Icons.Default.Favorite, label = "Favoritos"),
+    NavItem(route = "adoptante_mascotas", icon = Icons.Default.Pets, label = "Mascotas"),
     NavItem(route = "adoptante_donaciones", icon = Icons.Default.VolunteerActivism, label = "Donaciones"),
-    NavItem(route = "adoptante_solicitudes", icon = Icons.Default.List, label = "Solicitudes"),
+    NavItem(route = "adoptante_solicitudes", icon = Icons.Default.Send, label = "Solicitudes"),
 )
 
 val refugioNavItems = listOf(
     // Rutas para Refugio
     NavItem(route = "refugio_home", icon = Icons.Default.Home, label = "Inicio"),
+    NavItem(route = "refugio_solicitudes", icon = Icons.Default.Inbox, label = "Solicitudes"),
     NavItem(route = "refugio_mis_mascotas", icon = Icons.Default.Pets, label = "Mis Mascotas"),
-    NavItem(route = "refugio_solicitudes", icon = Icons.Default.List, label = "Solicitudes"),
     NavItem(route = "refugio_donaciones", icon = Icons.Default.VolunteerActivism, label = "Donaciones"),
-    NavItem(route = "refugio_historial", icon = Icons.Default.List, label = "Historial"),
 )

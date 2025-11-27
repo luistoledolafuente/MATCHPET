@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.matchpet.ui.screens.*
 import com.example.matchpet.ui.screens.adoptante.DashboardScreen
-import com.example.matchpet.ui.screens.adoptante.ProfileScreen
+import com.example.matchpet.ui.screens.adoptante.ProfileScreen // Se mantiene la importación si la usas en otro sitio
 import com.example.matchpet.ui.screens.auth.LoginScreen
 import com.example.matchpet.ui.screens.auth.RegisterScreen
 import com.example.matchpet.ui.screens.refugio.RefugioDashboardScreen
@@ -47,24 +47,25 @@ fun AppNavigation(navController: NavHostController) {
             DashboardScreen(navController, token)
         }
 
-        // Dashboard Refugio
-        composable("refugio/dashboard/{token}") { backStackEntry ->
-            val token = backStackEntry.arguments?.getString("token") ?: ""
-            RefugioDashboardScreen(token)
-        }
-
-        // Profile Adoptante
+        // ❌ RUTA ELIMINADA: La gestión del perfil de Adoptante está ahora dentro de DashboardScreen.kt
+        /*
         composable("profile/{token}") { backStackEntry ->
             val token = backStackEntry.arguments?.getString("token") ?: ""
 
             ProfileScreen(
                 token = token,
                 onBack = {
-                    // Vuelve al dashboard adoptante
                     navController.popBackStack()
                 }
             )
         }
+        */
 
+        // Dashboard Refugio
+        composable("refugio/dashboard/{token}") { backStackEntry ->
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+            // Pasa el controlador principal
+            RefugioDashboardScreen(mainNavController = navController, token = token)
+        }
     }
 }
