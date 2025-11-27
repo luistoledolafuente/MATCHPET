@@ -66,7 +66,7 @@ export default function PerfilAdoptante() {
     setStatus(null);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/adoptantes/${user.usuarioId}`, {
+      const response = await fetch(`${BASE_URL}/api/adoptantes/${user.usuarioId}/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

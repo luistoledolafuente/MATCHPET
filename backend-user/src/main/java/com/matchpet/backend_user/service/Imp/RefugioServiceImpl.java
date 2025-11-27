@@ -31,35 +31,31 @@ public class RefugioServiceImpl implements RefugioService {
     private final JwtService jwtService;
 
     // --- Método de Registro (registerRefugio) ---
+    // Archivo: com.matchpet.backend_user.service.Imp/RefugioServiceImpl.java
+
     @Override
     @Transactional
     public AuthResponse registerRefugio(RegisterRefugioRequest request) {
 
+        // 1. VERIFICACIÓN DE DUPLICADO DE EMAIL (MANTENER)
         userRepository.findByEmail(request.getEmailLogin()).ifPresent(user -> {
             throw new RuntimeException("El email de login ya está registrado");
         });
-        UserModel usuario = userRepository.findByEmail(request.getEmailLogin())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        refugioRepository.findByUser(usuario).ifPresent(r -> {
-            throw new RuntimeException("El refugio ya está registrado para este usuario");
-        });
 
-        
+        // 2. BUSCAR ROL (MANTENER)
         RolModel refugioRole = rolRepository.findByNombreRol("Refugio")
                 .orElseThrow(() -> new RuntimeException("Error: Rol 'Refugio' no encontrado."));
 
+        // 3. CREACIÓN Y ASIGNACIÓN (MANTENER)
         Refugio nuevoRefugio = new Refugio();
         UserModel user = new UserModel();
         Set<RolModel> roles = new HashSet<>();
         roles.add(refugioRole);
 
         nuevoRefugio.setNombre(request.getNombreRefugio());
-
-        // Mapeo de campos que causaron error en el registro
         nuevoRefugio.setDescripcion(request.getDescripcion());
         nuevoRefugio.setPais(request.getPais());
         nuevoRefugio.setUrlSitioWeb(request.getUrlSitioWeb());
-
         nuevoRefugio.setDireccion(request.getDireccion());
         nuevoRefugio.setCiudad(request.getCiudad());
         nuevoRefugio.setEmail(request.getEmailRefugio());
@@ -69,7 +65,6 @@ public class RefugioServiceImpl implements RefugioService {
         user.setEmail(request.getEmailLogin());
         user.setHashContrasena(passwordEncoder.encode(request.getPassword()));
 
-        // Mapeo de nombre granular a UserModel
         String[] nombreParts = request.getPersonaContacto().split("\\s+", 3);
         user.setNombre(nombreParts.length > 0 ? nombreParts[0] : "Refugio");
         user.setApellidoPaterno(nombreParts.length > 1 ? nombreParts[1] : "");
@@ -84,6 +79,7 @@ public class RefugioServiceImpl implements RefugioService {
         user.setRefugio(nuevoRefugio);
         nuevoRefugio.setUser(user);
 
+        // 4. GUARDAR Y DEVOLVER TOKEN (MANTENER)
         userRepository.save(user);
 
         String accessToken = jwtService.generateAccessToken(user);

@@ -1,3 +1,5 @@
+// luistoledolafuente/matchpet/MATCHPET-Toledo/frontend-web-user/src/services/animalService.js
+
 import axios from "axios";
 
 const API_URL = "http://127.0.0.1:8081/api/animales";
@@ -22,12 +24,23 @@ export const getMisAnimales = async (token) => {
 };
 
 
-export async function createAnimal(payloadOrFormData, token) {
+// 🚨 CORRECCIÓN PARA EL ERROR 415 (Unsupported Media Type)
+export async function createAnimal(payload, token) {
   const headers = buildAuthHeader(token);
   console.debug('createAnimal: axios.defaults.headers.common=', axios.defaults.headers?.common);
   console.debug('createAnimal: request headers=', headers, 'tokenPassed=', !!token);
+  
   const url = `${API_URL}`;
-  const res = await axios.post(url, payloadOrFormData, { headers: { ...headers } });
+
+  // Se añaden los headers de autenticación y se fuerza el Content-Type a JSON.
+  const config = {
+      headers: { 
+          ...headers, 
+          'Content-Type': 'application/json' // CRÍTICO: Soluciona el error 415
+      }
+  };
+  
+  const res = await axios.post(url, payload, config);
 
   return res.data;
 }
@@ -39,6 +52,9 @@ export const updateAnimal = async (id, formDataOrJson, token) => {
   const headers = buildAuthHeader(token);
   const isFormData = (typeof FormData !== "undefined") && (formDataOrJson instanceof FormData);
 
+  // NOTA: Si formDataOrJson no es FormData, Axios intentará inferir application/json.
+  // Es recomendable forzar el Content-Type: application/json si no es FormData, 
+  // pero lo dejaremos como está para evitar conflicto con la subida de imágenes si la implementaste.
   const config = { headers: { ...headers } };
   const response = await axios.put(`${API_URL}/${id}`, formDataOrJson, config);
   return response.data;
@@ -55,6 +71,20 @@ export const deleteAnimal = async (id, token) => {
   return response.data;
 };
 
+// ---------- GET: Obtener Animales Paginados (para Adoptantes/Público) ----------
+// Llama a GET /api/animales (el feed global)
+export const getAnimalesPaginados = async (page = 0, size = 10, sort = 'id,desc') => {
+  // Nota: No se requiere token si el SecurityConfig lo permite (permitAll)
+  const response = await axios.get(`${API_URL}`, {
+    params: {
+      page,
+      size,
+      sort
+    }
+  });
+  return response.data; // Devuelve un objeto Page<AnimalDTO>
+};
+
 // Obtener últimos eventos de bitácora
 export const getBitacora = async (token) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -68,5 +98,6 @@ export default {
   createAnimal,
   updateAnimal,
   deleteAnimal,
-  getBitacora
+  getBitacora,
+  getAnimalesPaginados,
 };
