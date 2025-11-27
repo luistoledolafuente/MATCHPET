@@ -17,4 +17,6 @@ public interface AnimalRepository extends JpaRepository<Animal, Integer> {
 
     List<Animal> findByEstadoAdopcionId(Integer id);
 
+    Page<Animal> findByEstadoAdopcionId(Integer estadoAdopcionId, Pageable pageable);
+
 }

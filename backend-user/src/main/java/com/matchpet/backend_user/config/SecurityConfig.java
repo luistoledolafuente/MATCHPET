@@ -3,6 +3,7 @@ package com.matchpet.backend_user.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -57,6 +58,8 @@ public class SecurityConfig {
 
                         // Ruta protegida obligatoria
                         .requestMatchers("/api/user/profile").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/animales").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/animales/**").permitAll()
 
                         // RUTAS PÚBLICAS
                         .requestMatchers(

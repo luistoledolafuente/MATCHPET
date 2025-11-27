@@ -71,6 +71,20 @@ export const deleteAnimal = async (id, token) => {
   return response.data;
 };
 
+// ---------- GET: Obtener Animales Paginados (para Adoptantes/Público) ----------
+// Llama a GET /api/animales (el feed global)
+export const getAnimalesPaginados = async (page = 0, size = 10, sort = 'id,desc') => {
+  // Nota: No se requiere token si el SecurityConfig lo permite (permitAll)
+  const response = await axios.get(`${API_URL}`, {
+    params: {
+      page,
+      size,
+      sort
+    }
+  });
+  return response.data; // Devuelve un objeto Page<AnimalDTO>
+};
+
 // Obtener últimos eventos de bitácora
 export const getBitacora = async (token) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -84,5 +98,6 @@ export default {
   createAnimal,
   updateAnimal,
   deleteAnimal,
-  getBitacora
+  getBitacora,
+  getAnimalesPaginados,
 };

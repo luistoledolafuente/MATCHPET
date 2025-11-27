@@ -5,6 +5,7 @@ import com.matchpet.backend_user.dto.animal.CreateAnimalRequest;
 import com.matchpet.backend_user.dto.animal.UpdateAnimalRequest;
 import com.matchpet.backend_user.exception.AnimalNotFoundException;
 import com.matchpet.backend_user.model.*;
+import com.matchpet.backend_user.model.lookup.EstadoAdopcion;
 import com.matchpet.backend_user.repository.*;
 import com.matchpet.backend_user.service.AnimalService;
 import lombok.RequiredArgsConstructor;
@@ -220,7 +221,17 @@ public class AnimalServiceImpl implements AnimalService {
     @Override
     @Transactional(readOnly = true)
     public Page<AnimalDTO> getAnimalesPaginados(Pageable pageable) {
-        Page<Animal> animalesPaginados = animalRepository.findAll(pageable);
+        // 1. Buscar el ID del estado "Disponible"
+        // Asumo que el nombre exacto es "Disponible"
+        EstadoAdopcion estadoDisponible = estadoAdopcionRepository.findByNombre("Disponible")
+                .orElseThrow(() -> new RuntimeException("Error: Estado de adopción 'Disponible' no encontrado."));
+
+        // 2. Usar el nuevo método del repositorio para filtrar
+        Page<Animal> animalesPaginados = animalRepository.findByEstadoAdopcionId(
+                estadoDisponible.getId(),
+                pageable
+        );
+
         return animalesPaginados.map(this::convertToDTO);
     }
 
