@@ -20,12 +20,8 @@ import com.example.matchpet.viewmodel.RefugioDashboardViewModel
 fun RefugioHomeScreen(navController: NavController, token: String, paddingValues: PaddingValues) {
 
     val viewModel: RefugioDashboardViewModel = viewModel()
-
-    // 🔑 OBSERVAMOS el nuevo simpleUser (que contiene el nombre y email)
     val simpleUser by viewModel.simpleUser.collectAsState(initial = null)
-
-    // Cambiamos el nombre de la variable para que coincida con tu código original:
-    val user = simpleUser // simpleUser ahora tiene 'name', tu código espera 'nombreCompleto'
+    val user = simpleUser
 
     val animales by viewModel.animales.collectAsState(initial = emptyList())
     val bitacora by viewModel.bitacora.collectAsState(initial = emptyList())

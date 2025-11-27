@@ -1,5 +1,7 @@
 package com.example.matchpet.data.model
 
+import com.google.gson.annotations.SerializedName
+
 data class UserProfileResponse(
     val usuarioId: Int,
     val email: String,
@@ -11,6 +13,9 @@ data class UserProfileResponse(
     val direccion: String?,
     val ciudad: String?,
     val pais: String?,
-    val roles: List<String>
-    // Eliminado: refugio, porque NO existe RefugioData
+    val roles: List<String>,
+
+    // ⭐ ESTE ES EL CAMPO QUE TE FALTABA
+    @SerializedName("refugio")
+    val refugio: RefugioProfileResponse?
 )

@@ -11,6 +11,13 @@ interface ApiService {
     @POST("/api/refugios/register")
     suspend fun registerRefugio(@Body request: ShelterRegisterRequest): Response<AuthResponse>
 
+    // 1. Actualización de perfil del Refugio
+    @PUT("/api/refugios/{id}")
+    suspend fun updateRefugioProfile(
+        @Path("id") id: Int,
+        @Header("Authorization") token: String,
+        @Body request: RefugioUpdateRequest
+    ): Response<RefugioProfileResponse>
 
     @POST("/api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<AuthResponse>
