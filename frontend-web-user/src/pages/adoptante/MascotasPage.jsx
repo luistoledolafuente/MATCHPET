@@ -4,6 +4,7 @@ import animalService from "../../services/animalService";
 import { Loader2, XCircle, PawPrint } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext"; // Mantener por si se usa isAuthenticated/authLoading
 
+const BACKEND_BASE_URL = "http://127.0.0.1:8081";
 // NO NECESITAMOS API_URL NI AXIOS AQUÍ.
 
 export default function MascotasPage() {
@@ -75,7 +76,12 @@ export default function MascotasPage() {
             {mascotas.map((animal) => (
               <div key={animal.animal_id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition">
                 <img
-                  src={animal.fotos?.[0] || "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"}
+                  // 2. MODIFICACIÓN CRÍTICA AQUÍ: Concatenar la URL base
+                  src={
+                    animal.fotos?.[0]
+                      ? `${BACKEND_BASE_URL}${animal.fotos[0]}` // Ejemplo: http://127.0.0.1:8081/api/animales/files/xyz.jpg
+                      : "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"
+                  }
                   alt={`Foto de ${animal.nombre}`}
                   className="w-full h-48 object-cover"
                 />

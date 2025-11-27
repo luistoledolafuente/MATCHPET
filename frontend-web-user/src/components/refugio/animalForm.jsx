@@ -6,7 +6,7 @@ import {
     getRazas, getGeneros, getEstadosAdopcion,
     getTamanos, getNivelesEnergia, getTemperamentos
 } from '../../services/lookupsService';
-import { createAnimal, updateAnimal } from '../../services/animalService';
+import animalService, { createAnimal, updateAnimal } from '../../services/animalService';
 
 export default function AnimalForm({ animal, onClose, onSuccess, token: tokenProp }) {
 
@@ -163,6 +163,30 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
                     ? 0
                     : prev.fotoPrincipalIndex - (index < prev.fotoPrincipalIndex ? 1 : 0)
         }));
+    };
+
+    const handleFileUpload = async (event, index) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setLoading(true);
+        setError(null);
+        
+        try {
+            // 1. Llamar al nuevo servicio para subir el archivo
+            const uploadedUrl = await animalService.uploadPhoto(file, token);
+            
+            // 2. Insertar la URL devuelta por el backend en el campo de fotosUrls
+            handleFotoChange(index, uploadedUrl); 
+            
+            setFormStatus(`Foto ${file.name} subida y URL almacenada.`);
+
+        } catch (err) {
+            console.error("Error al subir foto:", err);
+            setError("Fallo al subir la imagen. Asegúrate de que el archivo es válido y el backend está activo.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     // VALIDACIÓN DE IDS
@@ -354,25 +378,46 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
                     <div className="p-4 bg-[#FFF7E6] border rounded-lg">
                         <h3 className="text-xl font-semibold text-[#316B7A]">Fotos</h3>
                         {formData.fotosUrls.map((url, i) => (
-                            <div key={i} className="flex items-center gap-2 mt-2">
-                                <input className="flex-1 border p-2 rounded"
-                                    value={url || ""}
-                                    onChange={e => handleFotoChange(i, e.target.value)}
-                                    placeholder="URL de foto" />
-                                <button type="button" onClick={() => handleRemoveFoto(i)} className="bg-[#93C5FD] text-black px-3 py-1 rounded hover:bg-[#60A5FA] transition">
+                            <div key={i} className="flex flex-col md:flex-row items-center gap-2 mt-2 border-b pb-2">
+                                
+                                {/* 1. Campo de Archivo para la Subida */}
+                                <input 
+                                    type="file"
+                                    onChange={e => handleFileUpload(e, i)}
+                                    className="hidden" // Ocultar el input nativo
+                                    id={`file-upload-${i}`}
+                                    accept="image/*"
+                                    disabled={loading}
+                                />
+                                <label 
+                                    htmlFor={`file-upload-${i}`}
+                                    className="cursor-pointer bg-[#FDB2A0] text-black px-3 py-1 rounded hover:bg-[#fca18b] transition text-sm flex-shrink-0"
+                                >
+                                    {url ? 'Cambiar Foto' : 'Subir Archivo'}
+                                </label>
+                                
+                                {/* 2. Mostrar la URL devuelta (Solo Lectura) */}
+                                <input 
+                                    className="flex-1 border p-2 rounded text-xs bg-gray-50"
+                                    value={url || "Esperando archivo..."}
+                                    readOnly 
+                                    disabled
+                                />
+
+                                {/* ... (Botón Eliminar y Principal se mantienen) ... */}
+                                <button type="button" onClick={() => handleRemoveFoto(i)} className="bg-[#93C5FD] text-black px-3 py-1 rounded hover:bg-[#60A5FA] transition text-sm flex-shrink-0">
                                     Eliminar
                                 </button>
 
-                                <label className="flex items-center gap-1">
+                                <label className="flex items-center gap-1 text-sm flex-shrink-0">
                                     <input type="radio" name="fotoPrincipal" checked={formData.fotoPrincipalIndex === i} onChange={() => setFormData(prev => ({ ...prev, fotoPrincipalIndex: i }))} />
                                     Principal
                                 </label>
                             </div>
                         ))}
-                        <button type="button" onClick={handleAddFoto} className="mt-3 bg-[#FDB2A0] text-black px-3 py-2 rounded hover:bg-[#fca18b] transition">
+                        <button type="button" onClick={handleAddFoto} className="mt-3 bg-[#FDB2A0] text-black px-3 py-2 rounded hover:bg-[#fca18b] transition" disabled={loading}>
                             Agregar Foto
                         </button>
-
                     </div>
 
                     <button
