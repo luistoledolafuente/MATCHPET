@@ -30,4 +30,11 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: SolicitudRequest
     ): Response<Void> // O el tipo de respuesta que devuelva el backend
+
+    @PUT("/api/adoptantes/{id}/profile")
+    suspend fun updateAdoptanteProfile(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: UpdateAdoptanteRequest
+    ): Response<UserProfileResponse>
 }

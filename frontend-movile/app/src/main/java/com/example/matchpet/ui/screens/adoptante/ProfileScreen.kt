@@ -29,6 +29,7 @@ import com.example.matchpet.ui.theme.WebBlueLight
 import com.example.matchpet.ui.theme.WebCream
 import com.example.matchpet.ui.theme.WebSalmon
 import com.example.matchpet.ui.theme.WebTeal
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
@@ -198,8 +199,37 @@ fun ProfileScreen(
                     ) {
                         Button(
                             onClick = {
-                                Toast.makeText(context, "Cambios guardados", Toast.LENGTH_SHORT).show()
-                                onBack()
+                                if (profile == null) return@Button
+                                
+                                val request = com.example.matchpet.data.model.UpdateAdoptanteRequest(
+                                    nombre = nombre,
+                                    apellidoPaterno = apellidoPaterno,
+                                    apellidoMaterno = apellidoMaterno,
+                                    telefono = telefono,
+                                    fechaNacimiento = fechaNacimiento,
+                                    direccion = direccion,
+                                    ciudad = ciudad,
+                                    pais = pais
+                                )
+
+                                val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
+                                scope.launch {
+                                    try {
+                                        val response = RetrofitClient.api.updateAdoptanteProfile(
+                                            token = "Bearer $token",
+                                            id = profile!!.usuarioId,
+                                            request = request
+                                        )
+                                        if (response.isSuccessful) {
+                                            Toast.makeText(context, "Perfil actualizado correctamente", Toast.LENGTH_SHORT).show()
+                                            onBack()
+                                        } else {
+                                            Toast.makeText(context, "Error al actualizar: ${response.message()}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Error de conexión: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
                             shape = RoundedCornerShape(12.dp)
