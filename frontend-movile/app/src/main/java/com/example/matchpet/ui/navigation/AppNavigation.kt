@@ -47,25 +47,21 @@ fun AppNavigation(navController: NavHostController) {
             DashboardScreen(navController, token)
         }
 
-        // ❌ RUTA ELIMINADA: La gestión del perfil de Adoptante está ahora dentro de DashboardScreen.kt
-        /*
-        composable("profile/{token}") { backStackEntry ->
-            val token = backStackEntry.arguments?.getString("token") ?: ""
-
-            ProfileScreen(
-                token = token,
-                onBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-        */
 
         // Dashboard Refugio
         composable("refugio/dashboard/{token}") { backStackEntry ->
             val token = backStackEntry.arguments?.getString("token") ?: ""
             // Pasa el controlador principal
             RefugioDashboardScreen(mainNavController = navController, token = token)
+        }
+
+        // Rutas Estáticas Globales
+        composable("about_us") {
+            AboutUsScreen(navController = navController)
+        }
+
+        composable("settings") {
+            SettingsScreen(navController = navController)
         }
     }
 }

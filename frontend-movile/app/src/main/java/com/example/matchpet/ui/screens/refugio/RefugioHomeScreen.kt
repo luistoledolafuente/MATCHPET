@@ -12,19 +12,27 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matchpet.viewmodel.RefugioDashboardViewModel
 
 @Composable
 fun RefugioHomeScreen(navController: NavController, token: String, paddingValues: PaddingValues) {
-    val viewModel = remember { RefugioDashboardViewModel() }
-    val user by viewModel.user.collectAsState()
+
+    val viewModel: RefugioDashboardViewModel = viewModel()
+
+    // 🔑 OBSERVAMOS el nuevo simpleUser (que contiene el nombre y email)
+    val simpleUser by viewModel.simpleUser.collectAsState(initial = null)
+
+    // Cambiamos el nombre de la variable para que coincida con tu código original:
+    val user = simpleUser // simpleUser ahora tiene 'name', tu código espera 'nombreCompleto'
+
     val animales by viewModel.animales.collectAsState(initial = emptyList())
     val bitacora by viewModel.bitacora.collectAsState(initial = emptyList())
 
-    // Carga inicial de datos simulados
+    // Carga inicial de datos
     LaunchedEffect(token) {
-        viewModel.loadUser(token)
+        viewModel.loadUser(token) // Esto llama a loadUserProfile
         viewModel.loadAnimales(token)
         viewModel.loadBitacora(token)
     }
@@ -33,14 +41,15 @@ fun RefugioHomeScreen(navController: NavController, token: String, paddingValues
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFDFF3FF)),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = paddingValues, // Usar paddingValues
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             // Header
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "¡Bienvenido, ${user?.nombreCompleto ?: "Refugio"}!",
+                    // 🔑 AJUSTE: Usar user?.name si user es SimpleRefugioUser
+                    text = "¡Bienvenido, ${simpleUser?.name ?: "Refugio"}!",
                     style = MaterialTheme.typography.titleLarge.copy(color = Color(0xFF007C91))
                 )
                 Text(
