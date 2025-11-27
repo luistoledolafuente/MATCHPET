@@ -153,12 +153,6 @@ fun ProfileScreen(
                                 .size(80.dp)
                                 .clip(CircleShape)
                         )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        TextButton(onClick = {
-                            Toast.makeText(context, "Funcionalidad de foto pendiente", Toast.LENGTH_SHORT).show()
-                        }) {
-                            Text("Cambiar foto", color = WebTeal, fontWeight = FontWeight.Bold)
-                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
