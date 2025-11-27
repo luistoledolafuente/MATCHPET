@@ -5,6 +5,8 @@ import AnimalForm from "../../components/refugio/animalForm";
 import { useAuth } from '../../contexts/AuthContext';
 import { getRazas } from '../../services/lookupsService';
 
+const BACKEND_BASE_URL = "http://localhost:8081";
+
 export default function MisMascotas() {
   const { isAuthenticated, token, loading: authLoading } = useAuth();
   const [animals, setAnimals] = useState([]);
@@ -110,9 +112,14 @@ export default function MisMascotas() {
                 >
                   <div className="relative">
                     <img
-                      src={animal.fotos?.[0] || "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"}
+                      src={
+                        (animal.fotos?.[0] && animal.fotos[0].startsWith('/'))
+                          ? `${BACKEND_BASE_URL}${animal.fotos[0]}`
+                          : animal.fotos?.[0] || "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"
+                      }
                       alt={`Foto de ${animal.nombre}`}
                       className="w-full h-48 object-cover rounded-t-2xl"
+                      // Mantén el onError por si acaso
                       onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo"; }}
                     />
                     <span
