@@ -19,13 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-
-// 🔑 ¡CORRECCIÓN/AÑADIR ESTAS IMPORTACIONES DE TU PAQUETE DE TEMA!
-// Asegúrate de que las rutas sean correctas para tu proyecto
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.ui.theme.SurfaceWhite
-
 
 /**
  * Clase de datos para definir un ítem de la barra de navegación.
@@ -96,15 +93,17 @@ fun RowScope.AddItem(
             // Navegación: Evita recomponer la pantalla si ya estamos en ella
             if (currentRoute != item.route) {
                 navController.navigate(item.route) {
-                    // Evita construir una pila grande de destinos en el back stack
-                    // Esto navega de forma segura en el NavHost interno
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
+                    // Pop up to the start destination of the graph to
+                    // avoid building up a large stack of destinations
+                    // on the back stack as users select items
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = false
                     }
-                    // Evita múltiples copias del mismo destino
+                    // Avoid multiple copies of the same destination when
+                    // reselecting the same item
                     launchSingleTop = true
-                    // Restaura el estado al cambiar de pestaña
-                    restoreState = true
+                    // Restore state when reselecting a previously selected item
+                    restoreState = false
                 }
             }
         },

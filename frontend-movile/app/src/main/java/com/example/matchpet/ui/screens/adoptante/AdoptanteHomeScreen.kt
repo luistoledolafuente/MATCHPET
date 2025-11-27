@@ -7,45 +7,47 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.matchpet.data.model.MascotaCardData
-import com.example.matchpet.data.model.SolicitudData
+import com.example.matchpet.ui.theme.WebBlueLight
+import com.example.matchpet.ui.theme.WebCream
+import com.example.matchpet.ui.theme.WebSalmon
+import com.example.matchpet.ui.theme.WebTeal
 
 @Composable
 fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValues: PaddingValues) {
-    // Los datos de ejemplo se mantienen dentro de la función HomeScreen
-    val recomendaciones = listOf(
+    // Datos de ejemplo para Mascotas
+    val nuevasMascotas = listOf(
         MascotaCardData("Max", "Mestizo", "2 años", "Refugio San Roque"),
         MascotaCardData("Luna", "Labrador", "1 año", "Refugio Esperanza"),
         MascotaCardData("Rocky", "Pastor Alemán", "3 años", "Patitas Felices"),
         MascotaCardData("Bella", "Golden Retriever", "4 años", "Refugio Norte"),
     )
 
-    val nuevasMascotas = listOf(
-        MascotaCardData("Toby", "Bulldog", "5 años", "Hogar Animal"),
-        MascotaCardData("Kira", "Siames", "1 año", "Refugio Esperanza"),
+    // Datos de ejemplo para Refugios Destacados
+    val refugiosDestacados = listOf(
+        RefugioCardData("Refugio Esperanza", "Lima, Perú", 4),
+        RefugioCardData("Patitas Felices", "Arequipa, Perú", 5),
+        RefugioCardData("Casa Rescate", "Cusco, Perú", 3)
     )
 
-    val solicitudes = listOf(
-        SolicitudData("Max", "Aprobada", "20 Nov 2025"),
-        SolicitudData("Coco", "Pendiente", "18 Nov 2025")
-    )
-
-    // El LazyColumn utiliza el padding que le pasamos del Scaffold superior.
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFF9F1)),
-        contentPadding = paddingValues, // Aplica el padding aquí
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+            .background(WebCream), // Fondo Crema Web
+        contentPadding = paddingValues,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // -------------------------
         // HEADER
@@ -54,143 +56,227 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp) // Aplicar padding horizontal
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
-                Text(
-                    text = "¡Hola, Adoptante! 🐾",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF244B57)
-                )
-                Text(
-                    text = "Estas mascotas podrían ser tu pareja ideal 💛",
-                    fontSize = 13.sp,
-                    color = Color(0xFF6F6F6F)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "¡Hola, Adoptante! 🐾",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = WebTeal
+                    )
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "Ubicación",
+                            tint = WebSalmon,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Tu Ubicación",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+
+        // -------------------------
+        // BUSCADOR
+        // -------------------------
+        item {
+            Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = { Text("Buscar mascota por tipo, refugio o raza…", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(WebBlueLight.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = WebTeal,
+                        unfocusedBorderColor = Color.LightGray,
+                        cursorColor = WebTeal
+                    ),
+                    singleLine = true
                 )
             }
         }
 
-        // BUSCADOR
+        // -------------------------
+        // BANNER "MATCH PERFECTO"
+        // -------------------------
         item {
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Buscar mascota por tipo, refugio o raza…") },
-                leadingIcon = { Icon(Icons.Default.Search, null) },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(55.dp)
-                    .padding(horizontal = 16.dp), // Aplicar padding horizontal
-                singleLine = true
-            )
-        }
-
-        // RECOMENDADAS
-        item { SectionTitle("Recomendadas Para Ti", Modifier.padding(start = 16.dp)) }
-
-        item {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp)
+                    .padding(horizontal = 24.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(WebBlueLight)
+                    .padding(24.dp)
             ) {
-                items(recomendaciones) {
-                    MascotaCard(it)
+                Column {
+                    Text(
+                        text = "¡Tu Match Perfecto te Espera!",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = WebTeal
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Te presentamos las mascotas más compatibles contigo según tus preferencias.",
+                        fontSize = 14.sp,
+                        color = Color(0xFF4A5568)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { navController.navigate("adoptante_mascotas") },
+                        colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Ver Recomendaciones", color = Color.White)
+                    }
                 }
             }
         }
 
-        // NUEVAS CERCA DE TI
-        item { SectionTitle("Nuevas Mascotas Cerca de Ti", Modifier.padding(start = 16.dp)) }
+        // -------------------------
+        // NUEVAS MASCOTAS CERCA DE TI
+        // -------------------------
+        item { SectionTitle("Nuevas Mascotas Cerca de Ti", Modifier.padding(horizontal = 24.dp)) }
 
         item {
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp)
             ) {
                 items(nuevasMascotas) {
-                    MascotaCard(it)
+                    MascotaCardWebStyle(it)
                 }
             }
         }
 
-        // SOLICITUDES
-        item { SectionTitle("Tus Últimas Solicitudes", Modifier.padding(start = 16.dp)) }
+        // -------------------------
+        // REFUGIOS DESTACADOS
+        // -------------------------
+        item { SectionTitle("Refugios Destacados", Modifier.padding(horizontal = 24.dp)) }
 
-        items(solicitudes) {
-            SolicitudCard(it, Modifier.padding(horizontal = 16.dp))
+        item {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp)
+            ) {
+                items(refugiosDestacados) {
+                    RefugioCardWebStyle(it)
+                }
+            }
         }
+        
+        item { Spacer(modifier = Modifier.height(24.dp)) }
     }
 }
 
 // ------------------------------------------------------
-// COMPONENTES AUXILIARES (Necesarios para que compile el Home)
+// DATA CLASSES & COMPONENTS
 // ------------------------------------------------------
+
+data class RefugioCardData(val nombre: String, val ubicacion: String, val estrellas: Int)
 
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = Color(0xFF346D77),
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF1F2937), // Gray-800
         modifier = modifier
     )
 }
 
 @Composable
-fun MascotaCard(item: MascotaCardData) {
+fun MascotaCardWebStyle(item: MascotaCardData) {
     Card(
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFEDEBFF)),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = WebCream),
         modifier = Modifier
-            .width(180.dp)
-            .height(250.dp),
-        elevation = CardDefaults.cardElevation(5.dp)
+            .width(200.dp)
+            .height(280.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, WebTeal.copy(alpha = 0.2f))
     ) {
-
         Column(modifier = Modifier.padding(12.dp)) {
-
+            // Placeholder imagen
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
-                    .background(Color(0xFFCCCCCC), RoundedCornerShape(14.dp))
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.LightGray)
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Text(item.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text("${item.raza}, ${item.edad}", fontSize = 12.sp, color = Color(0xFF4F4F4F))
-            Text(item.refugio, fontSize = 11.sp, color = Color(0xFF777777))
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .height(34.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9BD8C0))
+            Text(item.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = WebTeal)
+            Text(item.refugio, fontSize = 12.sp, color = Color.Gray)
+            
+            Spacer(modifier = Modifier.weight(1f))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Ver Perfil", fontSize = 12.sp)
+                Text(item.edad, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = WebSalmon)
+                // Icono corazón placeholder
+                Text("♥", color = Color.Gray, fontSize = 20.sp)
             }
         }
     }
 }
 
 @Composable
-fun SolicitudCard(item: SolicitudData, modifier: Modifier = Modifier) {
+fun RefugioCardWebStyle(item: RefugioCardData) {
     Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEFE2)),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = WebCream),
+        modifier = Modifier
+            .width(220.dp)
+            .height(140.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, WebSalmon.copy(alpha = 0.3f))
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Text("Mascota: ${item.mascota}", fontWeight = FontWeight.Bold)
-            Text("Estado: ${item.estado}", fontSize = 12.sp, color = Color(0xFF585858))
-            Text("Fecha: ${item.fecha}", fontSize = 12.sp, color = Color(0xFF7B7B7B))
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(item.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = WebTeal)
+            
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+                Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(12.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(item.ubicacion, fontSize = 12.sp, color = Color.Gray)
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Estrellas
+            Row {
+                repeat(5) { index ->
+                    Text(
+                        text = "★",
+                        color = if (index < item.estrellas) Color(0xFFEAB308) else Color.LightGray, // Yellow-500
+                        fontSize = 14.sp
+                    )
+                }
+            }
+            
+            Text("Ver perfil", fontSize = 12.sp, color = WebSalmon, modifier = Modifier.padding(top = 4.dp))
         }
     }
 }

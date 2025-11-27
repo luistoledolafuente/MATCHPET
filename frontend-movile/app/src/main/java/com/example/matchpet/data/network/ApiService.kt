@@ -19,4 +19,15 @@ interface ApiService {
     @GET("/api/user/profile")
     suspend fun getProfile(@Header("Authorization") token: String): Response<UserProfileResponse>
 
+    @GET("/api/animales")
+    suspend fun getAnimales(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10
+    ): Response<PageResponse<Animal>>
+
+    @POST("/api/solicitudes")
+    suspend fun createSolicitud(
+        @Header("Authorization") token: String,
+        @Body request: SolicitudRequest
+    ): Response<Void> // O el tipo de respuesta que devuelva el backend
 }
