@@ -85,6 +85,25 @@ export const getAnimalesPaginados = async (page = 0, size = 10, sort = 'id,desc'
   return response.data; // Devuelve un objeto Page<AnimalDTO>
 };
 
+// ---------- POST: Subir Imagen (Upload) ----------
+export const uploadPhoto = async (file, token) => {
+    if (!token) throw new Error("Token no proporcionado");
+    
+    const formData = new FormData();
+    formData.append('file', file); // 'file' es el nombre del parámetro esperado por el backend
+    
+    const response = await axios.post(`${API_URL}/upload`, formData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            // NOTA: Axios/el navegador establecerá automáticamente 'Content-Type: multipart/form-data'
+            // No lo establecemos manualmente, ya que arruinaría la boundary.
+        }
+    });
+
+    // El backend devuelve: { "url": "/api/animales/files/unique-id.jpg" }
+    return response.data.url;
+};
+
 // Obtener últimos eventos de bitácora
 export const getBitacora = async (token) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -100,4 +119,5 @@ export default {
   deleteAnimal,
   getBitacora,
   getAnimalesPaginados,
+  uploadPhoto
 };

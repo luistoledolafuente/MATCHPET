@@ -34,10 +34,13 @@ public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
                 .orElseThrow(() -> new RuntimeException("Animal no encontrado"));
         EstadoSolicitud estadoInicial = estadoSolicitudRepository.findById(1)
                 .orElseThrow(() -> new RuntimeException("Estado 'Enviada' no encontrado en la BD."));
+
         SolicitudAdopcion nuevaSolicitud = new SolicitudAdopcion();
         nuevaSolicitud.setAdoptante(adoptante);
         nuevaSolicitud.setAnimal(animal);
         nuevaSolicitud.setEstadoSolicitud(estadoInicial);
+        nuevaSolicitud.setMensajeAdoptante(request.getMensajeAdoptante());
+
         SolicitudAdopcion solicitudGuardada = solicitudRepository.save(nuevaSolicitud);
         return convertToDTO(solicitudGuardada);
     }

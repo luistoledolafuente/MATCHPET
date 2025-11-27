@@ -12,12 +12,12 @@ const buildAuthHeader = (token) => {
 // =========================
 // REFUGIO: Actualizar estado de solicitud
 // =========================
-export const updateSolicitud = async (id, estado, token) => {
+export const updateSolicitud = async (id, updateData, token) => {
   if (!token && !axios.defaults.headers.common?.Authorization)
     throw new Error("Token no proporcionado");
 
   const headers = buildAuthHeader(token);
-  const response = await axios.put(`${API_URL}/${id}`, { estado }, { headers });
+  const response = await axios.put(`${API_URL}/${id}`, updateData, { headers }); 
   return response.data;
 };
 
