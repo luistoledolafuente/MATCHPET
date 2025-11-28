@@ -77,4 +77,26 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: SolicitudRequest
     ): Response<Void>
+
+    // --------------- LOOKUPS (CATÁLOGOS) ------------------------------------
+    @GET("/api/lookups/generos")
+    suspend fun getGeneros(): Response<List<LookupItem>>
+
+    @GET("/api/lookups/tamanos")
+    suspend fun getTamanos(): Response<List<LookupItem>>
+
+    @GET("/api/lookups/niveles-energia")
+    suspend fun getNivelesEnergia(): Response<List<LookupItem>>
+
+    @GET("/api/lookups/estados-adopcion")
+    suspend fun getEstadosAdopcion(): Response<List<LookupItem>>
+
+    @GET("/api/lookups/especies")
+    suspend fun getEspecies(): Response<List<EspecieItem>>
+
+    @GET("/api/lookups/razas")
+    suspend fun getRazas(): Response<List<RazaItem>>
+
+    @GET("/api/lookups/temperamentos")
+    suspend fun getTemperamentos(): Response<List<TemperamentoItem>>
 }

@@ -3,10 +3,7 @@ package com.example.matchpet.data.repository
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import com.example.matchpet.data.model.AnimalCreationRequest
-import com.example.matchpet.data.model.AnimalResponse
-import com.example.matchpet.data.model.AnimalUpdateRequest
-import com.example.matchpet.data.model.ImageUploadResponse
+import com.example.matchpet.data.model.*
 import com.example.matchpet.data.network.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +14,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 
-// 🔑 CAMBIO CLAVE: El contexto (Context) es necesario para leer los archivos de la Uri.
 class AnimalRepository(
     private val apiService: ApiService,
     private val appContext: Context
@@ -109,16 +105,14 @@ class AnimalRepository(
         }
     }
 
-    // 6. POST: Subir imagen (Recibe Uri del ViewModel y llama a la API)
+    // 6. POST: Subir imagen
     suspend fun uploadImage(token: String, fileUri: Uri): Resource<ImageUploadResponse> = withContext(Dispatchers.IO) {
-        // 1. Convertir Uri a MultipartBody.Part
         val imagePart = try {
             createPartFromUri(fileUri)
         } catch (e: Exception) {
             return@withContext Resource.Error("Error al preparar la imagen para subir: ${e.localizedMessage}")
         }
 
-        // 2. Llamar al servicio con el MultipartBody.Part
         return@withContext try {
             val response = apiService.uploadImage(imagePart, "Bearer $token")
             if (response.isSuccessful && response.body() != null) {
@@ -132,29 +126,20 @@ class AnimalRepository(
         }
     }
 
-    // 🔑 FUNCIÓN DE AYUDA para convertir Uri a MultipartBody.Part
     private fun createPartFromUri(uri: Uri): MultipartBody.Part {
         val contentResolver = appContext.contentResolver
         val inputStream = contentResolver.openInputStream(uri)
             ?: throw IOException("No se pudo abrir el InputStream para la Uri: $uri")
 
         val mimeType = contentResolver.getType(uri) ?: "application/octet-stream"
-
-        // Obtenemos el nombre del archivo si es posible
         val fileName = getFileName(uri)
-
-        // Leemos el contenido del InputStream a un ByteArray
         val fileBytes = inputStream.readBytes()
         inputStream.close()
 
-        // Creamos el RequestBody
         val requestBody = fileBytes.toRequestBody(mimeType.toMediaTypeOrNull())
-
-        // Creamos el MultipartBody.Part. Asumo que tu backend espera el campo "file"
         return MultipartBody.Part.createFormData("file", fileName, requestBody)
     }
 
-    // 🔑 FUNCIÓN DE AYUDA para obtener el nombre de archivo de una Uri
     private fun getFileName(uri: Uri): String {
         var name = "uploaded_file"
         if (uri.scheme == "content") {
@@ -170,5 +155,103 @@ class AnimalRepository(
             name = uri.pathSegments.last()
         }
         return name
+    }
+
+    // 7. LOOKUP: Obtener catálogos
+    suspend fun getGeneros(): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getGeneros()
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error("Error al obtener géneros")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getTamanos(): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getTamanos()
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error("Error al obtener tamaños")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getNivelesEnergia(): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getNivelesEnergia()
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error("Error al obtener niveles de energía")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getEstadosAdopcion(): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getEstadosAdopcion()
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error("Error al obtener estados de adopción")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getEspecies(): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getEspecies()
+            if (response.isSuccessful && response.body() != null) {
+                // Convert EspecieItem to LookupItem
+                val lookupItems = response.body()!!.map { LookupItem(it.id, it.nombre) }
+                Resource.Success(lookupItems)
+            } else {
+                Resource.Error("Error al obtener especies")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getRazas(): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getRazas()
+            if (response.isSuccessful && response.body() != null) {
+                // Convert RazaItem to LookupItem
+                val lookupItems = response.body()!!.map { LookupItem(it.id, it.nombre) }
+                Resource.Success(lookupItems)
+            } else {
+                Resource.Error("Error al obtener razas")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getTemperamentos(): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getTemperamentos()
+            if (response.isSuccessful && response.body() != null) {
+                // Convert TemperamentoItem to LookupItem
+                val lookupItems = response.body()!!.map { LookupItem(it.id, it.nombre) }
+                Resource.Success(lookupItems)
+            } else {
+                Resource.Error("Error al obtener temperamentos")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
     }
 }

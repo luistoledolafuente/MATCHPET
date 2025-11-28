@@ -74,48 +74,41 @@ class NuevaMascotaViewModel(
     var estadosAdopcion by mutableStateOf<List<LookupItem>>(emptyList())
     var temperamentosList by mutableStateOf<List<LookupItem>>(emptyList())
 
-
     private var animalIdToEdit: Int? = null
 
-    // LÓGICA DE CARGA DE CATÁLOGOS
+    // LÓGICA DE CARGA DE CATÁLOGOS - AHORA USA EL BACKEND
     fun loadLookups(token: String) = viewModelScope.launch {
         _state.value = AnimalFormState.LoadingLookups
 
-        // Simulación de carga (Quitar cuando implementes tu Repositorio):
-        if (generos.isEmpty()) {
-            generos = listOf(LookupItem(1, "Macho"), LookupItem(2, "Hembra"))
-            tamanos = listOf(LookupItem(1, "Pequeño"), LookupItem(2, "Mediano"), LookupItem(3, "Grande"))
-            nivelesEnergia = listOf(LookupItem(1, "Bajo"), LookupItem(2, "Medio"), LookupItem(3, "Alto"))
-            estadosAdopcion = listOf(LookupItem(1, "Disponible"), LookupItem(2, "Reservado"), LookupItem(3, "Adoptado"))
+        try {
+            // Fetch all lookups from backend
+            val generosResult = animalRepository.getGeneros()
+            val tamanosResult = animalRepository.getTamanos()
+            val nivelesResult = animalRepository.getNivelesEnergia()
+            val estadosResult = animalRepository.getEstadosAdopcion()
+            val especiesResult = animalRepository.getEspecies()
+            val razasResult = animalRepository.getRazas()
+            val temperamentosResult = animalRepository.getTemperamentos()
 
-            // 🔑 DATOS DE PRUEBA AGREGADOS PARA SOLUCIONAR EL REPORTE DEL USUARIO
-            especies = listOf(LookupItem(1, "Perro"), LookupItem(2, "Gato"), LookupItem(3, "Otro"))
-            razas = listOf(
-                LookupItem(1, "Mestizo"),
-                LookupItem(2, "Labrador"),
-                LookupItem(3, "Golden Retriever"),
-                LookupItem(4, "Pastor Alemán"),
-                LookupItem(5, "Siames"),
-                LookupItem(6, "Persa"),
-                LookupItem(7, "Bulldog")
-            )
-            temperamentosList = listOf(
-                LookupItem(1, "Juguetón"),
-                LookupItem(2, "Tímido"),
-                LookupItem(3, "Cariñoso"),
-                LookupItem(4, "Tranquilo"),
-                LookupItem(5, "Protector"),
-                LookupItem(6, "Energético")
-            )
+            // Update state with fetched data
+            if (generosResult is Resource.Success) generos = generosResult.data ?: emptyList()
+            if (tamanosResult is Resource.Success) tamanos = tamanosResult.data ?: emptyList()
+            if (nivelesResult is Resource.Success) nivelesEnergia = nivelesResult.data ?: emptyList()
+            if (estadosResult is Resource.Success) estadosAdopcion = estadosResult.data ?: emptyList()
+            if (especiesResult is Resource.Success) especies = especiesResult.data ?: emptyList()
+            if (razasResult is Resource.Success) razas = razasResult.data ?: emptyList()
+            if (temperamentosResult is Resource.Success) temperamentosList = temperamentosResult.data ?: emptyList()
+
+            // Set default values
+            if (generoId == null) generoId = generos.firstOrNull()?.id
+            if (tamanoId == null) tamanoId = tamanos.find { it.nombre == "Mediano" }?.id
+            if (nivelEnergiaId == null) nivelEnergiaId = nivelesEnergia.find { it.nombre == "Medio" }?.id
+            if (estadoAdopcionId == null) estadoAdopcionId = estadosAdopcion.find { it.nombre == "Disponible" }?.id
+
+            _state.value = AnimalFormState.Idle
+        } catch (e: Exception) {
+            _state.value = AnimalFormState.Error("Error al cargar catálogos: ${e.message}")
         }
-
-        // Inicializar con valores por defecto
-        if (generoId == null) generoId = generos.firstOrNull()?.id
-        if (tamanoId == null) tamanoId = tamanos.find { it.nombre == "Mediano" }?.id
-        if (nivelEnergiaId == null) nivelEnergiaId = nivelesEnergia.find { it.nombre == "Medio" }?.id
-        if (estadoAdopcionId == null) estadoAdopcionId = estadosAdopcion.find { it.nombre == "Disponible" }?.id
-
-        _state.value = AnimalFormState.Idle
     }
 
     // LÓGICA DE CARGA DE DATOS PARA EDICIÓN
@@ -177,7 +170,6 @@ class NuevaMascotaViewModel(
             _temperamentoIds.value.filter { it != temperamentoId }
         }
     }
-
 
     // LÓGICA DE ENVÍO (CREACIÓN O ACTUALIZACIÓN)
     fun handleSubmit(token: String) {
@@ -272,14 +264,11 @@ class NuevaMascotaViewModel(
     fun uploadImage(token: String, fileUri: Uri) = viewModelScope.launch {
         _state.value = AnimalFormState.ImageUploading
 
-        // La función animalRepository.uploadImage debe existir y devolver la URL en ImageUploadResponse
         when (val result = animalRepository.uploadImage(token, fileUri)) {
             is Resource.Success -> {
                 val newUrl = result.data?.url ?: ""
                 if (newUrl.isNotBlank()) {
-                    // 1. Añade la URL a la lista de fotos
                     _photoUrls.value = _photoUrls.value + newUrl
-                    // 2. Establece el estado de éxito con la nueva URL
                     _state.value = AnimalFormState.ImageUploaded(newUrl)
                 } else {
                     _state.value = AnimalFormState.Error("La subida fue exitosa, pero no se recibió la URL.")
@@ -298,7 +287,6 @@ class NuevaMascotaViewModel(
         val newUrls = oldUrls.filter { it != url }
         _photoUrls.value = newUrls
 
-        // Si se elimina la foto principal, resetear el índice a 0 o al último elemento
         if (fotoPrincipalIndex >= newUrls.size) {
             fotoPrincipalIndex = if (newUrls.isEmpty()) 0 else newUrls.size - 1
         }

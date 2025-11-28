@@ -77,14 +77,6 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                         color = Color(0xFF6F6F6F)
                     )
                 }
-                IconButton(
-                    onClick = { navController.navigate("adoptante_perfil") },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(Color(0xFF89CFBD), CircleShape)
-                ) {
-                    Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White)
-                }
             }
         }
 
@@ -96,7 +88,7 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard("Mascotas", totalMascotas.toString(), Color(0xFF007C91))
+                StatCard("Mascotas Disponibles", totalMascotas.toString(), Color(0xFF007C91))
                 StatCard("Pendientes", solicitudesPendientes.toString(), Color(0xFF407581))
                 StatCard("Adopciones", adopcionesMes.toString(), Color(0xFF9BD8C0))
                 StatCard("Donaciones", "$$donacionesSemana", Color(0xFFFDB2A0))
