@@ -63,5 +63,7 @@ fun AppNavigation(navController: NavHostController) {
         composable("settings") {
             SettingsScreen(navController = navController)
         }
+
+
     }
 }

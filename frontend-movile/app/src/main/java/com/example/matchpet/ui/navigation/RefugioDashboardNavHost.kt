@@ -8,8 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.matchpet.ui.screens.adoptante.ProfileScreen
+import androidx.navigation.navArgument
 import com.example.matchpet.ui.screens.refugio.MisMascotasScreen
+import com.example.matchpet.ui.screens.refugio.NuevaMascotaScreen
 import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen // Tu pantalla de contenido principal
 import com.example.matchpet.ui.screens.refugio.RefugioProfileScreen
 
@@ -40,16 +41,28 @@ fun RefugioDashboardNavHost(
         composable("refugio_mis_mascotas") {
             MisMascotasScreen(
                 token = token,
-                // Función de navegación para el FAB (Floating Action Button) de 'Mis Mascotas'
-                onNavigateToNewAnimal = { navController.navigate("nueva_mascota") }
+                onNavigateToNewAnimal = { navController.navigate("nueva_mascota") },
+                // 🔑 NUEVO: Función para navegar a la pantalla de edición, pasando el ID.
+                onNavigateToEditAnimal = { animalId ->
+                    navController.navigate("nueva_mascota?animalId=$animalId")
+                }
             )
         }
-        // 2b. AGREGAR NUEVA MASCOTA (Ruta de destino del FAB)
-        composable("nueva_mascota") {
-            // ✅ TODO: Implementar la pantalla real para agregar una mascota
+
+        // 2b. AGREGAR / EDITAR NUEVA MASCOTA (La pantalla de formulario)
+        composable(
+            route = "nueva_mascota?animalId={animalId}",
+            arguments = listOf(
+                navArgument("animalId") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            // El ID que viene por la URL es String?
+            val animalId = backStackEntry.arguments?.getString("animalId")
             NuevaMascotaScreen(
                 onBack = { navController.popBackStack() },
-                token = token
+                token = token,
+                // ✅ CORRECCIÓN: El parámetro en la función es 'animalId', no 'animalIdToEdit'
+                animalId = animalId
             )
         }
 
@@ -72,11 +85,4 @@ fun RefugioDashboardNavHost(
         }
 
     }
-}
-
-// 🔑 Placeholder necesario para que compile la ruta 'nueva_mascota'
-@Composable
-fun NuevaMascotaScreen(onBack: () -> Unit, token: String) {
-    Text("Pantalla: Formulario para Nueva Mascota. Token: $token", )
-    // Puedes llamar a onBack() si necesitas un botón de regreso
 }

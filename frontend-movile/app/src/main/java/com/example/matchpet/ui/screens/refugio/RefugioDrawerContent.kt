@@ -16,7 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.ui.theme.SurfaceWhite
-import com.example.matchpet.viewmodel.ProfileViewModel // ✅ CORRECCIÓN: Usamos el nombre de clase correcto
+import com.example.matchpet.viewmodel.ProfileViewModel
 
 @Composable
 fun RefugioDrawerContent(
@@ -24,19 +24,15 @@ fun RefugioDrawerContent(
     mainNavController: NavController,
     closeDrawer: () -> Unit,
     token: String,
-    // ✅ CORRECCIÓN: Usamos el nombre de clase correcto
     viewModel: ProfileViewModel = viewModel()
 ) {
-    // 1. 🔑 Observamos el StateFlow simple para nombre y email
+
     val simpleUser by viewModel.simpleUser.collectAsState()
 
-    // 2. 🔑 Dispara la carga del perfil al abrir/inicializar el Drawer
     LaunchedEffect(token) {
-        // Aseguramos que la información se carga usando el token
         viewModel.loadUserProfile(token)
     }
 
-    // 3. 🔑 Usamos los datos reales del StateFlow
     val userName = simpleUser?.name ?: "Cargando Refugio..."
     val userEmail = simpleUser?.email ?: "..."
 
