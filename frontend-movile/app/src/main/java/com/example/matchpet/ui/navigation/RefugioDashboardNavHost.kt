@@ -8,7 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.matchpet.ui.screens.adoptante.ProfileScreen
+import androidx.navigation.navArgument
+import com.example.matchpet.ui.screens.refugio.MisMascotasScreen
+import com.example.matchpet.ui.screens.refugio.NuevaMascotaScreen
 import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen // Tu pantalla de contenido principal
 import com.example.matchpet.ui.screens.refugio.RefugioProfileScreen
 
@@ -37,7 +39,31 @@ fun RefugioDashboardNavHost(
 
         // 2. MIS MASCOTAS
         composable("refugio_mis_mascotas") {
-            Text("Pantalla: Mis Mascotas (Contenido)", modifier.fillMaxSize())
+            MisMascotasScreen(
+                token = token,
+                onNavigateToNewAnimal = { navController.navigate("nueva_mascota") },
+                // 🔑 NUEVO: Función para navegar a la pantalla de edición, pasando el ID.
+                onNavigateToEditAnimal = { animalId ->
+                    navController.navigate("nueva_mascota?animalId=$animalId")
+                }
+            )
+        }
+
+        // 2b. AGREGAR / EDITAR NUEVA MASCOTA (La pantalla de formulario)
+        composable(
+            route = "nueva_mascota?animalId={animalId}",
+            arguments = listOf(
+                navArgument("animalId") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            // El ID que viene por la URL es String?
+            val animalId = backStackEntry.arguments?.getString("animalId")
+            NuevaMascotaScreen(
+                onBack = { navController.popBackStack() },
+                token = token,
+                // ✅ CORRECCIÓN: El parámetro en la función es 'animalId', no 'animalIdToEdit'
+                animalId = animalId
+            )
         }
 
         // 3. SOLICITUDES
@@ -49,8 +75,6 @@ fun RefugioDashboardNavHost(
         composable("refugio_donaciones") {
             Text("Pantalla: Donaciones (Contenido)", modifier.fillMaxSize())
         }
-
-
 
         // 6. PERFIL
         composable("refugio_perfil") {

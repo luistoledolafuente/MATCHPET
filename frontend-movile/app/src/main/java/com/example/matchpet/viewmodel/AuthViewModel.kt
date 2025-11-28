@@ -3,11 +3,10 @@ package com.example.matchpet.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.matchpet.data.model.*
-import com.example.matchpet.data.network.RetrofitClient
+import com.example.matchpet.utils.Injection // Importamos Injection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import android.util.Log // Importar Log para debug
+import android.util.Log
 
 // Mejorar la gestión de estado con una clase sellada
 sealed class AuthState {
@@ -23,20 +22,15 @@ class AuthViewModel : ViewModel() {
     val authState: kotlinx.coroutines.flow.StateFlow<AuthState> = _authState
 
     // Función auxiliar para obtener el perfil y determinar el rol
-    // Dentro de la clase AuthViewModel
-
-    // Función auxiliar para obtener el perfil y determinar el rol
-    // Dentro de la clase AuthViewModel
-
     private suspend fun fetchProfileAndNavigate(token: String) {
         val authHeader = "Bearer $token"
-        val profileResponse = RetrofitClient.api.getProfile(authHeader)
+        // 🔑 CAMBIO: Usar Injection.apiService en lugar de RetrofitClient.api
+        val profileResponse = Injection.apiService.getProfile(authHeader)
 
         if (profileResponse.isSuccessful && profileResponse.body() != null) {
             val profile = profileResponse.body()!!
             try {
                 // ✅ CORRECCIÓN: Intentamos obtener el primer rol de la lista 'roles'
-                // Si la lista está vacía, tomamos 'null' para ser manejado por fromString
                 val roleString = profile.roles.firstOrNull()
 
                 // Usamos la función fromString que ya hicimos segura contra nulos
@@ -53,15 +47,13 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-// ... (resto del AuthViewModel)
-// ... (resto del AuthViewModel)
-
     fun login(email: String, password: String) {
         _authState.value = AuthState.Loading
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val request = LoginRequest(email = email, password = password)
-                val response = RetrofitClient.api.login(request)
+                // 🔑 CAMBIO: Usar Injection.apiService
+                val response = Injection.apiService.login(request)
 
                 if (response.isSuccessful && response.body() != null) {
                     val token = response.body()!!.accessToken
@@ -107,7 +99,8 @@ class AuthViewModel : ViewModel() {
                     pais = pais
                 )
 
-                val response = RetrofitClient.api.registerAdoptante(request)
+                // 🔑 CAMBIO: Usar Injection.apiService
+                val response = Injection.apiService.registerAdoptante(request)
 
                 if (response.isSuccessful && response.body() != null) {
                     val token = response.body()!!.accessToken
@@ -153,7 +146,8 @@ class AuthViewModel : ViewModel() {
                     urlSitioWeb = urlSitioWeb
                 )
 
-                val response = RetrofitClient.api.registerRefugio(request)
+                // 🔑 CAMBIO: Usar Injection.apiService
+                val response = Injection.apiService.registerRefugio(request)
 
                 if (response.isSuccessful && response.body() != null) {
                     val token = response.body()!!.accessToken

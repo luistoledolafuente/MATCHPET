@@ -2,6 +2,8 @@ package com.example.matchpet.ui.screens.refugio
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+// 🔑 Importamos el modificador de padding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -10,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navigation
 import androidx.navigation.compose.rememberNavController
 import com.example.matchpet.ui.components.BottomNavBar
 import com.example.matchpet.ui.components.refugioNavItems
@@ -33,7 +36,7 @@ fun RefugioDashboardScreen(
     val currentRoute = navBackStackEntry?.destination?.route
 
     // Definimos las rutas y condiciones
-    val profileRoute = "refugio_perfil" // La ruta que viene del Drawer
+    val profileRoute = "refugio_perfil"
     val bottomBarRoutes = refugioNavItems.map { it.route }
 
     // Bandera para la BottomNavBar: ¿Estamos en una ruta principal?
@@ -81,10 +84,12 @@ fun RefugioDashboardScreen(
                 }
             }
         ) { paddingValues ->
+            // ✅ CORRECCIÓN APLICADA AQUÍ: Usamos Modifier.padding(paddingValues)
             RefugioDashboardNavHost(
                 navController = dashboardNavController,
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(paddingValues) // ESTO ASEGURA QUE EL CONTENIDO NO SE ESCONDA BAJO LAS BARRAS
                     .background(BackgroundLight),
                 token = token,
                 paddingValues = paddingValues

@@ -2,98 +2,88 @@ package com.example.matchpet.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.matchpet.data.model.RefugioProfileResponse
-import com.example.matchpet.data.model.RefugioUpdateRequest
-import com.example.matchpet.data.model.UserProfileResponse
-import com.example.matchpet.data.repository.RefugioRepository
-import com.example.matchpet.data.repository.Resource
+import com.example.matchpet.data.model.UserProfileResponse // 🔑 Importar el modelo REAL de la respuesta
+import com.example.matchpet.data.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.*
+import android.util.Log
 
-class RefugioViewModel(
-    private val repository: RefugioRepository
-) : ViewModel() {
+// Modelo simplificado para la UI del Drawer y Home (solo nombre y email)
+data class SimpleRefugioUser(val name: String, val email: String)
 
-    // ------------------------------------------------------------
-    // ESTADOS DEL PERFIL DEL REFUGIO
-    // ------------------------------------------------------------
-    private val _userProfile = MutableStateFlow<UserProfileResponse?>(null)
-    val userProfile: StateFlow<UserProfileResponse?> = _userProfile
-
-    private val _refugio = MutableStateFlow<RefugioProfileResponse?>(null)
-    val refugio: StateFlow<RefugioProfileResponse?> = _refugio
-
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage
-
-    private val _successMessage = MutableStateFlow<String?>(null)
-    val successMessage: StateFlow<String?> = _successMessage
+// Modelos simplificados para el dashboard
+data class Animal(val nombre: String, val raza: String?, val fechaCreacion: Date = Date())
+data class BitacoraItem(val descripcion: String, val fecha: Date)
 
 
-    // ------------------------------------------------------------
-    // 1. OBTENER PERFIL COMPLETO (USER + REFUGIO)
-    // ------------------------------------------------------------
-    fun loadProfile(token: String) {
+class ProfileViewModel : ViewModel() {
+
+    // 🔑 NUEVO: StateFlow simple para el nombre/email de la cabecera
+    private val _simpleUser = MutableStateFlow<SimpleRefugioUser?>(null)
+    val simpleUser: StateFlow<SimpleRefugioUser?> = _simpleUser.asStateFlow()
+
+    private val _animales = MutableStateFlow<List<Animal>>(emptyList())
+    val animales: StateFlow<List<Animal>> = _animales.asStateFlow()
+
+    private val _bitacora = MutableStateFlow<List<BitacoraItem>>(emptyList())
+    val bitacora: StateFlow<List<BitacoraItem>> = _bitacora.asStateFlow()
+
+    fun loadUserProfile(token: String) {
         viewModelScope.launch {
-            repository.getProfile(token).collect { resource ->
-                when (resource) {
-                    is Resource.Loading -> _loading.value = true
+            try {
+                val authHeader = "Bearer $token"
+                // 🔑 Llamamos a getProfile (que devuelve UserProfileResponse)
+                val response = RetrofitClient.api.getProfile(authHeader)
 
-                    is Resource.Success -> {
-                        _loading.value = false
-                        _userProfile.value = resource.data
+                if (response.isSuccessful && response.body() != null) {
+                    val profile = response.body()!!
 
-                        // ⭐ extraemos refugio desde el perfil
-                        _refugio.value = resource.data?.refugio
-                    }
-
-                    is Resource.Error -> {
-                        _loading.value = false
-                        _errorMessage.value = resource.message ?: "Error desconocido"
-                    }
+                    // 🔑 CORRECTO: Extraemos los campos necesarios de UserProfileResponse
+                    _simpleUser.value = SimpleRefugioUser(
+                        name = profile.nombre ?: "Refugio sin Nombre", // Usamos 'nombre' del UserProfileResponse
+                        email = profile.email
+                    )
+                } else {
+                    Log.e("RefugioDashVM", "Error cargando perfil: ${response.code()}")
+                    setFallbackUser("Error al cargar perfil")
                 }
+            } catch (e: Exception) {
+                Log.e("RefugioDashVM", "Exception cargando perfil", e)
+                setFallbackUser("Error de conexión")
             }
         }
     }
 
+    private fun setFallbackUser(nombreError: String) {
+        _simpleUser.value = SimpleRefugioUser(name = nombreError, email = "N/A")
+    }
 
-    // ------------------------------------------------------------
-    // 2. ACTUALIZAR PERFIL DEL REFUGIO
-    // ------------------------------------------------------------
-    fun updateRefugio(
-        refugioId: Int,
-        token: String,
-        request: RefugioUpdateRequest
-    ) {
+
+
+    // Función original renombrada (antes loadUser) para ser llamada desde HomeScreen
+    fun loadUser(token: String) {
+        loadUserProfile(token)
+    }
+
+    // Manteniendo el resto de las funciones:
+    fun loadAnimales(token: String) {
         viewModelScope.launch {
-            _loading.value = true
-            _errorMessage.value = null
-            _successMessage.value = null
-
-            val result = repository.updateRefugioProfile(
-                id = refugioId,
-                token = token,
-                request = request
+            _animales.value = listOf(
+                Animal("Max", "Perro", Date(System.currentTimeMillis() - 86400000)), // Ayer
+                Animal("Luna", "Gato", Date()), // Hoy
             )
+        }
+    }
 
-            _loading.value = false
-
-            when (result) {
-                is Resource.Success -> {
-                    _refugio.value = result.data
-                    _successMessage.value = "Datos actualizados correctamente."
-                }
-
-                is Resource.Error -> {
-                    _errorMessage.value = result.message
-                }
-
-                else -> Unit
-            }
+    fun loadBitacora(token: String) {
+        viewModelScope.launch {
+            _bitacora.value = listOf(
+                BitacoraItem("Max fue adoptado", Date(System.currentTimeMillis() - 3600000)),
+                BitacoraItem("Nueva mascota agregada: Luna", Date()),
+            )
         }
     }
 }
