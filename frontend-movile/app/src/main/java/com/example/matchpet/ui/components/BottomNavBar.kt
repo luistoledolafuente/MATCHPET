@@ -21,15 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
-// 🔑 ¡CORRECCIÓN/AÑADIR ESTAS IMPORTACIONES DE TU PAQUETE DE TEMA!
-// Asegúrate de que las rutas sean correctas para tu proyecto
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.ui.theme.SurfaceWhite
 
-
-/**
- * Clase de datos para definir un ítem de la barra de navegación.
- */
 data class NavItem(
     val route: String,
     val icon: ImageVector,
@@ -47,7 +41,6 @@ fun BottomNavBar(
     navController: NavController,
     navItems: List<NavItem>
 ) {
-    // Obtiene la entrada actual del Back Stack para saber en qué ruta estamos
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -67,9 +60,7 @@ fun BottomNavBar(
     }
 }
 
-/**
- * Define la apariencia de cada ítem dentro de la barra de navegación.
- */
+
 @Composable
 fun RowScope.AddItem(
     item: NavItem,
@@ -93,22 +84,16 @@ fun RowScope.AddItem(
         },
         selected = isSelected,
         onClick = {
-            // Navegación: Evita recomponer la pantalla si ya estamos en ella
             if (currentRoute != item.route) {
                 navController.navigate(item.route) {
-                    // Evita construir una pila grande de destinos en el back stack
-                    // Esto navega de forma segura en el NavHost interno
                     popUpTo(navController.graph.startDestinationId) {
                         saveState = true
                     }
-                    // Evita múltiples copias del mismo destino
                     launchSingleTop = true
-                    // Restaura el estado al cambiar de pestaña
                     restoreState = true
                 }
             }
         },
-        // Personalización de colores para que coincida con tu estilo (PrimaryTeal)
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = PrimaryTeal,
             selectedTextColor = PrimaryTeal,
@@ -121,7 +106,6 @@ fun RowScope.AddItem(
 
 
 val adoptanteNavItems = listOf(
-    // Rutas para Adoptante
     NavItem(route = "adoptante_home", icon = Icons.Default.Home, label = "Inicio"),
     NavItem(route = "adoptante_favoritos", icon = Icons.Default.Favorite, label = "Favoritos"),
     NavItem(route = "adoptante_mascotas", icon = Icons.Default.Pets, label = "Mascotas"),

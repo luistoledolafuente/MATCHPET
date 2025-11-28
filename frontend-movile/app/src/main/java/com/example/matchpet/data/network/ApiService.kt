@@ -26,5 +26,7 @@ interface ApiService {
     @GET("/api/user/profile")
     suspend fun getProfile(@Header("Authorization") token: String): Response<UserProfileResponse>
 
-
+    // Nuevo para animales
+    @GET("api/animales/mis-animales")
+    suspend fun getMisAnimales(@Header("Authorization")token:String): Response<List<AnimalResponse>>
 }

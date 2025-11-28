@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.matchpet.ui.screens.adoptante.ProfileScreen
+import com.example.matchpet.ui.screens.refugio.MisMascotasScreen
 import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen // Tu pantalla de contenido principal
 import com.example.matchpet.ui.screens.refugio.RefugioProfileScreen
 
@@ -37,7 +38,19 @@ fun RefugioDashboardNavHost(
 
         // 2. MIS MASCOTAS
         composable("refugio_mis_mascotas") {
-            Text("Pantalla: Mis Mascotas (Contenido)", modifier.fillMaxSize())
+            MisMascotasScreen(
+                token = token,
+                // Función de navegación para el FAB (Floating Action Button) de 'Mis Mascotas'
+                onNavigateToNewAnimal = { navController.navigate("nueva_mascota") }
+            )
+        }
+        // 2b. AGREGAR NUEVA MASCOTA (Ruta de destino del FAB)
+        composable("nueva_mascota") {
+            // ✅ TODO: Implementar la pantalla real para agregar una mascota
+            NuevaMascotaScreen(
+                onBack = { navController.popBackStack() },
+                token = token
+            )
         }
 
         // 3. SOLICITUDES
@@ -50,8 +63,6 @@ fun RefugioDashboardNavHost(
             Text("Pantalla: Donaciones (Contenido)", modifier.fillMaxSize())
         }
 
-
-
         // 6. PERFIL
         composable("refugio_perfil") {
             RefugioProfileScreen(
@@ -61,4 +72,11 @@ fun RefugioDashboardNavHost(
         }
 
     }
+}
+
+// 🔑 Placeholder necesario para que compile la ruta 'nueva_mascota'
+@Composable
+fun NuevaMascotaScreen(onBack: () -> Unit, token: String) {
+    Text("Pantalla: Formulario para Nueva Mascota. Token: $token", )
+    // Puedes llamar a onBack() si necesitas un botón de regreso
 }

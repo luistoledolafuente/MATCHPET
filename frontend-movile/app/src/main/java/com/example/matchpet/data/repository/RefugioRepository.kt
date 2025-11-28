@@ -8,18 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 // -------------------------------------------------------------
-// Resource<T> - Manejo estándar de Estados
-// -------------------------------------------------------------
-sealed class Resource<T>(
-    val data: T? = null,
-    val message: String? = null
-) {
-    class Success<T>(data: T) : Resource<T>(data)
-    class Error<T>(message: String, data: T? = null) : Resource<T>(data, message)
-    class Loading<T>(data: T? = null) : Resource<T>(data)
-}
-
-// -------------------------------------------------------------
 // REPOSITORIO EXCLUSIVO PARA REFUGIO
 // -------------------------------------------------------------
 class RefugioRepository(
@@ -28,6 +16,7 @@ class RefugioRepository(
 
     // 1. Obtener perfil del usuario (que incluye los datos del Refugio)
     fun getProfile(token: String): Flow<Resource<UserProfileResponse>> = flow {
+        // La clase Resource se importa automáticamente del mismo paquete (data.repository)
         emit(Resource.Loading())
 
         try {

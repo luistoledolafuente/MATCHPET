@@ -16,7 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.ui.theme.SurfaceWhite
-import com.example.matchpet.viewmodel.RefugioDashboardViewModel
+import com.example.matchpet.viewmodel.ProfileViewModel // ✅ CORRECCIÓN: Usamos el nombre de clase correcto
 
 @Composable
 fun RefugioDrawerContent(
@@ -24,7 +24,8 @@ fun RefugioDrawerContent(
     mainNavController: NavController,
     closeDrawer: () -> Unit,
     token: String,
-    viewModel: RefugioDashboardViewModel = viewModel()
+    // ✅ CORRECCIÓN: Usamos el nombre de clase correcto
+    viewModel: ProfileViewModel = viewModel()
 ) {
     // 1. 🔑 Observamos el StateFlow simple para nombre y email
     val simpleUser by viewModel.simpleUser.collectAsState()
