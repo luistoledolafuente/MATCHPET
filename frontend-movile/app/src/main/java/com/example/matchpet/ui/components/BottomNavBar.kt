@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.ui.theme.SurfaceWhite
 
@@ -86,11 +86,11 @@ fun RowScope.AddItem(
         onClick = {
             if (currentRoute != item.route) {
                 navController.navigate(item.route) {
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = false
                     }
                     launchSingleTop = true
-                    restoreState = true
+                    restoreState = false
                 }
             }
         },

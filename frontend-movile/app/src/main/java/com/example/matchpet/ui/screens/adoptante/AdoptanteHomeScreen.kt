@@ -125,7 +125,7 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(recomendaciones) { MascotaCard(it) }
+                items(recomendaciones) { MascotaCard(it) { navController.navigate("adoptante_mascotas") } }
             }
         }
 
@@ -136,7 +136,7 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(nuevasMascotas) { MascotaCard(it) }
+                items(nuevasMascotas) { MascotaCard(it) { navController.navigate("adoptante_mascotas") } }
             }
         }
 
@@ -173,7 +173,7 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MascotaCard(item: MascotaCardData) {
+fun MascotaCard(item: MascotaCardData, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFEDEBFF)),
@@ -192,7 +192,7 @@ fun MascotaCard(item: MascotaCardData) {
             Text(item.refugio, fontSize = 11.sp, color = Color(0xFF777777))
             Spacer(Modifier.height(10.dp))
             Button(
-                onClick = {},
+                onClick = onClick,
                 modifier = Modifier.height(34.dp).fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9BD8C0))

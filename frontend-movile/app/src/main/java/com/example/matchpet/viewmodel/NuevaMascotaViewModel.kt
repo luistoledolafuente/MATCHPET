@@ -87,6 +87,26 @@ class NuevaMascotaViewModel(
             tamanos = listOf(LookupItem(1, "Pequeño"), LookupItem(2, "Mediano"), LookupItem(3, "Grande"))
             nivelesEnergia = listOf(LookupItem(1, "Bajo"), LookupItem(2, "Medio"), LookupItem(3, "Alto"))
             estadosAdopcion = listOf(LookupItem(1, "Disponible"), LookupItem(2, "Reservado"), LookupItem(3, "Adoptado"))
+
+            // 🔑 DATOS DE PRUEBA AGREGADOS PARA SOLUCIONAR EL REPORTE DEL USUARIO
+            especies = listOf(LookupItem(1, "Perro"), LookupItem(2, "Gato"), LookupItem(3, "Otro"))
+            razas = listOf(
+                LookupItem(1, "Mestizo"),
+                LookupItem(2, "Labrador"),
+                LookupItem(3, "Golden Retriever"),
+                LookupItem(4, "Pastor Alemán"),
+                LookupItem(5, "Siames"),
+                LookupItem(6, "Persa"),
+                LookupItem(7, "Bulldog")
+            )
+            temperamentosList = listOf(
+                LookupItem(1, "Juguetón"),
+                LookupItem(2, "Tímido"),
+                LookupItem(3, "Cariñoso"),
+                LookupItem(4, "Tranquilo"),
+                LookupItem(5, "Protector"),
+                LookupItem(6, "Energético")
+            )
         }
 
         // Inicializar con valores por defecto
