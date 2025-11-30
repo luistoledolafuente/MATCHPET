@@ -71,12 +71,29 @@ interface ApiService {
     @POST("/api/animales/upload")
     suspend fun uploadImage(@Part file: MultipartBody.Part, @Header("Authorization") token: String): Response<ImageUploadResponse>
 
-    // --------------- SOLICITUDES ------------------------------------
+
+
+    // --------------- SOLICITUDES ADOPTANTE ------------------------------------
     @POST("/api/solicitudes")
     suspend fun createSolicitud(
         @Header("Authorization") token: String,
         @Body request: SolicitudRequest
     ): Response<Void>
+
+    // --------------- END POINTS DE SOLICITUDES ------------------------------------
+
+    @GET("/api/solicitudes/recibidas")
+    suspend fun getSolicitudesRecibidas(
+        @Header("Authorization") token: String
+    ): Response<List<SolicitudResponse>>
+
+    @PUT("/api/solicitudes/{id}")
+    suspend fun actualizarEstadoSolicitud(
+        @Header("Authorization") token: String,
+        @Path("id") solicitudId: Int,
+        @Body request: SolicitudUpdateRequest
+    ): Response<SolicitudResponse>
+
 
     // --------------- LOOKUPS (CATÁLOGOS) ------------------------------------
     @GET("/api/lookups/generos")

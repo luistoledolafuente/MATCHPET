@@ -80,8 +80,3 @@ data class AnimalUpdateRequest(
     @SerializedName("fotoPrincipalIndex")
     val fotoPrincipalIndex: Int? = null
 )
-
-data class LookupItem(
-    val id: Int,
-    val nombre: String
-)

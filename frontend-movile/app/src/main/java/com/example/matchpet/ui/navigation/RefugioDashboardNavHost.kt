@@ -13,6 +13,7 @@ import com.example.matchpet.ui.screens.refugio.MisMascotasScreen
 import com.example.matchpet.ui.screens.refugio.NuevaMascotaScreen
 import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen // Tu pantalla de contenido principal
 import com.example.matchpet.ui.screens.refugio.RefugioProfileScreen
+import com.example.matchpet.ui.screens.refugio.SolicitudesRecibidasScreen
 
 @Composable
 fun RefugioDashboardNavHost(
@@ -68,7 +69,8 @@ fun RefugioDashboardNavHost(
 
         // 3. SOLICITUDES
         composable("refugio_solicitudes") {
-            Text("Pantalla: Solicitudes de Adopción (Contenido)", modifier.fillMaxSize())
+            // 🔑 REEMPLAZO DEL PLACEHOLDER por la pantalla real
+            SolicitudesRecibidasScreen(token = token)
         }
 
         // 4. DONACIONES
