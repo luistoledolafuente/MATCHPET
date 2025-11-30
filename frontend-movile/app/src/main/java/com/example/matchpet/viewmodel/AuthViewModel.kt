@@ -7,6 +7,10 @@ import com.example.matchpet.utils.Injection // Importamos Injection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import android.util.Log
+import com.example.matchpet.data.model.adoptante.AdopterRegisterRequest
+import com.example.matchpet.data.model.auth.LoginRequest
+import com.example.matchpet.data.model.auth.UserRole
+import com.example.matchpet.data.model.refugio.ShelterRegisterRequest
 
 // Mejorar la gestión de estado con una clase sellada
 sealed class AuthState {

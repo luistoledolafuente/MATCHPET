@@ -6,7 +6,7 @@ import com.example.matchpet.data.repository.AnimalRepository
 import com.example.matchpet.data.repository.RefugioRepository
 import com.example.matchpet.viewmodel.MisMascotasViewModel
 import com.example.matchpet.viewmodel.NuevaMascotaViewModel
-import com.example.matchpet.viewmodel.RefugioViewModelFactory
+import com.example.matchpet.viewmodel.refugio.RefugioViewModelFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

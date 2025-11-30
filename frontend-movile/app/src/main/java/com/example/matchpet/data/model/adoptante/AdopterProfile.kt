@@ -1,4 +1,4 @@
-package com.example.matchpet.data.model
+package com.example.matchpet.data.model.adoptante
 
 data class AdopterProfile(
     val usuarioId: Int,

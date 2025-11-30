@@ -1,8 +1,7 @@
-package com.example.matchpet.viewmodel
+package com.example.matchpet.viewmodel.adoptante
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.matchpet.data.model.UserProfileResponse
 import com.example.matchpet.data.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

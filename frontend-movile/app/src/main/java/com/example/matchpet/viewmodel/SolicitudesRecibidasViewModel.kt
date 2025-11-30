@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.matchpet.data.model.LookupItem
+import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.data.model.SolicitudResponse
 import com.example.matchpet.data.repository.Resource
 import com.example.matchpet.data.repository.SolicitudRepository

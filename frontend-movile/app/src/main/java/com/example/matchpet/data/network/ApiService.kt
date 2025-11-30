@@ -1,6 +1,23 @@
 package com.example.matchpet.data.network
 
 import com.example.matchpet.data.model.*
+import com.example.matchpet.data.model.adoptante.AdopterRegisterRequest
+import com.example.matchpet.data.model.adoptante.UpdateAdoptanteRequest
+import com.example.matchpet.data.model.animal.Animal
+import com.example.matchpet.data.model.animal.AnimalCreationRequest
+import com.example.matchpet.data.model.animal.AnimalResponse
+import com.example.matchpet.data.model.animal.AnimalUpdateRequest
+import com.example.matchpet.data.model.animal.EspecieItem
+import com.example.matchpet.data.model.animal.LookupItem
+import com.example.matchpet.data.model.animal.PageResponse
+import com.example.matchpet.data.model.animal.RazaItem
+import com.example.matchpet.data.model.animal.TemperamentoItem
+import com.example.matchpet.data.model.auth.AuthResponse
+import com.example.matchpet.data.model.auth.LoginRequest
+import com.example.matchpet.data.model.auth.UserProfileResponse
+import com.example.matchpet.data.model.refugio.RefugioProfileResponse
+import com.example.matchpet.data.model.refugio.RefugioUpdateRequest
+import com.example.matchpet.data.model.refugio.ShelterRegisterRequest
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*

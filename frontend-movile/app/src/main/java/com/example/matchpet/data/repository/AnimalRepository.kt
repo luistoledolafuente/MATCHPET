@@ -4,6 +4,10 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import com.example.matchpet.data.model.*
+import com.example.matchpet.data.model.animal.AnimalCreationRequest
+import com.example.matchpet.data.model.animal.AnimalResponse
+import com.example.matchpet.data.model.animal.AnimalUpdateRequest
+import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.data.network.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

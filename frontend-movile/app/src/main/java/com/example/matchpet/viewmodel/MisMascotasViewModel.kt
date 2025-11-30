@@ -3,7 +3,7 @@ package com.example.matchpet.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.matchpet.data.model.AnimalResponse
+import com.example.matchpet.data.model.animal.AnimalResponse
 import com.example.matchpet.data.repository.AnimalRepository
 import com.example.matchpet.data.repository.Resource
 import kotlinx.coroutines.flow.MutableStateFlow

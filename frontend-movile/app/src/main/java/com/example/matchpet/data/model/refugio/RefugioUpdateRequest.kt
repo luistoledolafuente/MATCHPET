@@ -1,4 +1,4 @@
-package com.example.matchpet.data.model
+package com.example.matchpet.data.model.refugio
 
 data class RefugioUpdateRequest(
     val nombre: String,

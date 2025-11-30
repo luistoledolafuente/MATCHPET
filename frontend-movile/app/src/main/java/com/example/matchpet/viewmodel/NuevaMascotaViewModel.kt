@@ -7,9 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.matchpet.data.model.AnimalCreationRequest
-import com.example.matchpet.data.model.AnimalUpdateRequest
-import com.example.matchpet.data.model.LookupItem
+import com.example.matchpet.data.model.animal.AnimalCreationRequest
+import com.example.matchpet.data.model.animal.AnimalUpdateRequest
+import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.data.repository.AnimalRepository
 import com.example.matchpet.data.repository.Resource
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,8 +1,8 @@
 package com.example.matchpet.data.repository
 
-import com.example.matchpet.data.model.UserProfileResponse
-import com.example.matchpet.data.model.RefugioProfileResponse
-import com.example.matchpet.data.model.RefugioUpdateRequest
+import com.example.matchpet.data.model.auth.UserProfileResponse
+import com.example.matchpet.data.model.refugio.RefugioProfileResponse
+import com.example.matchpet.data.model.refugio.RefugioUpdateRequest
 import com.example.matchpet.data.network.ApiService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

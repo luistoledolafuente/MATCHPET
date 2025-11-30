@@ -1,5 +1,6 @@
-package com.example.matchpet.data.model
+package com.example.matchpet.data.model.auth
 
+import com.example.matchpet.data.model.refugio.RefugioProfileResponse
 import com.google.gson.annotations.SerializedName
 
 data class UserProfileResponse(

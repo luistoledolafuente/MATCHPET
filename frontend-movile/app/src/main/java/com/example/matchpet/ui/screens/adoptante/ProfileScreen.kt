@@ -23,7 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.matchpet.data.model.UserProfileResponse
+import com.example.matchpet.data.model.auth.UserProfileResponse
+import com.example.matchpet.data.model.adoptante.UpdateAdoptanteRequest
 import com.example.matchpet.data.network.RetrofitClient
 import com.example.matchpet.ui.theme.WebBlueLight
 import com.example.matchpet.ui.theme.WebCream
@@ -195,7 +196,7 @@ fun ProfileScreen(
                             onClick = {
                                 if (profile == null) return@Button
                                 
-                                val request = com.example.matchpet.data.model.UpdateAdoptanteRequest(
+                                val request = UpdateAdoptanteRequest(
                                     nombre = nombre,
                                     apellidoPaterno = apellidoPaterno,
                                     apellidoMaterno = apellidoMaterno,

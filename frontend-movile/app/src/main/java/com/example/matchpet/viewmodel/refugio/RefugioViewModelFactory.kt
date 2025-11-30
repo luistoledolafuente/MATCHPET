@@ -1,4 +1,4 @@
-package com.example.matchpet.viewmodel
+package com.example.matchpet.viewmodel.refugio
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

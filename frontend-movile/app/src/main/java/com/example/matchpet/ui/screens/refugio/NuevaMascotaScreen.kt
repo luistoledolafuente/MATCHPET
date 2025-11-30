@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.matchpet.data.model.LookupItem
+import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.AnimalFormState
 import com.example.matchpet.viewmodel.NuevaMascotaViewModel

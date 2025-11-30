@@ -1,4 +1,4 @@
-package com.example.matchpet.data.model
+package com.example.matchpet.data.model.auth
 
 data class User(
     val usuarioId: Int,

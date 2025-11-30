@@ -1,4 +1,4 @@
-package com.example.matchpet.data.model
+package com.example.matchpet.data.model.animal
 
 data class MascotaCardData(
     val nombre: String,
@@ -6,4 +6,3 @@ data class MascotaCardData(
     val edad: String,
     val refugio: String
 )
-

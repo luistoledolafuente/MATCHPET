@@ -1,10 +1,10 @@
-package com.example.matchpet.viewmodel
+package com.example.matchpet.viewmodel.refugio
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.matchpet.data.model.RefugioProfileResponse
-import com.example.matchpet.data.model.RefugioUpdateRequest
-import com.example.matchpet.data.model.UserProfileResponse
+import com.example.matchpet.data.model.auth.UserProfileResponse
+import com.example.matchpet.data.model.refugio.RefugioProfileResponse
+import com.example.matchpet.data.model.refugio.RefugioUpdateRequest
 import com.example.matchpet.data.repository.RefugioRepository
 import com.example.matchpet.data.repository.Resource
 import kotlinx.coroutines.flow.MutableStateFlow

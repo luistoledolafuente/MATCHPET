@@ -1,4 +1,4 @@
-package com.example.matchpet.data.model
+package com.example.matchpet.data.model.auth
 
 enum class UserRole(val displayName: String) {
     ADOPTER("Adoptante"),

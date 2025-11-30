@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.example.matchpet.data.model.LookupItem
+import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.data.model.SolicitudResponse
 import com.example.matchpet.data.network.RetrofitClient
 import com.example.matchpet.data.repository.SolicitudRepository

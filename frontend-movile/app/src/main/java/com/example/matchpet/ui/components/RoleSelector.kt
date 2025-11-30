@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.matchpet.data.model.UserRole
+import com.example.matchpet.data.model.auth.UserRole
 import com.example.matchpet.ui.theme.BorderGray
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.ui.theme.TextSecondary

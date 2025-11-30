@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.example.matchpet.data.model.AnimalResponse
+import com.example.matchpet.data.model.animal.AnimalResponse
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.viewmodel.DeleteAnimalState // 🔑 Importado
 import com.example.matchpet.viewmodel.MisMascotasViewModel

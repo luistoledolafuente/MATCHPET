@@ -1,4 +1,4 @@
-package com.example.matchpet.data.model
+package com.example.matchpet.data.model.animal
 
 data class Animal(
     val animal_id: Int,

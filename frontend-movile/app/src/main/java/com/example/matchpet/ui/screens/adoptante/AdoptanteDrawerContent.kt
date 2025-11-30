@@ -16,7 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matchpet.ui.theme.PrimaryTeal
 import com.example.matchpet.ui.theme.SurfaceWhite
-import com.example.matchpet.viewmodel.AdoptanteDashboardViewModel
+import com.example.matchpet.viewmodel.adoptante.AdoptanteDashboardViewModel
 
 @Composable
 fun AdoptanteDrawerContent(

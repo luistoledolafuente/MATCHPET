@@ -2,7 +2,7 @@ package com.example.matchpet.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.matchpet.data.model.UserProfileResponse // 🔑 Importar el modelo REAL de la respuesta
+import com.example.matchpet.data.model.auth.UserProfileResponse // 🔑 Importar el modelo REAL de la respuesta
 import com.example.matchpet.data.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -19,12 +19,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.matchpet.data.model.RefugioUpdateRequest
+import com.example.matchpet.data.model.refugio.RefugioUpdateRequest
 import com.example.matchpet.data.network.RetrofitClient
 import com.example.matchpet.data.repository.RefugioRepository
 import com.example.matchpet.ui.theme.PrimaryTeal
-import com.example.matchpet.viewmodel.RefugioViewModel
-import com.example.matchpet.viewmodel.RefugioViewModelFactory
+import com.example.matchpet.viewmodel.refugio.RefugioViewModel
+import com.example.matchpet.viewmodel.refugio.RefugioViewModelFactory
 
 @Composable
 fun RefugioProfileScreen(

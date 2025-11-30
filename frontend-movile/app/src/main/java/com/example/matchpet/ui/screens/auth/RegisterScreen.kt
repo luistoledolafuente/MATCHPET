@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.matchpet.data.model.UserRole
+import com.example.matchpet.data.model.auth.UserRole
 import com.example.matchpet.ui.components.PrimaryButton
 import com.example.matchpet.ui.components.RoleSelector
 import com.example.matchpet.ui.theme.*
