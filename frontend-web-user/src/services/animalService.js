@@ -104,6 +104,21 @@ export const uploadPhoto = async (file, token) => {
     return response.data.url;
 };
 
+// ---------- NUEVO: Obtener Recomendaciones (Match IA) ----------
+export const getRecomendaciones = async (token) => {
+  if (!token && !axios.defaults.headers.common?.Authorization) 
+    throw new Error("Token de autenticación de Adoptante no proporcionado");
+    
+  const headers = buildAuthHeader(token);
+  
+  // Llama a GET /api/animales/recomendados
+  const response = await axios.get(`${API_URL}/recomendados`, {
+    headers
+  });
+  
+  return response.data; // Devuelve List<AnimalDTO>
+};
+
 // Obtener últimos eventos de bitácora
 export const getBitacora = async (token) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -119,5 +134,6 @@ export default {
   deleteAnimal,
   getBitacora,
   getAnimalesPaginados,
-  uploadPhoto
+  uploadPhoto,
+  getRecomendaciones
 };
