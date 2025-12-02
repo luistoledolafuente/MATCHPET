@@ -1,8 +1,8 @@
 package com.example.matchpet.ui.screens.refugio
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-// 🔑 Importamos el modificador de padding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -12,8 +12,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.navigation
 import androidx.navigation.compose.rememberNavController
+import com.example.matchpet.data.repository.AnimalRepository // 🔑 Nueva importación
+import com.example.matchpet.viewmodel.refugio.RefugioViewModel // 🔑 Nueva importación
 import com.example.matchpet.ui.components.BottomNavBar
 import com.example.matchpet.ui.components.refugioNavItems
 import com.example.matchpet.ui.navigation.RefugioDashboardNavHost
@@ -25,7 +26,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun RefugioDashboardScreen(
     mainNavController: NavController,
-    token: String
+    token: String,
+    // 🔑 AÑADIDOS: Debes recibir las dependencias que el NavHost necesita
+    animalRepository: AnimalRepository,
+    refugioViewModel: RefugioViewModel
 ) {
     val dashboardNavController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -84,15 +88,17 @@ fun RefugioDashboardScreen(
                 }
             }
         ) { paddingValues ->
-            // ✅ CORRECCIÓN APLICADA AQUÍ: Usamos Modifier.padding(paddingValues)
+            // ✅ CORRECCIÓN FINAL: Pasamos los dos parámetros faltantes
             RefugioDashboardNavHost(
                 navController = dashboardNavController,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues) // ESTO ASEGURA QUE EL CONTENIDO NO SE ESCONDA BAJO LAS BARRAS
+                    .padding(paddingValues)
                     .background(BackgroundLight),
                 token = token,
-                paddingValues = paddingValues
+                paddingValues = paddingValues,
+                animalRepository = animalRepository, // 🔑 ¡Parámetro añadido!
+                refugioViewModel = refugioViewModel // 🔑 ¡Parámetro añadido!
             )
         }
     }
