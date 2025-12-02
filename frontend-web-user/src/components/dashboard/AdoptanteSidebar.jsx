@@ -1,7 +1,8 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { Home, Heart, Gift, User, LogOut } from "lucide-react";
+// Importar el nuevo ícono ZAP para la IA
+import { Home, Heart, Gift, User, LogOut, Zap, ListOrdered } from "lucide-react"; 
 
 export default function AdoptanteSidebar() {
   const { user, logout } = useAuth();
@@ -14,11 +15,20 @@ export default function AdoptanteSidebar() {
 
   const links = [
     { to: "/dashboard/adoptante", icon: Home, label: "Home" },
+    
+    // NUEVO ENLACE: Recomendaciones con IA
+    { 
+      to: "/dashboard/adoptante/recomendaciones", 
+      icon: Zap, 
+      label: "Match IA",
+      style: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" // Estilo para destacarlo
+    },
+
     { to: "/dashboard/adoptante/mascotas", icon: Gift, label: "Mascotas" },
     { to: "/dashboard/adoptante/favoritos", icon: Heart, label: "Favoritos" },
     { to: "/dashboard/adoptante/donaciones", icon: Gift, label: "Donaciones" },
-    { to: "/dashboard/adoptante/perfil", icon: User, label: "Mi Perfil" },
-    {to: "/dashboard/adoptante/mis-solicitudes", icon: Heart, label: "Mis Solicitudes"},
+    {to: "/dashboard/adoptante/mis-solicitudes", icon: ListOrdered, label: "Mis Solicitudes"},
+    // Usé ListOrdered para Mis Solicitudes, Heart ya estaba asignado a Favoritos
   ];
 
   return (
@@ -34,14 +44,16 @@ export default function AdoptanteSidebar() {
       </div>
 
       <nav className="flex-1 px-6 py-6 space-y-3 overflow-y-auto" aria-label="Menú principal">
-        {links.map(({ to, icon: Icon, label }) => (
+        {links.map(({ to, icon: Icon, label, style }) => (
           <NavLink
             key={to}
             to={to}
             end={to === "/dashboard/adoptante"} // Para que solo Home coincida exactamente con esa ruta
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg font-semibold transition-colors duration-200
-        ${isActive ? "bg-[#d0f0fd] text-[#407581]" : "text-[#407581] hover:bg-[#e0f7ff]"}` // Solo el activo tiene bg
+        ${isActive 
+          ? `bg-[#d0f0fd] text-[#407581] ${style}` // Estilo base si está activo
+          : `${style ? style : 'text-[#407581] hover:bg-[#e0f7ff]'}`}` // Estilo normal
             }
           >
             <Icon className="w-5 h-5 mr-3" />
