@@ -1,5 +1,6 @@
 package com.matchpet.backend_user.controller;
 
+import com.matchpet.backend_user.dto.animal.AnimalDTO;
 import com.matchpet.backend_user.dto.auth.AuthResponse;
 import com.matchpet.backend_user.dto.adoptante.RegisterAdoptanteRequest;
 import com.matchpet.backend_user.dto.adoptante.UpdateAdoptanteRequest;
@@ -16,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/adoptantes") // <-- ¡Nueva ruta base!
@@ -63,5 +67,48 @@ public class AdoptanteController {
         UserProfileResponse updatedProfile = adoptanteService.updateAdoptante(id, request);
         return ResponseEntity.ok(updatedProfile);
     }
+
+    @Operation(
+            summary = "Adoptante: Añadir un animal a favoritos",
+            security = @SecurityRequirement(name = "bearerAuth") // <--- ¡AGREGA ESTO!
+    )
+    @PostMapping("/favoritos/{animalId}")
+    public ResponseEntity<Map<String, String>> addFavorite(
+            @PathVariable Integer animalId,
+            @AuthenticationPrincipal UserModel userDetails
+    ) {
+        String userEmail = userDetails.getEmail();
+        adoptanteService.addFavoriteAnimal(userEmail, animalId);
+        return ResponseEntity.ok(Map.of("message", "Animal añadido a favoritos."));
+    }
+
+    @Operation(
+            summary = "Adoptante: Eliminar un animal de favoritos",
+            security = @SecurityRequirement(name = "bearerAuth") // <--- ¡AGREGA ESTO!
+    )
+    @DeleteMapping("/favoritos/{animalId}")
+    public ResponseEntity<Map<String, String>> removeFavorite(
+            @PathVariable Integer animalId,
+            @AuthenticationPrincipal UserModel userDetails
+    ) {
+        String userEmail = userDetails.getEmail();
+        adoptanteService.removeFavoriteAnimal(userEmail, animalId);
+        return ResponseEntity.ok(Map.of("message", "Animal eliminado de favoritos."));
+    }
+
+    @Operation(
+            summary = "Adoptante: Obtener la lista de animales favoritos",
+            security = @SecurityRequirement(name = "bearerAuth") // <--- ¡AGREGA ESTO!
+    )
+    @GetMapping("/favoritos")
+    public ResponseEntity<List<AnimalDTO>> getFavorites(@AuthenticationPrincipal UserModel userDetails) {
+        String userEmail = userDetails.getEmail();
+        List<AnimalDTO> favoritos = adoptanteService.getFavoriteAnimals(userEmail);
+        return ResponseEntity.ok(favoritos);
+    }
+
+
+
+
 
 }

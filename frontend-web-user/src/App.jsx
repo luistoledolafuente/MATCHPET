@@ -23,6 +23,7 @@ import PerfilAdoptante from "./pages/adoptante/Perfil.jsx";
 import Donaciones from "./pages/adoptante/Donaciones.jsx";
 import MisSolicitudes from "./pages/adoptante/MisSolicitudes.jsx";
 import RecomendacionesPage from "./pages/adoptante/RecomendacionesPage.jsx";
+import DetalleMascota from "./pages/adoptante/DetalleMascota.jsx";
 
 // --- Dashboards Refugio ---
 import DashboardHomeRefugio from "./pages/refugio/DashboardHome.jsx";
@@ -81,6 +82,7 @@ function DashboardRoutes() {
           <Route path="donaciones" element={<Donaciones />} />
           <Route path="mis-solicitudes" element={<MisSolicitudes />} />
           <Route path="recomendaciones" element={<RecomendacionesPage />} />
+          <Route path="mascotas/:id" element={<DetalleMascota />} />
 
         </Route>
 

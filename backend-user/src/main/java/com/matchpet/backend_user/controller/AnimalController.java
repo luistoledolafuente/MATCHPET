@@ -189,4 +189,18 @@ public class AnimalController {
         Page<AnimalDTO> animales = animalService.getAnimalesPaginados(pageable);
         return ResponseEntity.ok(animales);
     }
+
+    @Operation(
+            summary = "Obtiene el detalle de un animal por ID",
+            description = "Devuelve la información completa de un animal específico. Acceso público."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Animal encontrado"),
+            @ApiResponse(responseCode = "404", description = "Animal no encontrado")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<AnimalDTO> getAnimalById(@PathVariable Integer id) {
+        AnimalDTO animal = animalService.getAnimalById(id);
+        return ResponseEntity.ok(animal);
+    }
 }

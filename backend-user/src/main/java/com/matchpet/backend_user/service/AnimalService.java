@@ -3,6 +3,7 @@ package com.matchpet.backend_user.service;
 import com.matchpet.backend_user.dto.animal.AnimalDTO;
 import com.matchpet.backend_user.dto.animal.CreateAnimalRequest;
 import com.matchpet.backend_user.dto.animal.UpdateAnimalRequest;
+import com.matchpet.backend_user.model.Animal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -45,4 +46,8 @@ public interface AnimalService {
      * (¡AÑADIDO! Faltaba en la interfaz)
      */
     Page<AnimalDTO> getAnimalesPaginados(Pageable pageable);
+    AnimalDTO convertAnimalToDTO(Animal animal);
+
+
+
 }

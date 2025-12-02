@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.HashSet;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Set;
@@ -76,6 +77,14 @@ public class UserModel implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PerfilAdoptante adoptante;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "Adoptante_Favoritos",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "animal_id")
+    )
+    private Set<Animal> favoritos = new HashSet<>();
 
 
     // --- MÉTODOS CUSTOM PARA RETROCOMPATIBILIDAD ---
