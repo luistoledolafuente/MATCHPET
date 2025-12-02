@@ -1,17 +1,23 @@
 package com.matchpet.backend_user.service.Imp;
 
+import com.matchpet.backend_user.dto.animal.AnimalDTO;
 import com.matchpet.backend_user.dto.auth.AuthResponse;
 import com.matchpet.backend_user.dto.adoptante.RegisterAdoptanteRequest;
 import com.matchpet.backend_user.dto.adoptante.UpdateAdoptanteRequest;
 import com.matchpet.backend_user.dto.user.UserProfileResponse;
+import com.matchpet.backend_user.model.Animal;
 import com.matchpet.backend_user.model.PerfilAdoptante;
 import com.matchpet.backend_user.model.RolModel;
 import com.matchpet.backend_user.model.UserModel;
+import com.matchpet.backend_user.repository.AnimalRepository;
 import com.matchpet.backend_user.repository.PerfilAdoptanteRepository;
 import com.matchpet.backend_user.repository.RolRepository;
 import com.matchpet.backend_user.repository.UserRepository;
 import com.matchpet.backend_user.service.AdoptanteService;
+import com.matchpet.backend_user.service.AnimalService;
 import com.matchpet.backend_user.service.JwtService;
+import com.matchpet.backend_user.dto.animal.AnimalDTO;
+import com.matchpet.backend_user.service.AnimalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +38,8 @@ public class AdoptanteServiceImpl implements AdoptanteService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PerfilAdoptanteRepository adoptanteRepository;
+    private final AnimalRepository animalRepository;
+    private final AnimalService animalService;
 
     @Override
     @Transactional
@@ -127,4 +136,55 @@ public class AdoptanteServiceImpl implements AdoptanteService {
                 .pais(updatedPerfil.getPais())
                 .build();
     }
+
+    @Override
+    @Transactional
+    public void addFavoriteAnimal(String userEmail, Integer animalId) {
+        UserModel user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario Adoptante no encontrado."));
+
+        Animal animal = animalRepository.findById(animalId)
+                .orElseThrow(() -> new RuntimeException("Animal no encontrado."));
+
+        Set<Animal> favoritos = user.getFavoritos();
+        if (favoritos.contains(animal)) {
+            // Ya está en favoritos, no hacemos nada o lanzamos un mensaje
+            throw new RuntimeException("El animal ya está en tu lista de favoritos.");
+        }
+
+        favoritos.add(animal);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void removeFavoriteAnimal(String userEmail, Integer animalId) {
+        UserModel user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario Adoptante no encontrado."));
+
+        Animal animal = animalRepository.findById(animalId)
+                .orElseThrow(() -> new RuntimeException("Animal no encontrado."));
+
+        Set<Animal> favoritos = user.getFavoritos();
+        if (!favoritos.contains(animal)) {
+
+            throw new RuntimeException("El animal no se encuentra en tu lista de favoritos.");
+        }
+
+        favoritos.remove(animal);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AnimalDTO> getFavoriteAnimals(String userEmail) {
+        UserModel user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario Adoptante no encontrado."));
+
+
+        return user.getFavoritos().stream()
+                .map(animalService::convertAnimalToDTO) // Usamos el mapper de AnimalService
+                .collect(Collectors.toList());
+    }
+
 }

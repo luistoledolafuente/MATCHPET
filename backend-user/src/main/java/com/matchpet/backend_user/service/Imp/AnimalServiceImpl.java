@@ -273,4 +273,34 @@ public class AnimalServiceImpl implements AnimalService {
                         .collect(Collectors.toList()))
                 .build();
     }
+
+    @Override
+    public AnimalDTO convertAnimalToDTO(Animal animal) {
+        return AnimalDTO.builder()
+                .animal_id(animal.getId())
+                .nombre(animal.getNombre())
+                .fechaNacimientoAprox(animal.getFechaNacimientoAprox())
+                .descripcionPersonalidad(animal.getDescripcionPersonalidad())
+                .compatibleNiños(animal.isCompatibleNiños())
+                .compatibleOtrasMascotas(animal.isCompatibleOtrasMascotas())
+                .estaVacunado(animal.isEstaVacunado())
+                .estaEsterilizado(animal.isEstaEsterilizado())
+                .historialMedico(animal.getHistorialMedico())
+                .fechaIngresoRefugio(animal.getFechaIngresoRefugio())
+                .raza(animal.getRaza().getNombreRaza())
+                .especie(animal.getRaza().getEspecie().getNombreEspecie())
+                .genero(animal.getGenero().getNombre())
+                .tamano(animal.getTamano().getNombre())
+                .nivelEnergia(animal.getNivelEnergia().getNombre())
+                .estadoAdopcion(animal.getEstadoAdopcion().getNombre())
+                .refugioNombre(animal.getRefugio().getNombre())
+                .refugioCiudad(animal.getRefugio().getCiudad())
+                .temperamentos(animal.getTemperamentos().stream()
+                        .map(temperamento -> temperamento.getNombreTemperamento())
+                        .collect(Collectors.toList()))
+                .fotos(animal.getFotos().stream()
+                        .map(foto -> foto.getUrlFoto())
+                        .collect(Collectors.toList()))
+                .build();
+    }
 }

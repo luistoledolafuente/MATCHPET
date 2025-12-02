@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 @Component
@@ -30,8 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
+        // Obtiene el encabezado Authorization
         final String authHeader = request.getHeader("Authorization");
 
+        // Si el encabezado no tiene un token "Bearer", pasamos al siguiente filtro
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -39,31 +42,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String jwt;
         final String userEmail;
-        
+
         try {
-            jwt = authHeader.substring(7);
+            // Extraer el token JWT y el nombre del usuario
+            jwt = authHeader.substring(7);  // Eliminar el prefijo "Bearer "
             userEmail = jwtService.extractUsername(jwt);
 
+            // Si el usuario no está autenticado aún y el token es válido, proceder con la autenticación
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
+                    // Crear el token de autenticación y establecerlo en el contexto de seguridad
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
                             userDetails.getAuthorities()
                     );
+
                     authToken.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
+
+                    // Establecer la autenticación en el SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // Maneja fallas de JWT (expiración, firma inválida) sin romper la cadena.
-            System.err.println("Error de JWT: " + e.getMessage());
+            // Manejo de excepciones de JWT (expiración, firma inválida)
+            logger.error("Error de JWT: ", e);
         }
 
+        // Continuar con el siguiente filtro
         filterChain.doFilter(request, response);
     }
 }

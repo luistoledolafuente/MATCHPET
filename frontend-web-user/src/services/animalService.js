@@ -3,6 +3,7 @@
 import axios from "axios";
 
 const API_URL = "http://127.0.0.1:8081/api/animales";
+const ADOPTANTE_URL = "http://127.0.0.1:8081/api/adoptantes";
 
 
 const buildAuthHeader = (token) => {
@@ -119,6 +120,42 @@ export const getRecomendaciones = async (token) => {
   return response.data; // Devuelve List<AnimalDTO>
 };
 
+// ---------- FAVORITOS (NUEVO) ----------
+export const addFavorite = async (animalId, token) => {
+  if (!token) throw new Error("Token no proporcionado");
+  // POST /api/adoptantes/favoritos/{id}
+  const response = await axios.post(`${ADOPTANTE_URL}/favoritos/${animalId}`, {}, {
+    headers: buildAuthHeader(token)
+  });
+  return response.data;
+};
+
+export const removeFavorite = async (animalId, token) => {
+  if (!token) throw new Error("Token no proporcionado");
+  // DELETE /api/adoptantes/favoritos/{id}
+  const response = await axios.delete(`${ADOPTANTE_URL}/favoritos/${animalId}`, {
+    headers: buildAuthHeader(token)
+  });
+  return response.data;
+};
+
+export const getFavorites = async (token) => {
+  if (!token) return []; // Si no hay token, retornamos lista vacía sin error
+  // GET /api/adoptantes/favoritos
+  const response = await axios.get(`${ADOPTANTE_URL}/favoritos`, {
+    headers: buildAuthHeader(token)
+  });
+  return response.data; // Devuelve List<AnimalDTO>
+};
+
+// --- NUEVO: Obtener detalle de una mascota ---
+export const getAnimalById = async (id) => {
+  // GET /api/animales/{id}
+  // No requiere token obligatoriamente si es público, pero si lo tienes, mejor enviarlo.
+  const response = await axios.get(`${API_URL}/${id}`);
+  return response.data;
+};
+
 // Obtener últimos eventos de bitácora
 export const getBitacora = async (token) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -135,5 +172,9 @@ export default {
   getBitacora,
   getAnimalesPaginados,
   uploadPhoto,
-  getRecomendaciones
+  getRecomendaciones,
+  addFavorite,
+  removeFavorite,
+  getFavorites,
+  getAnimalById
 };
