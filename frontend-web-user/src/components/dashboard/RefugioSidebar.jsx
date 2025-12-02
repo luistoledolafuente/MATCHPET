@@ -18,7 +18,6 @@ export default function RefugioSidebar() {
     { to: "/dashboard/refugio/solicitudes", icon: FileText, label: "Solicitudes" },
     { to: "/dashboard/refugio/donaciones", icon: Gift, label: "Donaciones" },
     { to: "/dashboard/refugio/perfil", icon: User, label: "Mi Perfil" },
-    { to: "/dashboard/refugio/historial", icon: List, label: "Historial" },
   ];
 
   return (

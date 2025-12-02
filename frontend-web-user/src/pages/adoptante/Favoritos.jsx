@@ -79,7 +79,7 @@ export default function Favoritos() {
               disponibles y guarda las que roben tu corazón.
             </p>
             <Link
-              to="/adoptante/mascotas"
+              to="/dashboard/adoptante/mascotas"
               className="inline-flex items-center px-6 py-3 bg-[#316B7A] text-white font-bold rounded-lg hover:bg-[#265a66] transition shadow-md hover:shadow-lg"
             >
               <PawPrint className="w-5 h-5 mr-2" />

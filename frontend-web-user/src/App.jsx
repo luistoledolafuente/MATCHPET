@@ -1,6 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-// Note: Elimino el useEffect sin usar, ya que no se utiliza en este componente
-// import { useEffect } from "react"; 
 
 // --- Páginas Públicas ---
 import HomePage from "./pages/HomePage.jsx";
@@ -31,7 +29,6 @@ import MisMascotas from "./pages/refugio/MisMascotas.jsx";
 import DonacionesRecibidas from "./pages/refugio/DonacionesRecibidas.jsx";
 import PerfilRefugio from "./pages/refugio/Perfil.jsx";
 import NuevaMascota from "./pages/refugio/NuevaMascota.jsx";
-import Historial from "./pages/refugio/Historial.jsx"
 
 // --- Layouts ---
 import MainLayout from "./layouts/MainLayout.jsx";
@@ -94,7 +91,6 @@ function DashboardRoutes() {
           <Route path="donaciones" element={<DonacionesRecibidas />} />
           <Route path="perfil" element={<PerfilRefugio />} />
           <Route path="solicitudes" element={<Solicitudes />} />
-          <Route path="historial" element={<Historial/>} />
         </Route>
       </Route>
     </Routes>
@@ -105,37 +101,37 @@ function DashboardRoutes() {
 // ------------------ APP PRINCIPAL ------------------
 export default function App() {
   return (
-    <Routes>
-      {/* Rutas Públicas */}
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/sobre-nosotros" element={<NosotrosPage />} />
-        <Route path="/nosotros" element={<NosotrosPage />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/ayuda" element={<Ayuda />} />
-        <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-        <Route path="/terminos-servicio" element={<TerminosServicio />} />
-        <Route path="/adoptar" element={<UnderConstructionPage />} />
-        <Route path="/donar" element={<UnderConstructionPage />} />
-        <Route path="/refugio" element={<UnderConstructionPage />} />
-      </Route>
+      <Routes>
+        {/* Rutas Públicas */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/sobre-nosotros" element={<NosotrosPage />} />
+          <Route path="/nosotros" element={<NosotrosPage />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/ayuda" element={<Ayuda />} />
+          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+          <Route path="/terminos-servicio" element={<TerminosServicio />} />
+          <Route path="/adoptar" element={<UnderConstructionPage />} />
+          <Route path="/donar" element={<UnderConstructionPage />} />
+          <Route path="/refugio" element={<UnderConstructionPage />} />
+        </Route>
 
-      {/* Autenticación */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/registro" element={<RegisterPage />} />
+        {/* Autenticación */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/registro" element={<RegisterPage />} />
 
-      {/* Dashboard */}
-      <Route path="/dashboard/*" element={<DashboardRoutes />} />
+        {/* Dashboard */}
+        <Route path="/dashboard/*" element={<DashboardRoutes />} />
 
-      {/* Catch-all */}
-      <Route
-        path="*"
-        element={
-          <MainLayout>
-            <UnderConstructionPage />
-          </MainLayout>
-        }
-      />
-    </Routes>
+        {/* Catch-all */}
+        <Route
+          path="*"
+          element={
+            <MainLayout>
+              <UnderConstructionPage />
+            </MainLayout>
+          }
+        />
+      </Routes>
   );
 }
