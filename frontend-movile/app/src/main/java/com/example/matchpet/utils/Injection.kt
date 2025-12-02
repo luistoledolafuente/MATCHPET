@@ -1,13 +1,15 @@
 package com.example.matchpet.utils
 
-import android.content.Context // 🔑 Importación necesaria
+import android.content.Context
 import com.example.matchpet.data.network.ApiService
 import com.example.matchpet.data.repository.AnimalRepository
+import com.example.matchpet.data.repository.FavoritesRepository
 import com.example.matchpet.data.repository.RefugioRepository
 import com.example.matchpet.data.repository.SolicitudRepository
 import com.example.matchpet.viewmodel.MisMascotasViewModel
 import com.example.matchpet.viewmodel.NuevaMascotaViewModel
 import com.example.matchpet.viewmodel.adoptante.AdoptanteSolicitudesViewModel
+import com.example.matchpet.viewmodel.adoptante.FavoritesViewModel
 import com.example.matchpet.viewmodel.refugio.RefugioViewModelFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -37,6 +39,11 @@ object Injection {
     // 🔑 Repositorio de Solicitudes
     val solicitudRepository: SolicitudRepository by lazy {
         SolicitudRepository(apiService)
+    }
+
+    // 🔑 Repositorio de Favoritos
+    val favoritesRepository: FavoritesRepository by lazy {
+        FavoritesRepository(apiService)
     }
 
     // 🔑 3. Función para inicializar el Context
@@ -82,6 +89,11 @@ object Injection {
     // 🔑 Factory para AdoptanteSolicitudesViewModel
     fun provideSolicitudesViewModelFactory(): AdoptanteSolicitudesViewModel.Factory {
         return AdoptanteSolicitudesViewModel.Factory(solicitudRepository)
+    }
+
+    // 🔑 Factory para FavoritesViewModel
+    fun provideFavoritesViewModelFactory(): FavoritesViewModel.Factory {
+        return FavoritesViewModel.Factory(favoritesRepository)
     }
 
     // 5. Constante para la URL base (para Coil)
