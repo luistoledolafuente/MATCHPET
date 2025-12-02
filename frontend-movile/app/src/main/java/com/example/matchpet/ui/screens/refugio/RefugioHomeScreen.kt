@@ -1,160 +1,298 @@
 package com.example.matchpet.ui.screens.refugio
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.matchpet.viewmodel.ProfileViewModel
+import coil.compose.rememberAsyncImagePainter
+import com.example.matchpet.data.model.animal.AnimalResponse
+import com.example.matchpet.data.repository.AnimalRepository
+import com.example.matchpet.data.repository.Resource
+import com.example.matchpet.utils.Injection
+import com.example.matchpet.viewmodel.refugio.RefugioViewModel
+import kotlinx.coroutines.flow.collectLatest
 
+/* ---------------------------------------------------------
+ *               DASHBOARD — DATA CLASS
+ * --------------------------------------------------------- */
+data class DashboardCardData(
+    val title: String,
+    val value: Int,
+    val max: Int,
+    val accentColor: Color,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)
+
+/* ---------------------------------------------------------
+ *             DASHBOARD — TARJETAS (2 POR FILA)
+ * --------------------------------------------------------- */
 @Composable
-fun RefugioHomeScreen(navController: NavController, token: String, paddingValues: PaddingValues) {
-
-    val viewModel: ProfileViewModel = viewModel()
-    val simpleUser by viewModel.simpleUser.collectAsState(initial = null)
-    val animales by viewModel.animales.collectAsState(initial = emptyList())
-
-    // Carga inicial de datos
-    LaunchedEffect(token) {
-        viewModel.loadUser(token)
-        viewModel.loadAnimales(token)
-    }
-
-    LazyColumn(
+fun MetricCardMinimal(card: DashboardCardData) {
+    Card(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFDFF3FF)),
-        contentPadding = paddingValues,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .fillMaxWidth()
+            .height(140.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFAF3)),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        item {
-            // Header
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(card.icon, contentDescription = null, tint = Color(0xFF2B6777))
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "¡Bienvenido, ${simpleUser?.name ?: "Refugio"}!",
-                    style = MaterialTheme.typography.titleLarge.copy(color = Color(0xFF007C91))
-                )
-                Text(
-                    text = "Dashboard de Gestión del Refugio",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF407581))
-                )
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            // Estadísticas en tarjetas con gradientes
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(
-                    title = "Mascotas Disponibles",
-                    value = animales.size.toString(),
-                    gradient = Brush.horizontalGradient(listOf(Color(0xFFFFF7E6), Color(0xFFFFE0B2)))
-                )
-                StatCard(
-                    title = "Solicitudes Pendientes",
-                    value = "0",
-                    gradient = Brush.horizontalGradient(listOf(Color(0xFFD6F0E0), Color(0xFF407581).copy(alpha = 0.3f)))
+                    text = card.title,
+                    color = Color(0xFF2B6777),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(
-                    title = "Adopciones (Mes)",
-                    value = "0",
-                    gradient = Brush.horizontalGradient(listOf(Color(0xFFDFF3FF), Color(0xFFA8D8E0)))
-                )
-                StatCard(
-                    title = "Donaciones (Semana)",
-                    value = "$0",
-                    gradient = Brush.horizontalGradient(listOf(Color(0xFFFFE0E0), Color(0xFFFDB2A0)))
-                )
-            }
-        }
-
-        item {
             Text(
-                text = "Últimas Mascotas Agregadas",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                text = card.value.toString(),
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF2B6777)
+            )
+
+            val progress = if (card.max == 0) 0f else (card.value.toFloat() / card.max)
+
+            LinearProgressIndicator(
+                progress = progress,
+                color = card.accentColor,
+                trackColor = Color(0xFFD9F4FF),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(4.dp))
             )
         }
-
-        items(animales.takeLast(4).reversed()) { animal ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp)
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(20.dp),
-                elevation = CardDefaults.cardElevation(6.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White)
-                        .padding(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(Color.Gray, RoundedCornerShape(16.dp))
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxHeight()
-                    ) {
-                        Text(animal.nombre, style = MaterialTheme.typography.titleSmall, color = Color(0xFF007C91))
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(animal.raza ?: "Desconocida", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF407581))
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
-                }
-            }
-        }
-
-        item { Spacer(modifier = Modifier.height(24.dp)) }
     }
 }
+
+/* ---------------------------------------------------------
+ *                TARJETA DE ANIMAL RECIENTE
+ * --------------------------------------------------------- */
 @Composable
-fun StatCard(title: String, value: String, modifier: Modifier = Modifier, gradient: Brush) {
+fun RecentAnimalCard(animal: AnimalResponse) {
+
+    val foto = animal.fotos?.firstOrNull()
+    val fullUrl =
+        if (foto != null && foto.startsWith("/"))
+            "${Injection.BACKEND_BASE_URL}$foto"
+        else
+            foto ?: "https://placehold.co/200x200?text=NoFoto"
+
     Card(
-        modifier = modifier
-            .height(100.dp), // Solo altura, peso se aplica afuera
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
+        modifier = Modifier
+            .width(150.dp)
+            .height(190.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(5.dp)
     ) {
-        Box(
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            Image(
+                painter = rememberAsyncImagePainter(fullUrl),
+                contentDescription = "Foto de ${animal.nombre}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = animal.nombre,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color(0xFF2B6777)
+            )
+
+            Text(
+                text = animal.raza,
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
+        }
+    }
+}
+
+/* ---------------------------------------------------------
+ *                    PANTALLA PRINCIPAL
+ * --------------------------------------------------------- */
+@Composable
+fun RefugioHomeScreen(
+    navController: NavController,
+    token: String,
+    refugioViewModel: RefugioViewModel,
+    animalRepository: AnimalRepository
+) {
+
+    var total by remember { mutableStateOf(0) }
+    var adoptadas by remember { mutableStateOf(0) }
+    var disponibles by remember { mutableStateOf(0) }
+    var enProceso by remember { mutableStateOf(0) }
+    var machos by remember { mutableStateOf(0) }
+    var hembras by remember { mutableStateOf(0) }
+
+    var isLoading by remember { mutableStateOf(true) }
+    var error: String? by remember { mutableStateOf(null) }
+
+    var animalesRecientes by remember { mutableStateOf<List<AnimalResponse>>(emptyList()) }
+
+    // Cargar datos
+    LaunchedEffect(Unit) {
+        refugioViewModel.loadProfile(token)
+
+        animalRepository.getMisAnimales(token).collectLatest { resource ->
+
+            isLoading = resource is Resource.Loading
+
+            when (resource) {
+                is Resource.Success -> {
+                    val mascotas = resource.data ?: emptyList()
+
+                    animalesRecientes = mascotas.takeLast(10)
+
+                    total = mascotas.size
+                    adoptadas = mascotas.count { it.estadoAdopcion.equals("Adoptada", true) }
+                    disponibles = mascotas.count { it.estadoAdopcion.equals("Disponible", true) }
+
+                    enProceso = mascotas.count {
+                        val s = it.estadoAdopcion.lowercase()
+                        s.contains("proceso") || s.contains("cuidado") || s.contains("acogida")
+                    }
+
+                    machos = mascotas.count { it.genero.equals("Macho", true) }
+                    hembras = mascotas.count { it.genero.equals("Hembra", true) }
+
+                    error = null
+                }
+
+                is Resource.Error -> error = resource.message
+                else -> {}
+            }
+        }
+    }
+
+    val refugioProfile by refugioViewModel.refugio.collectAsState()
+
+    /* -------------------------------------------
+     *                UI PRINCIPAL
+     * ------------------------------------------- */
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF4FCFF))
+    ) {
+        // HEADER
+        Column(
             modifier = Modifier
-                .background(gradient)
-                .fillMaxSize()
-                .padding(12.dp)
+                .fillMaxWidth()
+                .background(Color(0xFF2B6777))
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Text(title, style = MaterialTheme.typography.bodySmall, color = Color(0xFF244B57))
-                Text(value, style = MaterialTheme.typography.titleMedium, color = Color(0xFF244B57))
+            Text("¡Hola!", color = Color.White, fontSize = 22.sp)
+            Text(
+                refugioProfile?.nombre ?: "Refugio",
+                fontSize = 28.sp,
+                color = Color.White,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                "Dashboard de mascotas",
+                fontSize = 14.sp,
+                color = Color(0xFFDAF3F8)
+            )
+            Spacer(Modifier.height(16.dp))
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        if (isLoading) {
+            Box(Modifier.fillMaxSize(), Alignment.Center) {
+                CircularProgressIndicator(color = Color(0xFF2B6777))
+            }
+            return@Column
+        }
+
+        if (error != null) {
+            Box(Modifier.fillMaxSize(), Alignment.Center) {
+                Text("Error: $error", color = Color.Red)
+            }
+            return@Column
+        }
+
+        // CARDS DEL DASHBOARD
+        val cards = listOf(
+            DashboardCardData("Total Mascotas", total, total, Color(0xFFFFD6A5), Icons.Filled.Pets),
+            DashboardCardData("Adoptadas", adoptadas, total, Color(0xFFA0C4FF), Icons.Filled.Verified),
+            DashboardCardData("Disponibles", disponibles, total, Color(0xFFA8E6CF), Icons.Filled.FavoriteBorder),
+            DashboardCardData("En Proceso", enProceso, total, Color(0xFFFFC6A5), Icons.Filled.Schedule),
+            DashboardCardData("Machos", machos, total, Color(0xFFFFE1A8), Icons.Filled.Male),
+            DashboardCardData("Hembras", hembras, total, Color(0xFFCDB4DB), Icons.Filled.Female)
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(12.dp)
+        ) {
+            items(cards) { card ->
+                MetricCardMinimal(card)
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+
+        // ANIMALES RECIENTES
+        Text(
+            "Animales recién añadidos",
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF2B6777),
+            fontSize = 20.sp,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        LazyRow(
+            modifier = Modifier.padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp)
+        ) {
+            items(animalesRecientes) { animal ->
+                RecentAnimalCard(animal)
             }
         }
     }

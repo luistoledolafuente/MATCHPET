@@ -43,7 +43,7 @@ fun RefugioDrawerContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(PrimaryTeal.copy(alpha = 0.9f))
+                .background(Color(0xFF2B6777))
                 .padding(16.dp),
             horizontalAlignment = Alignment.Start
         ) {

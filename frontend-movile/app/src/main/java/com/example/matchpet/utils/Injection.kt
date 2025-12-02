@@ -25,7 +25,7 @@ object Injection {
     private lateinit var appContext: Context
 
     // 🔑 2. Implementación de Repositorios con lazy para usar el Context
-    private val animalRepository: AnimalRepository by lazy {
+    val animalRepository: AnimalRepository by lazy {
         AnimalRepository(apiService, appContext) // 👈 Aquí inyectamos el appContext
     }
     private val refugioRepository: RefugioRepository by lazy {

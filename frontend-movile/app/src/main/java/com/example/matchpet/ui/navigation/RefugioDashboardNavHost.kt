@@ -9,9 +9,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.matchpet.data.repository.AnimalRepository // Importación necesaria
+import com.example.matchpet.viewmodel.refugio.RefugioViewModel // Importación necesaria
 import com.example.matchpet.ui.screens.refugio.MisMascotasScreen
 import com.example.matchpet.ui.screens.refugio.NuevaMascotaScreen
-import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen // Tu pantalla de contenido principal
+import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen
 import com.example.matchpet.ui.screens.refugio.RefugioProfileScreen
 import com.example.matchpet.ui.screens.refugio.SolicitudesRecibidasScreen
 
@@ -20,9 +22,11 @@ fun RefugioDashboardNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     token: String,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    // 🔑 AÑADIDOS: Estos son los parámetros que te faltaban en la función
+    animalRepository: AnimalRepository,
+    refugioViewModel: RefugioViewModel
 ) {
-    // Las rutas deben coincidir con refugioNavItems de BottomNavBar.kt
     NavHost(
         navController = navController,
         startDestination = "refugio_home",
@@ -30,11 +34,12 @@ fun RefugioDashboardNavHost(
     ) {
         // 1. HOME
         composable("refugio_home") {
-            // RefugioHomeScreen ahora necesita el NavController y paddingValues para funcionar correctamente
+            // ¡Ahora pasamos los cinco parámetros!
             RefugioHomeScreen(
                 navController = navController,
                 token = token,
-                paddingValues = paddingValues
+                animalRepository = animalRepository, // <--- ¡Importante!
+                refugioViewModel = refugioViewModel // <--- ¡Importante!
             )
         }
 
@@ -43,7 +48,6 @@ fun RefugioDashboardNavHost(
             MisMascotasScreen(
                 token = token,
                 onNavigateToNewAnimal = { navController.navigate("nueva_mascota") },
-                // 🔑 NUEVO: Función para navegar a la pantalla de edición, pasando el ID.
                 onNavigateToEditAnimal = { animalId ->
                     navController.navigate("nueva_mascota?animalId=$animalId")
                 }
@@ -57,19 +61,16 @@ fun RefugioDashboardNavHost(
                 navArgument("animalId") { defaultValue = "" }
             )
         ) { backStackEntry ->
-            // El ID que viene por la URL es String?
             val animalId = backStackEntry.arguments?.getString("animalId")
             NuevaMascotaScreen(
                 onBack = { navController.popBackStack() },
                 token = token,
-                // ✅ CORRECCIÓN: El parámetro en la función es 'animalId', no 'animalIdToEdit'
                 animalId = animalId
             )
         }
 
         // 3. SOLICITUDES
         composable("refugio_solicitudes") {
-            // 🔑 REEMPLAZO DEL PLACEHOLDER por la pantalla real
             SolicitudesRecibidasScreen(token = token)
         }
 
@@ -85,6 +86,5 @@ fun RefugioDashboardNavHost(
                 onBack = { navController.popBackStack() }
             )
         }
-
     }
 }
