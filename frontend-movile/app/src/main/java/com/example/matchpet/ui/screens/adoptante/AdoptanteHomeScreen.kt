@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.matchpet.data.model.animal.Animal
 import com.example.matchpet.data.model.animal.MascotaCardData
 import com.example.matchpet.data.model.SolicitudData
 import com.example.matchpet.ui.theme.PaleTeal
@@ -36,19 +37,6 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
     LaunchedEffect(token) {
         viewModel.loadDashboardStats(token)
     }
-
-    // Datos de ejemplo para las recomendaciones
-    val recomendaciones = listOf(
-        MascotaCardData("Max", "Mestizo", "2 años", "Refugio San Roque"),
-        MascotaCardData("Luna", "Labrador", "1 año", "Refugio Esperanza"),
-        MascotaCardData("Rocky", "Pastor Alemán", "3 años", "Patitas Felices"),
-        MascotaCardData("Bella", "Golden Retriever", "4 años", "Refugio Norte")
-    )
-
-    val nuevasMascotas = listOf(
-        MascotaCardData("Toby", "Bulldog", "5 años", "Hogar Animal"),
-        MascotaCardData("Kira", "Siames", "1 año", "Refugio Esperanza")
-    )
 
     LazyColumn(
         modifier = Modifier
@@ -96,16 +84,16 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                     }
                 }
                 is DashboardState.Success -> {
-                    val stats = (dashboardState as DashboardState.Success).stats
+                    val data = (dashboardState as DashboardState.Success).data
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        StatCard("Pendientes", stats.solicitudesPendientes.toString(), Color(0xFFEF6C00))
-                        StatCard("Aprobadas", stats.adopcionesAprobadas.toString(), Color(0xFF2E7D32))
-                        StatCard("Donaciones", "$${stats.totalDonaciones}", Color(0xFFC62828))
+                        StatCard("Pendientes", data.stats.solicitudesPendientes.toString(), Color(0xFFEF6C00))
+                        StatCard("Aprobadas", data.stats.adopcionesAprobadas.toString(), Color(0xFF2E7D32))
+                        StatCard("Donaciones", "$${data.stats.totalDonaciones}", Color(0xFFC62828))
                     }
                 }
                 is DashboardState.Error -> {
@@ -116,7 +104,6 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                     )
                 }
                 else -> {
-                    // Idle state - mostrar valores por defecto
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -153,25 +140,44 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
             )
         }
 
-        // --- RECOMENDADAS ---
-        item { SectionTitle("Recomendadas Para Ti", Modifier.padding(start = 16.dp)) }
-        item {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp)
-            ) {
-                items(recomendaciones) { MascotaCard(it) { navController.navigate("adoptante_mascotas") } }
-            }
-        }
+        // --- RECOMENDADAS PARA TI (Mascotas aleatorias) ---
+        when (val state = dashboardState) {
+            is DashboardState.Success -> {
+                if (state.data.mascotasRecomendadas.isNotEmpty()) {
+                    item { SectionTitle("Recomendadas Para Ti", Modifier.padding(start = 16.dp)) }
+                    item {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp)
+                        ) {
+                            items(state.data.mascotasRecomendadas) { animal ->
+                                RealMascotaCard(animal) { 
+                                    navController.navigate("adoptante_mascotas") 
+                                }
+                            }
+                        }
+                    }
+                }
 
-        // --- NUEVAS ---
-        item { SectionTitle("Nuevas Cerca de Ti", Modifier.padding(start = 16.dp)) }
-        item {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp)
-            ) {
-                items(nuevasMascotas) { MascotaCard(it) { navController.navigate("adoptante_mascotas") } }
+                // --- TUS SOLICITUDES (Mascotas solicitadas) ---
+                if (state.data.mascotasSolicitadas.isNotEmpty()) {
+                    item { SectionTitle("Tus Solicitudes", Modifier.padding(start = 16.dp)) }
+                    item {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp)
+                        ) {
+                            items(state.data.mascotasSolicitadas) { animal ->
+                                RealMascotaCard(animal) { 
+                                    navController.navigate("adoptante_solicitudes") 
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else -> {
+                // Mostrar loading o placeholder
             }
         }
     }
@@ -240,3 +246,62 @@ fun MascotaCard(item: MascotaCardData, onClick: () -> Unit) {
         }
     }
 }
+
+@Composable
+fun RealMascotaCard(animal: Animal, onClick: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier.width(160.dp).height(240.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            // Imagen de la mascota
+            if (!animal.fotos.isNullOrEmpty()) {
+                coil.compose.AsyncImage(
+                    model = "http://10.0.2.2:8081${animal.fotos[0]}",
+                    contentDescription = animal.nombre,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(110.dp)
+                        .background(PaleTeal.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(110.dp)
+                        .background(PaleTeal.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Pets, contentDescription = null, tint = WebTeal, modifier = Modifier.size(32.dp))
+                }
+            }
+            
+            Spacer(Modifier.height(10.dp))
+            Text(animal.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF004D40), maxLines = 1)
+            Text(
+                text = "${animal.raza ?: "Mestizo"}${if (animal.genero != null) " • ${animal.genero}" else ""}",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                maxLines = 1
+            )
+            Text(
+                text = animal.refugioNombre ?: "Refugio",
+                fontSize = 11.sp,
+                color = WebTeal,
+                maxLines = 1
+            )
+            Spacer(Modifier.weight(1f))
+            Button(
+                onClick = onClick,
+                modifier = Modifier.height(32.dp).fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                contentPadding = PaddingValues(0.dp)
+            ) { Text("Ver Perfil", fontSize = 12.sp) }
+        }
+    }
+}
+
