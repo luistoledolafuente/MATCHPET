@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -19,16 +17,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matchpet.data.model.animal.MascotaCardData
 import com.example.matchpet.data.model.SolicitudData
 import com.example.matchpet.ui.theme.PaleTeal
 import com.example.matchpet.ui.theme.WebTeal
+import com.example.matchpet.viewmodel.adoptante.AdoptanteHomeViewModel
+import com.example.matchpet.viewmodel.adoptante.DashboardState
 
 @Composable
 fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValues: PaddingValues) {
 
-    // Datos de ejemplo
+    val viewModel: AdoptanteHomeViewModel = viewModel()
+    val dashboardState by viewModel.dashboardState.collectAsState()
+
+    // Cargar datos al iniciar
+    LaunchedEffect(token) {
+        viewModel.loadDashboardStats(token)
+    }
+
+    // Datos de ejemplo para las recomendaciones
     val recomendaciones = listOf(
         MascotaCardData("Max", "Mestizo", "2 años", "Refugio San Roque"),
         MascotaCardData("Luna", "Labrador", "1 año", "Refugio Esperanza"),
@@ -40,16 +49,6 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
         MascotaCardData("Toby", "Bulldog", "5 años", "Hogar Animal"),
         MascotaCardData("Kira", "Siames", "1 año", "Refugio Esperanza")
     )
-
-    val solicitudes = listOf(
-        SolicitudData("Max", "Aprobada", "20 Nov 2025"),
-        SolicitudData("Coco", "Pendiente", "18 Nov 2025")
-    )
-
-    val totalMascotas = 12
-    val solicitudesPendientes = 2
-    val adopcionesMes = 1
-    val donacionesSemana = 50
 
     LazyColumn(
         modifier = Modifier
@@ -85,16 +84,50 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
 
         // --- ESTADÍSTICAS ---
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard("Mascotas", totalMascotas.toString(), Color(0xFF00695C))
-                StatCard("Pendientes", solicitudesPendientes.toString(), Color(0xFFEF6C00))
-                StatCard("Adopciones", adopcionesMes.toString(), Color(0xFF2E7D32))
-                StatCard("Donaciones", "$$donacionesSemana", Color(0xFFC62828))
+            when (dashboardState) {
+                is DashboardState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = WebTeal)
+                    }
+                }
+                is DashboardState.Success -> {
+                    val stats = (dashboardState as DashboardState.Success).stats
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        StatCard("Pendientes", stats.solicitudesPendientes.toString(), Color(0xFFEF6C00))
+                        StatCard("Aprobadas", stats.adopcionesAprobadas.toString(), Color(0xFF2E7D32))
+                        StatCard("Donaciones", "$${stats.totalDonaciones}", Color(0xFFC62828))
+                    }
+                }
+                is DashboardState.Error -> {
+                    Text(
+                        text = (dashboardState as DashboardState.Error).message,
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                else -> {
+                    // Idle state - mostrar valores por defecto
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        StatCard("Pendientes", "0", Color(0xFFEF6C00))
+                        StatCard("Aprobadas", "0", Color(0xFF2E7D32))
+                        StatCard("Donaciones", "$0", Color(0xFFC62828))
+                    }
+                }
             }
         }
 
@@ -141,10 +174,6 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                 items(nuevasMascotas) { MascotaCard(it) { navController.navigate("adoptante_mascotas") } }
             }
         }
-
-        // --- ÚLTIMAS SOLICITUDES ---
-        item { SectionTitle("Tus Últimas Solicitudes", Modifier.padding(start = 16.dp)) }
-        items(solicitudes) { SolicitudCard(it, Modifier.padding(horizontal = 16.dp)) }
     }
 }
 
@@ -154,7 +183,7 @@ fun StatCard(title: String, value: String, color: Color) {
     Card(
         modifier = Modifier
             .height(80.dp)
-            .width(85.dp),
+            .width(110.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -166,8 +195,9 @@ fun StatCard(title: String, value: String, color: Color) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = color)
-            Text(title, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = Color.Gray, maxLines = 1)
+            Text(value, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = color)
+            Spacer(Modifier.height(4.dp))
+            Text(title, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color.Gray, maxLines = 1)
         }
     }
 }
@@ -207,35 +237,6 @@ fun MascotaCard(item: MascotaCardData, onClick: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
                 contentPadding = PaddingValues(0.dp)
             ) { Text("Ver Perfil", fontSize = 12.sp) }
-        }
-    }
-}
-
-@Composable
-fun SolicitudCard(item: SolicitudData, modifier: Modifier = Modifier) {
-    val statusColor = when(item.estado.uppercase()) {
-        "APROBADA" -> Color(0xFFC8E6C9)
-        "RECHAZADA" -> Color(0xFFFFCDD2)
-        else -> Color.White
-    }
-    
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = statusColor),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Pets, contentDescription = null, tint = WebTeal, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Mascota: ${item.mascota}", fontWeight = FontWeight.Bold, color = Color(0xFF004D40))
-            }
-            Spacer(Modifier.height(4.dp))
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Estado: ${item.estado}", fontSize = 12.sp, color = Color(0xFF455A64), fontWeight = FontWeight.Medium)
-                Text("Fecha: ${item.fecha}", fontSize = 12.sp, color = Color(0xFF78909C))
-            }
         }
     }
 }
