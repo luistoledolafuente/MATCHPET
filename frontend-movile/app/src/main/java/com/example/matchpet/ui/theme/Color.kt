@@ -35,3 +35,4 @@ val WebCream = Color(0xFFFFF7E6)
 val WebTeal = Color(0xFF316B7A)
 val WebSalmon = Color(0xFFFDB2A0)
 val WebBlueLight = Color(0xFFBAE6FD)
+val PaleTeal = Color(0xFFB2D8D8) // Teal claro para fondos

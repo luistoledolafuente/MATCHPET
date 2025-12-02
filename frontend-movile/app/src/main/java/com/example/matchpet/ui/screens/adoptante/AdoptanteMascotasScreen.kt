@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,8 +23,7 @@ import coil.compose.AsyncImage
 import com.example.matchpet.data.model.animal.Animal
 import com.example.matchpet.data.model.SolicitudRequest
 import com.example.matchpet.data.network.RetrofitClient
-import com.example.matchpet.ui.theme.WebCream
-import com.example.matchpet.ui.theme.WebSalmon
+import com.example.matchpet.ui.theme.PaleTeal
 import com.example.matchpet.ui.theme.WebTeal
 import kotlinx.coroutines.launch
 
@@ -64,7 +65,7 @@ fun AdoptanteMascotasScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(WebCream)
+            .background(PaleTeal)
             .padding(paddingValues)
     ) {
         if (loading) {
@@ -84,7 +85,7 @@ fun AdoptanteMascotasScreen(
                     text = "Explorar Mascotas 🐾",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WebTeal,
+                    color = Color(0xFF004D40),
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
@@ -196,12 +197,12 @@ fun MascotaGridItem(
         Column {
             // Imagen
             AsyncImage(
-                model = if (!animal.fotos.isNullOrEmpty()) "http://10.0.2.2:8081${animal.fotos[0]}" else "https://placehold.co/400x300/a8d8e0/316B7A?text=No+Photo",
+                model = if (!animal.fotos.isNullOrEmpty()) "http://10.0.2.2:8081${animal.fotos[0]}" else "https://placehold.co/400x300/B2D8D8/004D40?text=No+Photo",
                 contentDescription = animal.nombre,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
-                    .background(Color.LightGray),
+                    .background(PaleTeal),
                 contentScale = ContentScale.Crop
             )
 
@@ -210,7 +211,7 @@ fun MascotaGridItem(
                     text = animal.nombre,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = WebTeal
+                    color = Color(0xFF004D40)
                 )
                 Text(
                     text = "${animal.raza ?: "Mestizo"} • ${animal.genero ?: "?"}",
@@ -221,7 +222,7 @@ fun MascotaGridItem(
                 Text(
                     text = animal.refugioNombre ?: "Refugio",
                     fontSize = 12.sp,
-                    color = WebSalmon,
+                    color = WebTeal,
                     fontWeight = FontWeight.SemiBold
                 )
                 

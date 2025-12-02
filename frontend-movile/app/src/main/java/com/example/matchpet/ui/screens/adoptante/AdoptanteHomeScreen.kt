@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.matchpet.data.model.animal.MascotaCardData
 import com.example.matchpet.data.model.SolicitudData
+import com.example.matchpet.ui.theme.PaleTeal
+import com.example.matchpet.ui.theme.WebTeal
 
 @Composable
 fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValues: PaddingValues) {
@@ -51,7 +54,7 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFF9F1)),
+            .background(PaleTeal),
         contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
@@ -69,12 +72,12 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                         text = "¡Hola, Adoptante! 🐾",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF244B57)
+                        color = Color(0xFF004D40)
                     )
                     Text(
                         text = "Dashboard de actividad y mascotas disponibles 💛",
                         fontSize = 13.sp,
-                        color = Color(0xFF6F6F6F)
+                        color = Color(0xFF00695C)
                     )
                 }
             }
@@ -88,10 +91,10 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard("Mascotas Disponibles", totalMascotas.toString(), Color(0xFF007C91))
-                StatCard("Pendientes", solicitudesPendientes.toString(), Color(0xFF407581))
-                StatCard("Adopciones", adopcionesMes.toString(), Color(0xFF9BD8C0))
-                StatCard("Donaciones", "$$donacionesSemana", Color(0xFFFDB2A0))
+                StatCard("Mascotas", totalMascotas.toString(), Color(0xFF00695C))
+                StatCard("Pendientes", solicitudesPendientes.toString(), Color(0xFFEF6C00))
+                StatCard("Adopciones", adopcionesMes.toString(), Color(0xFF2E7D32))
+                StatCard("Donaciones", "$$donacionesSemana", Color(0xFFC62828))
             }
         }
 
@@ -106,7 +109,14 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                     .fillMaxWidth()
                     .height(55.dp)
                     .padding(horizontal = 16.dp),
-                singleLine = true
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = WebTeal,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(12.dp)
             )
         }
 
@@ -143,51 +153,59 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
 fun StatCard(title: String, value: String, color: Color) {
     Card(
         modifier = Modifier
-            .height(80.dp),
-        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f)),
-        shape = RoundedCornerShape(12.dp)
+            .height(80.dp)
+            .width(85.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(8.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = color)
-            Text(value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = color)
+            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = color)
+            Text(title, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = Color.Gray, maxLines = 1)
         }
     }
 }
 
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF346D77), modifier = modifier)
+    Text(text, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF004D40), modifier = modifier)
 }
 
 @Composable
 fun MascotaCard(item: MascotaCardData, onClick: () -> Unit) {
     Card(
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFEDEBFF)),
-        modifier = Modifier.width(180.dp).height(250.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier.width(160.dp).height(240.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
-                    .background(Color(0xFFCCCCCC), RoundedCornerShape(14.dp))
-            )
+                    .height(110.dp)
+                    .background(PaleTeal.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Pets, contentDescription = null, tint = WebTeal, modifier = Modifier.size(32.dp))
+            }
             Spacer(Modifier.height(10.dp))
-            Text(item.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text("${item.raza}, ${item.edad}", fontSize = 12.sp, color = Color(0xFF4F4F4F))
-            Text(item.refugio, fontSize = 11.sp, color = Color(0xFF777777))
-            Spacer(Modifier.height(10.dp))
+            Text(item.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF004D40))
+            Text("${item.raza}, ${item.edad}", fontSize = 12.sp, color = Color.Gray)
+            Text(item.refugio, fontSize = 11.sp, color = WebTeal)
+            Spacer(Modifier.weight(1f))
             Button(
                 onClick = onClick,
-                modifier = Modifier.height(34.dp).fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9BD8C0))
+                modifier = Modifier.height(32.dp).fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                contentPadding = PaddingValues(0.dp)
             ) { Text("Ver Perfil", fontSize = 12.sp) }
         }
     }
@@ -195,15 +213,29 @@ fun MascotaCard(item: MascotaCardData, onClick: () -> Unit) {
 
 @Composable
 fun SolicitudCard(item: SolicitudData, modifier: Modifier = Modifier) {
+    val statusColor = when(item.estado.uppercase()) {
+        "APROBADA" -> Color(0xFFC8E6C9)
+        "RECHAZADA" -> Color(0xFFFFCDD2)
+        else -> Color.White
+    }
+    
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEFE2)),
-        shape = RoundedCornerShape(14.dp)
+        colors = CardDefaults.cardColors(containerColor = statusColor),
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
-            Text("Mascota: ${item.mascota}", fontWeight = FontWeight.Bold)
-            Text("Estado: ${item.estado}", fontSize = 12.sp, color = Color(0xFF585858))
-            Text("Fecha: ${item.fecha}", fontSize = 12.sp, color = Color(0xFF7B7B7B))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Pets, contentDescription = null, tint = WebTeal, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Mascota: ${item.mascota}", fontWeight = FontWeight.Bold, color = Color(0xFF004D40))
+            }
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Text("Estado: ${item.estado}", fontSize = 12.sp, color = Color(0xFF455A64), fontWeight = FontWeight.Medium)
+                Text("Fecha: ${item.fecha}", fontSize = 12.sp, color = Color(0xFF78909C))
+            }
         }
     }
 }

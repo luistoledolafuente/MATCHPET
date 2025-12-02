@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,10 +21,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.matchpet.data.model.SolicitudResponse
+import com.example.matchpet.ui.theme.PaleTeal
+import com.example.matchpet.ui.theme.WebTeal
 import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.adoptante.AdoptanteSolicitudesViewModel
 import com.example.matchpet.viewmodel.adoptante.SolicitudesState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdoptanteSolicitudesScreen(
     token: String,
@@ -39,69 +43,74 @@ fun AdoptanteSolicitudesScreen(
         viewModel.loadSolicitudes(token)
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFF9F1))
-            .padding(paddingValues),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Text(
-                text = "Mis Solicitudes de Adopción",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF244B57)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Mis Solicitudes de Adopción", color = Color.White) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = WebTeal),
+                actions = {
+                    IconButton(onClick = { viewModel.loadSolicitudes(token) }) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Recargar", tint = Color.White)
+                    }
+                }
             )
-        }
-
-        when (state) {
-            is SolicitudesState.Loading -> {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = Color(0xFF009688))
-                    }
-                }
-            }
-
-            is SolicitudesState.Success -> {
-                val solicitudes = (state as SolicitudesState.Success).solicitudes
-
-                if (solicitudes.isEmpty()) {
+        },
+        containerColor = PaleTeal
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            when (state) {
+                is SolicitudesState.Loading -> {
                     item {
-                        EmptyState()
-                    }
-                } else {
-                    items(solicitudes) { solicitud ->
-                        SolicitudCard(solicitud)
-                    }
-                }
-            }
-
-            is SolicitudesState.Error -> {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(
-                            text = (state as SolicitudesState.Error).message,
-                            modifier = Modifier.padding(16.dp),
-                            color = Color(0xFFD32F2F)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = WebTeal)
+                        }
                     }
                 }
-            }
 
-            is SolicitudesState.Idle -> {
-                // Do nothing
+                is SolicitudesState.Success -> {
+                    val solicitudes = (state as SolicitudesState.Success).solicitudes
+
+                    if (solicitudes.isEmpty()) {
+                        item {
+                            EmptyState()
+                        }
+                    } else {
+                        items(solicitudes) { solicitud ->
+                            SolicitudCard(solicitud)
+                        }
+                    }
+                }
+
+                is SolicitudesState.Error -> {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = (state as SolicitudesState.Error).message,
+                                modifier = Modifier.padding(16.dp),
+                                color = Color(0xFFD32F2F)
+                            )
+                        }
+                    }
+                }
+
+                is SolicitudesState.Idle -> {
+                    // Do nothing
+                }
             }
         }
     }
@@ -109,16 +118,26 @@ fun AdoptanteSolicitudesScreen(
 
 @Composable
 fun SolicitudCard(solicitud: SolicitudResponse) {
-    val estadoColor = when (solicitud.estadoSolicitud.nombre.uppercase()) {
-        "APROBADA", "APROBADO" -> Color(0xFF66BB6A)
-        "RECHAZADA", "RECHAZADO" -> Color(0xFFEF5350)
-        "PENDIENTE" -> Color(0xFFFFA726)
-        else -> Color(0xFF9E9E9E)
+    val estadoNombre = solicitud.estadoSolicitud.nombre.uppercase()
+    
+    // Colores de fondo de tarjeta similares al refugio
+    val cardBackgroundColor = when (estadoNombre) {
+        "APROBADA", "APROBADO" -> Color(0xFFC8E6C9) // Verde claro
+        "RECHAZADA", "RECHAZADO" -> Color(0xFFFFCDD2) // Rojo claro
+        else -> Color.White
+    }
+
+    // Color del texto/badge del estado
+    val estadoTextColor = when (estadoNombre) {
+        "APROBADA", "APROBADO" -> Color(0xFF2E7D32)
+        "RECHAZADA", "RECHAZADO" -> Color(0xFFC62828)
+        "PENDIENTE", "ENVIADA", "EN REVISIÓN" -> Color(0xFFEF6C00)
+        else -> Color(0xFF616161)
     }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -171,13 +190,13 @@ fun SolicitudCard(solicitud: SolicitudResponse) {
 
                     // Estado
                     Surface(
-                        color = estadoColor.copy(alpha = 0.15f),
+                        color = if (cardBackgroundColor == Color.White) estadoTextColor.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.5f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = solicitud.estadoSolicitud.nombre.uppercase(),
+                            text = estadoNombre,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                            color = estadoColor,
+                            color = if (cardBackgroundColor == Color.White) estadoTextColor else Color.Black,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -203,7 +222,7 @@ fun SolicitudCard(solicitud: SolicitudResponse) {
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    text = solicitud.animal.nombre,
+                    text = "Refugio",
                     fontSize = 14.sp,
                     color = Color(0xFF757575)
                 )
