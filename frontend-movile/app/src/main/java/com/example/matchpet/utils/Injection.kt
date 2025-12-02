@@ -4,8 +4,10 @@ import android.content.Context // 🔑 Importación necesaria
 import com.example.matchpet.data.network.ApiService
 import com.example.matchpet.data.repository.AnimalRepository
 import com.example.matchpet.data.repository.RefugioRepository
+import com.example.matchpet.data.repository.SolicitudRepository
 import com.example.matchpet.viewmodel.MisMascotasViewModel
 import com.example.matchpet.viewmodel.NuevaMascotaViewModel
+import com.example.matchpet.viewmodel.adoptante.AdoptanteSolicitudesViewModel
 import com.example.matchpet.viewmodel.refugio.RefugioViewModelFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -30,6 +32,11 @@ object Injection {
     }
     private val refugioRepository: RefugioRepository by lazy {
         RefugioRepository(apiService)
+    }
+
+    // 🔑 Repositorio de Solicitudes
+    val solicitudRepository: SolicitudRepository by lazy {
+        SolicitudRepository(apiService)
     }
 
     // 🔑 3. Función para inicializar el Context
@@ -70,6 +77,11 @@ object Injection {
 
     fun provideRefugioViewModelFactory(): RefugioViewModelFactory {
         return RefugioViewModelFactory(refugioRepository)
+    }
+
+    // 🔑 Factory para AdoptanteSolicitudesViewModel
+    fun provideSolicitudesViewModelFactory(): AdoptanteSolicitudesViewModel.Factory {
+        return AdoptanteSolicitudesViewModel.Factory(solicitudRepository)
     }
 
     // 5. Constante para la URL base (para Coil)

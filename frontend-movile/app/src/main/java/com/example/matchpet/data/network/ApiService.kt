@@ -73,31 +73,42 @@ interface ApiService {
 
     @POST("/api/animales")
     suspend fun createAnimal(
-        @Header("Authorization") token: String, @Body request: AnimalCreationRequest
+        @Header("Authorization") token: String,
+        @Body request: AnimalCreationRequest
     ): Response<AnimalResponse>
 
     @PUT("/api/animales/{id}")
     suspend fun updateAnimal(
-        @Path("id") id: Int, @Header("Authorization") token: String, @Body request: AnimalUpdateRequest
+        @Path("id") id: Int,
+        @Header("Authorization") token: String,
+        @Body request: AnimalUpdateRequest
     ): Response<AnimalResponse>
 
     @DELETE("/api/animales/{id}")
-    suspend fun deleteAnimal(@Path("id") id: String, @Header("Authorization") token: String): Response<Unit>
+    suspend fun deleteAnimal(
+        @Header("Authorization") token: String,
+        @Path("id") id: String
+    ): Response<Unit>
 
     @Multipart
     @POST("/api/animales/upload")
-    suspend fun uploadImage(@Part file: MultipartBody.Part, @Header("Authorization") token: String): Response<ImageUploadResponse>
+    suspend fun uploadImage(
+        @Part file: MultipartBody.Part,
+        @Header("Authorization") token: String
+    ): Response<ImageUploadResponse>
 
 
-
-    // --------------- SOLICITUDES ADOPTANTE ------------------------------------
+    // --------------- SOLICITUDES ------------------------------------
     @POST("/api/solicitudes")
     suspend fun createSolicitud(
         @Header("Authorization") token: String,
         @Body request: SolicitudRequest
     ): Response<Void>
 
-    // --------------- END POINTS DE SOLICITUDES ------------------------------------
+    @GET("/api/solicitudes/mis-solicitudes")
+    suspend fun getMisSolicitudes(
+        @Header("Authorization") token: String
+    ): Response<List<SolicitudResponse>>
 
     @GET("/api/solicitudes/recibidas")
     suspend fun getSolicitudesRecibidas(

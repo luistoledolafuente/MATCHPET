@@ -23,6 +23,21 @@ class SolicitudRepository(private val apiService: ApiService) {
         }
     }
 
+    suspend fun getMisSolicitudes(token: String): Resource<List<SolicitudResponse>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getMisSolicitudes("Bearer $token")
+                if (response.isSuccessful) {
+                    Resource.Success(response.body() ?: emptyList())
+                } else {
+                    Resource.Error("Error ${response.code()}: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
     suspend fun updateSolicitudStatus(
         token: String,
         solicitudId: Int,

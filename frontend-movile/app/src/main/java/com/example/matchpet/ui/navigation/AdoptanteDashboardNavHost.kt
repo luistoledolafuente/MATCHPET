@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.matchpet.ui.screens.adoptante.AdoptanteHomeScreen
 import com.example.matchpet.ui.screens.adoptante.AdoptanteMascotasScreen
+import com.example.matchpet.ui.screens.adoptante.AdoptanteSolicitudesScreen
 
 @Composable
 fun AdoptanteDashboardNavHost(
@@ -52,7 +53,10 @@ fun AdoptanteDashboardNavHost(
 
         // 5. Pestaña de Solicitudes
         composable("adoptante_solicitudes") {
-            Text("Pantalla de Solicitudes (Contenido)", modifier.fillMaxSize())
+            AdoptanteSolicitudesScreen(
+                token = token,
+                paddingValues = paddingValues
+            )
         }
     }
 }
