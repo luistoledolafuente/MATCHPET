@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
+import OAuth2RedirectHandler from "./pages/auth/OAuth2RedirectHandler.jsx";
+
 // --- Páginas Públicas ---
 import HomePage from "./pages/HomePage.jsx";
 import NosotrosPage from "./pages/StaticPages/NosotrosPage.jsx";
@@ -119,6 +121,8 @@ export default function App() {
         {/* Autenticación */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegisterPage />} />
+        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+
 
         {/* Dashboard */}
         <Route path="/dashboard/*" element={<DashboardRoutes />} />

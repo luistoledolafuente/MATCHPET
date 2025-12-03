@@ -83,8 +83,13 @@ public class SecurityConfig {
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // OAuth2
-                .oauth2Login(oauth ->
-                        oauth.successHandler(oAuth2LoginSuccessHandler))
+                .oauth2Login(oauth -> oauth
+        .successHandler(oAuth2LoginSuccessHandler)
+        .failureHandler((request, response, exception) -> {
+            response.sendRedirect("/login?error"); // opcional, así ves errores de OAuth2
+        })
+)
+
 
                 // provider
                 .authenticationProvider(authenticationProvider())

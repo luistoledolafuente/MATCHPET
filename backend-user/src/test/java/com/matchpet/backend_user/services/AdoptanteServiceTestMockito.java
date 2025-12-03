@@ -10,18 +10,20 @@ import com.matchpet.backend_user.model.PerfilAdoptante;
 import com.matchpet.backend_user.repository.UserRepository;
 import com.matchpet.backend_user.repository.RolRepository;
 import com.matchpet.backend_user.repository.PerfilAdoptanteRepository;
+import com.matchpet.backend_user.repository.AnimalRepository;
+import com.matchpet.backend_user.service.AnimalService;
 import com.matchpet.backend_user.service.Imp.AdoptanteServiceImpl;
 import com.matchpet.backend_user.service.JwtService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
-import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Optional;
 
 public class AdoptanteServiceTestMockito {
 
@@ -30,6 +32,9 @@ public class AdoptanteServiceTestMockito {
     private PasswordEncoder passwordEncoder;
     private JwtService jwtService;
     private PerfilAdoptanteRepository adoptanteRepository;
+    private AnimalRepository animalRepository;     // <-- NUEVO
+    private AnimalService animalService;           // <-- NUEVO
+
     private AdoptanteServiceImpl adoptanteService;
 
     @BeforeEach
@@ -40,12 +45,17 @@ public class AdoptanteServiceTestMockito {
         jwtService = mock(JwtService.class);
         adoptanteRepository = mock(PerfilAdoptanteRepository.class);
 
+        animalRepository = mock(AnimalRepository.class); // <-- NUEVO
+        animalService = mock(AnimalService.class);       // <-- NUEVO
+
         adoptanteService = new AdoptanteServiceImpl(
                 userRepository,
                 rolRepository,
                 passwordEncoder,
                 jwtService,
-                adoptanteRepository
+                adoptanteRepository,
+                animalRepository,  // <-- NUEVO
+                animalService      // <-- NUEVO
         );
     }
 
