@@ -28,6 +28,7 @@ public class DonacionController {
 
     private final DonacionService donacionService;
 
+    // Endpoint para crear una donación (checkout)
     @Operation(
             summary = "Inicia un checkout para una nueva donación",
             description = "Crea una donación en estado 'Pendiente' y devuelve un ID de sesión de pasarela de pago simulado. " +
@@ -50,6 +51,7 @@ public class DonacionController {
         return ResponseEntity.ok(response);
     }
 
+    // Endpoint para obtener las donaciones recibidas por el Refugio autenticado
     @Operation(
             summary = "Obtiene las donaciones recibidas por el Refugio autenticado",
             description = "Devuelve una lista de todas las donaciones hechas a este refugio.",
@@ -63,6 +65,7 @@ public class DonacionController {
         return ResponseEntity.ok(donaciones);
     }
 
+    // Endpoint para obtener las donaciones realizadas por el Adoptante autenticado
     @Operation(
             summary = "Obtiene las donaciones realizadas por el Adoptante autenticado",
             description = "Devuelve un historial de todas las donaciones que ha hecho este adoptante.",
@@ -76,18 +79,19 @@ public class DonacionController {
         return ResponseEntity.ok(donaciones);
     }
 
+    // Endpoint para recibir notificaciones de Mercado Pago (Webhooks)
     @Operation(summary = "Recibe notificaciones de Mercado Pago (Webhooks)")
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> payload) {
-        // Ejecutamos la lógica en segundo plano o directo
+        // Llamamos al servicio para procesar la notificación de Mercado Pago
         donacionService.receiveWebhook(payload);
 
-        // SIEMPRE responder 200 OK a Mercado Pago, o te bloquearán el webhook
+        // Siempre responder 200 OK a Mercado Pago, o se bloqueará el webhook
         return ResponseEntity.ok("OK");
     }
 
-    // NOTA: En un proyecto real, aquí faltaría un endpoint público (Webhook)
-    // @PostMapping("/webhook/pago-confirmado")
-    // para que la pasarela de pago (Culqi/Stripe) nos avise
-    // cuando una donación "Pendiente" pase a "Completado".
+    // Notas:
+    // 1. Asegúrate de manejar correctamente las excepciones en el servicio (ej. problemas de conexión con la API de Mercado Pago).
+    // 2. Puedes personalizar la lógica de recepción de Webhooks dependiendo de los estados de pago que recibas desde Mercado Pago.
+    // 3. Es importante que en producción, la URL del Webhook esté accesible desde internet.
 }
