@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.annotations.UpdateTimestamp;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate; // CAMBIO: Importación moderna para fechas
 import java.sql.Timestamp;
@@ -19,11 +20,13 @@ import java.util.Set;
 @Data
 @Entity
 @Table(name = "Animales")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Animal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "animal_id")
+    @EqualsAndHashCode.Include
     private Integer id; // Práctica común: usar 'id' en Java
 
     @Column(nullable = false, length = 100)

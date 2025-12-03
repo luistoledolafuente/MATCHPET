@@ -69,6 +69,7 @@ public class SecurityConfig {
                                 "/api/refugios/register",
                                 "/api/lookups/**",
                                 "/api/donaciones/checkout",
+                                "/api/donaciones/webhook",
                                 "/login/oauth2/**",
                                 "/",
                                 "/error"
@@ -83,8 +84,13 @@ public class SecurityConfig {
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // OAuth2
-                .oauth2Login(oauth ->
-                        oauth.successHandler(oAuth2LoginSuccessHandler))
+                .oauth2Login(oauth -> oauth
+        .successHandler(oAuth2LoginSuccessHandler)
+        .failureHandler((request, response, exception) -> {
+            response.sendRedirect("/login?error"); // opcional, así ves errores de OAuth2
+        })
+)
+
 
                 // provider
                 .authenticationProvider(authenticationProvider())

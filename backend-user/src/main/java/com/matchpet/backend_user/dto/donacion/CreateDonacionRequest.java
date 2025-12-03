@@ -26,5 +26,7 @@ public class CreateDonacionRequest {
     private Integer refugioId;  // Donación directa a un refugio
     private Integer animalId;   // Donación directa a un animal
 
-    private String mensajeDonante; // Mensaje opcional
+    private String mensajeDonante;
+    private String successUrl; // Nuevo campo opcional
+    private String failureUrl;
 }

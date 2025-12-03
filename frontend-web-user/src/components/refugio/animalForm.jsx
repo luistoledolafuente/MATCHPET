@@ -89,31 +89,39 @@ export default function AnimalForm({ animal, onClose, onSuccess, token: tokenPro
 
     // Cargar datos si es edición
     useEffect(() => {
-        if (isEditing && animal && lookups.temperamentos?.length > 0) {
-            setFormData(prev => ({
-                ...prev,
-                nombre: animal.nombre || '',
-                descripcionPersonalidad: animal.descripcionPersonalidad || '',
-                historialMedico: animal.historialMedico || '',
-                razaId: animal.raza?.id || '',
-                generoId: animal.genero?.id || '',
-                estadoAdopcionId: animal.estadoAdopcion?.id || 1,
-                tamanoId: animal.tamano?.id || '',
-                nivelEnergiaId: animal.nivelEnergia?.id || '',
-                fechaNacimientoAprox: animal.fechaNacimientoAprox?.split("T")[0],
-                fechaIngresoRefugio: animal.fechaIngresoRefugio?.split("T")[0],
-                compatibleNiños: animal.compatibleNiños ?? true,
-                compatibleOtrasMascotas: animal.compatibleOtrasMascotas ?? true,
-                estaVacunado: animal.estaVacunado ?? true,
-                estaEsterilizado: animal.estaEsterilizado ?? true,
-                temperamentosNombres: animal.temperamentos?.map(
-                    t => t.nombreTemperamento ?? t.nombre_temperamento ?? t.nombre
-                ).filter(Boolean) || [],
-                fotosUrls: animal.fotos?.map(f => f.urlFoto) || [""],
-                fotoPrincipalIndex: animal.fotos?.findIndex(f => f.esPrincipal) ?? 0
-            }));
-        }
-    }, [animal, isEditing, lookups.temperamentos]);
+    if (isEditing && animal && Object.keys(lookups).length > 0) {
+        const razaId = lookups.razas.find(r => r.nombre === animal.raza)?.id || '';
+        const generoId = lookups.generos.find(g => g.nombre === animal.genero)?.id || '';
+        const estadoId = lookups.estadosAdopcion.find(e => e.nombre === animal.estadoAdopcion)?.id || 1;
+        const tamanoId = lookups.tamanos.find(t => t.nombre === animal.tamano)?.id || '';
+        const nivelEnergiaId = lookups.nivelesEnergia.find(n => n.nombre === animal.nivelEnergia)?.id || '';
+
+        setFormData(prev => ({
+            ...prev,
+            nombre: animal.nombre || '',
+            descripcionPersonalidad: animal.descripcionPersonalidad || '',
+            historialMedico: animal.historialMedico || '',
+            razaId,
+            generoId,
+            estadoAdopcionId: estadoId,
+            tamanoId,
+            nivelEnergiaId,
+            fechaNacimientoAprox: animal.fechaNacimientoAprox?.split("T")[0],
+            fechaIngresoRefugio: animal.fechaIngresoRefugio?.split("T")[0],
+            compatibleNiños: animal.compatibleNiños ?? true,
+            compatibleOtrasMascotas: animal.compatibleOtrasMascotas ?? true,
+            estaVacunado: animal.estaVacunado ?? true,
+            estaEsterilizado: animal.estaEsterilizado ?? true,
+            temperamentosNombres: animal.temperamentos?.map(
+                t => t.nombreTemperamento ?? t.nombre_temperamento ?? t.nombre
+            ).filter(Boolean) || [],
+            fotosUrls: animal.fotos?.map(f => f.urlFoto) || [""],
+            fotoPrincipalIndex: animal.fotos?.findIndex(f => f.esPrincipal) ?? 0
+        }));
+    }
+}, [animal, isEditing, lookups]);
+
+
 
     // Manejo de inputs
     const handleChange = e => {

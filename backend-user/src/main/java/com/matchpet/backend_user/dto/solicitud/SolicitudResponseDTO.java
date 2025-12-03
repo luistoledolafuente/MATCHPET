@@ -22,7 +22,9 @@ public class SolicitudResponseDTO {
     private Timestamp fechaSolicitud;
     private Timestamp fechaActualizacion;
     private String notasInternas;
-    private String mensajeAlAdoptante;
+    
+    private String mensajeAdoptante;     // ✅ MENSAJE DEL ADOPTANTE
+    private String mensajeAlAdoptante;   // ✅ MENSAJE DEL REFUGIO
 
     // Datos del estado
     private EstadoSolicitud estadoSolicitud;

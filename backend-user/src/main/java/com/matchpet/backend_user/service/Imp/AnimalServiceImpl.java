@@ -260,6 +260,7 @@ public class AnimalServiceImpl implements AnimalService {
                 .nivelEnergia(animal.getNivelEnergia().getNombre())
 
                 .estadoAdopcion(animal.getEstadoAdopcion().getNombre())
+                .refugioId(animal.getRefugio().getId())
                 .refugioNombre(animal.getRefugio().getNombre())
 
                 // CAMBIO: Corregido el typo 'getCidad()'
@@ -293,6 +294,7 @@ public class AnimalServiceImpl implements AnimalService {
                 .tamano(animal.getTamano().getNombre())
                 .nivelEnergia(animal.getNivelEnergia().getNombre())
                 .estadoAdopcion(animal.getEstadoAdopcion().getNombre())
+                .refugioId(animal.getRefugio().getId())
                 .refugioNombre(animal.getRefugio().getNombre())
                 .refugioCiudad(animal.getRefugio().getCiudad())
                 .temperamentos(animal.getTemperamentos().stream()

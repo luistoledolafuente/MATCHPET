@@ -147,9 +147,17 @@ public class AdoptanteServiceImpl implements AdoptanteService {
                 .orElseThrow(() -> new RuntimeException("Animal no encontrado."));
 
         Set<Animal> favoritos = user.getFavoritos();
-        if (favoritos.contains(animal)) {
-            // Ya está en favoritos, no hacemos nada o lanzamos un mensaje
+
+        // BLINDAJE: Verificamos manualmente por ID para evitar errores de objetos proxy
+        boolean yaExiste = favoritos.stream()
+                .anyMatch(a -> a.getId().equals(animalId));
+
+        if (yaExiste) {
+            // Opción A: Lanzar error (Lo que tienes ahora)
             throw new RuntimeException("El animal ya está en tu lista de favoritos.");
+
+            // Opción B: No hacer nada y retornar (Más suave para el frontend)
+            // return;
         }
 
         favoritos.add(animal);
@@ -162,16 +170,17 @@ public class AdoptanteServiceImpl implements AdoptanteService {
         UserModel user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario Adoptante no encontrado."));
 
-        Animal animal = animalRepository.findById(animalId)
-                .orElseThrow(() -> new RuntimeException("Animal no encontrado."));
-
         Set<Animal> favoritos = user.getFavoritos();
-        if (!favoritos.contains(animal)) {
 
-            throw new RuntimeException("El animal no se encuentra en tu lista de favoritos.");
-        }
+        // BLINDAJE: Buscamos el objeto exacto dentro del Set usando el ID
+        Animal animalEnLista = favoritos.stream()
+                .filter(a -> a.getId().equals(animalId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("El animal no se encuentra en tu lista de favoritos."));
 
-        favoritos.remove(animal);
+        // Removemos el objeto exacto que encontramos en la lista
+        favoritos.remove(animalEnLista);
+
         userRepository.save(user);
     }
 

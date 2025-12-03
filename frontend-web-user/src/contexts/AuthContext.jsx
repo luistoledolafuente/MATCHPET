@@ -96,19 +96,28 @@ export const AuthProvider = ({ children }) => {
         setError(null);
         delete axios.defaults.headers.common["Authorization"];
     };
-
+    
     const value = useMemo(() => ({
-        user,
-        userType,
-        token,
-        isAuthenticated,
-        loading,
-        error,
-        login,
-        register,
-        registerRefugio,
-        logout,
-    }), [user, userType, token, isAuthenticated, loading, error]);
+  user,
+  userType,
+  token,
+  isAuthenticated,
+  loading,
+  error,
+  login,
+  register,
+  registerRefugio,
+  logout,
+  setToken: ({ accessToken }) => {
+    if (accessToken) {
+      localStorage.setItem("accessToken", accessToken);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      loadProfile(); // ⚡ Carga perfil después de Google login
+    }
+  },
+}), [user, userType, token, isAuthenticated, loading, error]);
+
+
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

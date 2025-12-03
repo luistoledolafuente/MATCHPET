@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PawPrint, PlusCircle, Pencil, Trash2, Loader2, XCircle } from 'lucide-react';
+import { PawPrint, PlusCircle, Pencil, Trash2, Loader2, XCircle, Dog } from 'lucide-react';
 import { getMisAnimales, deleteAnimal } from '../../services/animalService';
 import AnimalForm from "../../components/refugio/animalForm";
 import { useAuth } from '../../contexts/AuthContext';
@@ -70,11 +70,11 @@ export default function MisMascotas() {
 
 
   return (
-    <div className="bg-[#FFF7E6] min-h-screen p-8 font-sans">
+    <div className="min-h-screen p-8 font-sans bg-gradient-to-b from-[#FFF7E6] to-[#AEEAFD]">
       <div className="max-w-7xl mx-auto space-y-8">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-[#FDB2A0]">
           <h1 className="text-4xl font-extrabold text-[#316B7A] flex items-center mb-4 sm:mb-0">
-            <PawPrint className="w-8 h-8 mr-3 text-[#FDB2A0]" />
+            <Dog className="w-8 h-8 mr-3 text-[#FDB2A0]" />
             Mis Mascotas en Adopción
           </h1>
           <button

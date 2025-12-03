@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAnimalById } from '../../services/animalService';
-import { Loader2, ArrowLeft, MapPin, Heart } from 'lucide-react';
+import { Loader2, ArrowLeft, MapPin, Heart, DollarSign } from 'lucide-react'; // <--- Agregamos DollarSign
 
 const BACKEND_BASE_URL = "http://127.0.0.1:8081";
 
@@ -41,9 +41,10 @@ export default function DetalleMascota() {
       : ["https://placehold.co/600x400/e2e8f0/cbd5e1?text=Sin+Foto"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FFF7E6] to-[#EAF7FD] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#FFF7E6] to-[#EAF7FD] flex items-center justify-center p-4 font-sans">
       {/* Card centrada */}
       <div className="max-w-5xl w-full bg-white rounded-2xl shadow-2xl border-4 border-gray-300 overflow-hidden">
+        
         {/* Botón Volver */}
         <div className="p-4 border-b border-gray-100 flex items-center">
           <button
@@ -55,7 +56,7 @@ export default function DetalleMascota() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Imagen */}
+          {/* Columna Izquierda: Imagen */}
           <div className="p-6 bg-gray-50">
             <div className="aspect-w-4 aspect-h-3 mb-4 rounded-xl overflow-hidden shadow-lg border-4 border-white">
               <img
@@ -81,8 +82,8 @@ export default function DetalleMascota() {
             </div>
           </div>
 
-          {/* Información */}
-          <div className="p-8 flex flex-col">
+          {/* Columna Derecha: Información */}
+          <div className="p-8 flex flex-col h-full">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h1 className="text-4xl font-bold text-[#316B7A] mb-2">
@@ -166,12 +167,29 @@ export default function DetalleMascota() {
               </div>
             </div>
 
-            <button
-              className="w-full bg-[#316B7A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#25525d] transition shadow-lg flex justify-center items-center mt-auto"
-              onClick={() => navigate("/dashboard/adoptante/mascotas")}
-            >
-              <Heart className="w-6 h-6 mr-2" /> ¡Quiero Adoptarlo!
-            </button>
+            {/* --- SECCIÓN DE BOTONES --- */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-auto pt-4 border-t border-gray-100">
+                {/* 1. Botón ADOPTAR */}
+                <button
+                  className="flex-1 bg-[#316B7A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#25525d] transition shadow-lg flex justify-center items-center"
+                  onClick={() => navigate("/dashboard/adoptante/mascotas")} 
+                  // Nota: Lo enviamos al feed para que use el modal desde allá, 
+                  // o podrías implementar el modal aquí mismo si prefieres.
+                >
+                  <Heart className="w-6 h-6 mr-2" /> 
+                  Adoptar
+                </button>
+
+                {/* 2. Botón DONAR (Nuevo) */}
+                <button
+                  className="flex-1 bg-white border-2 border-green-500 text-green-600 py-4 rounded-xl font-bold text-lg hover:bg-green-50 transition shadow-lg flex justify-center items-center"
+                  onClick={() => navigate(`/dashboard/adoptante/donaciones?animalId=${animal.animal_id}`)}
+                >
+                  <DollarSign className="w-6 h-6 mr-2" /> 
+                  Donar
+                </button>
+            </div>
+
           </div>
         </div>
       </div>

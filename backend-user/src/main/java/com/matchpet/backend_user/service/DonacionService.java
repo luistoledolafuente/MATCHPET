@@ -5,6 +5,7 @@ import com.matchpet.backend_user.dto.donacion.CreateDonacionRequest;
 import com.matchpet.backend_user.dto.donacion.DonacionResponseDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface DonacionService {
 
@@ -34,6 +35,7 @@ public interface DonacionService {
      */
     List<DonacionResponseDTO> getMisDonaciones(String adoptanteEmail);
 
+    void receiveWebhook(Map<String, Object> payload);
     // Aquí podríamos añadir un método 'webhook' para que la pasarela de pago
     // nos avise cuando el pago sea exitoso (ej: 'updateEstadoPago')
 }
