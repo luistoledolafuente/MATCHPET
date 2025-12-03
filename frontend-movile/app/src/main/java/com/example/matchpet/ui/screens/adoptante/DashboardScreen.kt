@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.matchpet.ui.components.BottomNavBar
@@ -42,7 +43,7 @@ fun DashboardScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("MatchPet - Adoptante", color = Color.White) },
+                    title = { Text("MATCHPET", color = Color.White, fontWeight = FontWeight.Bold) },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = WebTeal),
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {

@@ -1,15 +1,15 @@
 package com.example.matchpet.ui.screens.adoptante
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.matchpet.data.model.animal.Animal
+import com.example.matchpet.ui.theme.PaleTeal
 import com.example.matchpet.ui.theme.WebTeal
 import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.adoptante.FavoritesViewModel
@@ -50,7 +51,7 @@ fun FavoritesScreen(
                 title = { Text("Mis Favoritos") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -61,7 +62,7 @@ fun FavoritesScreen(
             )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize().background(PaleTeal)) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (error != null) {
@@ -88,10 +89,6 @@ fun FavoritesScreen(
                             onViewProfile = {
                                 navController.navigate("animal_detail/${animal.animal_id}")
                             },
-                            onRequest = {
-                                // Aquí podrías abrir el modal de solicitud o navegar
-                                navController.navigate("animal_detail/${animal.animal_id}")
-                            },
                             onRemove = {
                                 viewModel.removeFavorite(token, animal.animal_id)
                             }
@@ -107,7 +104,6 @@ fun FavoritesScreen(
 fun FavoriteGridItem(
     animal: Animal,
     onViewProfile: () -> Unit,
-    onRequest: () -> Unit,
     onRemove: () -> Unit
 ) {
     Card(
@@ -124,7 +120,8 @@ fun FavoriteGridItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                 contentScale = ContentScale.Crop
             )
 
@@ -149,13 +146,10 @@ fun FavoriteGridItem(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = onViewProfile) {
-                        Icon(Icons.Default.Info, contentDescription = "Ver Perfil", tint = WebTeal)
-                    }
-                    IconButton(onClick = onRequest) {
-                        Icon(Icons.Default.Pets, contentDescription = "Solicitar", tint = WebTeal)
+                        Icon(Icons.Default.Pets, contentDescription = "Ver Detalles", tint = WebTeal)
                     }
                     IconButton(onClick = onRemove) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
+                        Icon(Icons.Default.Favorite, contentDescription = "Desmarcar", tint = Color.Red)
                     }
                 }
             }
