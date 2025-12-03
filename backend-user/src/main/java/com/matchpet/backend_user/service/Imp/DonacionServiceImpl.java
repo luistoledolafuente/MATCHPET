@@ -7,10 +7,22 @@ import com.matchpet.backend_user.model.*;
 import com.matchpet.backend_user.model.lookup.EstadoPago;
 import com.matchpet.backend_user.repository.*;
 import com.matchpet.backend_user.service.DonacionService;
+
+// --- IMPORTS DE MERCADO PAGO ---
+import com.mercadopago.exceptions.MPApiException; // <--- IMPORTANTE
+import com.mercadopago.exceptions.MPException;    // <--- IMPORTANTE
+import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
+import com.mercadopago.client.preference.PreferenceClient;
+import com.mercadopago.client.preference.PreferenceItemRequest;
+import com.mercadopago.client.preference.PreferenceRequest;
+import com.mercadopago.resources.preference.Preference;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +43,7 @@ public class DonacionServiceImpl implements DonacionService {
     @Transactional
     public CheckoutResponseDTO createDonacion(CreateDonacionRequest request, String userEmail) {
 
+        // 1. Lógica de negocio previa (Guardar en BD)
         Donante donante = findOrCreateDonante(request, userEmail);
 
         Refugio refugio = (request.getRefugioId() != null)
@@ -55,23 +68,69 @@ public class DonacionServiceImpl implements DonacionService {
 
         Donacion donacionGuardada = donacionRepository.save(donacion);
 
-        String checkoutSessionId = "fake_checkout_session_" + donacionGuardada.getId() + "_" + System.currentTimeMillis();
+        // 2. Integración con Mercado Pago
+        try {
+            // A. Crear el ítem a cobrar
+            // NOTA: unitPrice espera BigDecimal. Si request.getMonto() es Double/Integer, úsalo directo si el tipo coincide,
+            // o usa 'new BigDecimal(request.getMonto().toString())' para mayor seguridad.
+            PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
+                    .id("DONACION-" + donacionGuardada.getId())
+                    .title("Donación a MatchPet")
+                    .description("Ayuda voluntaria para refugios")
+                    .pictureUrl("https://matchpet.org/logo.png")
+                    .quantity(1)
+                    .currencyId("PEN")
+                    .unitPrice(new BigDecimal(request.getMonto().toString())) // <--- Aseguramos conversión a BigDecimal
+                    .build();
 
-        return new CheckoutResponseDTO(checkoutSessionId, donacionGuardada.getId());
+            List<PreferenceItemRequest> items = new ArrayList<>();
+            items.add(itemRequest);
+
+            // B. Configurar a dónde vuelve el usuario después de pagar
+            PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
+                    .success("http://localhost:5173/dashboard/adoptante/donaciones?status=success")
+                    .pending("http://localhost:5173/dashboard/adoptante/donaciones?status=pending")
+                    .failure("http://localhost:5173/dashboard/adoptante/donaciones?status=failure")
+                    .build();
+
+            // C. Crear la solicitud de preferencia
+            PreferenceRequest preferenceRequest = PreferenceRequest.builder()
+                    .items(items)
+                    .backUrls(backUrls)
+                    /*.autoReturn("approved")*/
+                    .externalReference(String.valueOf(donacionGuardada.getId()))
+                    .build();
+
+            // D. Llamar a Mercado Pago
+            PreferenceClient client = new PreferenceClient();
+            Preference preference = client.create(preferenceRequest);
+
+            // 3. Retornar los datos reales al Frontend
+            return CheckoutResponseDTO.builder()
+                    .preferenceId(preference.getId())
+                    .url(preference.getInitPoint())
+                    .donacionId(donacionGuardada.getId())
+                    .build();
+
+        } catch (MPApiException e) {
+            // ESTO ES LO NUEVO: Imprimimos el contenido exacto del error que manda MercadoPago
+            System.err.println("❌ ERROR MP API (Detalle): " + e.getApiResponse().getContent());
+            e.printStackTrace();
+            throw new RuntimeException("Error MP API: " + e.getApiResponse().getContent());
+        } catch (Exception e) {
+            System.err.println("❌ Error General: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error General: " + e.getMessage());
+        }
     }
 
-    /**
-     * Lógica para encontrar un donante.
-     */
     private Donante findOrCreateDonante(CreateDonacionRequest request, String userEmail) {
-        // Opción 1: El usuario está logueado
         if (userEmail != null) {
             UserModel user = userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
 
             return donanteRepository.findByUser(user).orElseGet(() -> {
                 Donante nuevoDonante = new Donante();
-                // CORRECCIÓN: Uso de getNombreCompleto() para el donante logueado
                 nuevoDonante.setNombreCompleto(user.getNombreCompleto());
                 nuevoDonante.setEmail(user.getEmail());
                 nuevoDonante.setUser(user);
@@ -79,7 +138,6 @@ public class DonacionServiceImpl implements DonacionService {
             });
         }
 
-        // Opción 2: El usuario es un invitado
         if (request.getEmailDonante() == null || request.getNombreDonante() == null) {
             throw new RuntimeException("Para donar como invitado, se requiere nombre y email.");
         }
@@ -91,7 +149,6 @@ public class DonacionServiceImpl implements DonacionService {
             return donanteRepository.save(nuevoDonanteInvitado);
         });
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -124,10 +181,6 @@ public class DonacionServiceImpl implements DonacionService {
                 .collect(Collectors.toList());
     }
 
-
-    /**
-     * Método helper privado para convertir Donacion (Entidad) a DonacionResponseDTO
-     */
     private DonacionResponseDTO convertToDTO(Donacion donacion) {
         return DonacionResponseDTO.builder()
                 .id(donacion.getId())
