@@ -15,6 +15,7 @@ import com.example.matchpet.ui.screens.adoptante.AdoptanteMascotasScreen
 import com.example.matchpet.ui.screens.adoptante.AdoptanteSolicitudesScreen
 import com.example.matchpet.ui.screens.adoptante.AnimalDetailScreen
 import com.example.matchpet.ui.screens.adoptante.FavoritesScreen
+import com.example.matchpet.ui.screens.adoptante.RecomendacionesScreen
 
 @Composable
 fun AdoptanteDashboardNavHost(
@@ -40,6 +41,14 @@ fun AdoptanteDashboardNavHost(
         // 2. Pestaña de Favoritos
         composable("adoptante_favoritos") {
             FavoritesScreen(
+                token = token,
+                navController = navController
+            )
+        }
+
+        // Nueva: Pestaña de Recomendaciones IA
+        composable("adoptante_recomendaciones") {
+            RecomendacionesScreen(
                 token = token,
                 navController = navController
             )
