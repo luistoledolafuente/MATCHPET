@@ -5,10 +5,10 @@ import { useAuth } from '../../contexts/AuthContext';
 
 // Asunción de IDs (Verifica estos IDs en tu BD/modelo EstadoSolicitud.java)
 const ESTADO_IDS = {
-    ENVIADA: 1,
-    EN_PROCESO: 2,
-    APROBADA: 3,
-    RECHAZADA: 4,
+  ENVIADA: 1,
+  EN_PROCESO: 2,
+  APROBADA: 3,
+  RECHAZADA: 4,
 };
 
 export default function Solicitudes() {
@@ -21,9 +21,9 @@ export default function Solicitudes() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSolicitud, setSelectedSolicitud] = useState(null);
   const [gestionData, setGestionData] = useState({
-      estadoSolicitudId: null,
-      notasInternas: '',
-      mensajeAlAdoptante: '',
+    estadoSolicitudId: null,
+    notasInternas: '',
+    mensajeAlAdoptante: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [gestionError, setGestionError] = useState(null);
@@ -32,11 +32,11 @@ export default function Solicitudes() {
   // Función para obtener la clase de color basada en el estado
   const getEstadoClass = (estadoNombre) => {
     switch (estadoNombre) {
-        case 'Aprobada': return 'bg-green-100 text-green-800 border-green-500';
-        case 'Rechazada': return 'bg-red-100 text-red-800 border-red-500';
-        case 'En Proceso': return 'bg-blue-100 text-blue-800 border-blue-500';
-        case 'Enviada':
-        default: return 'bg-yellow-100 text-yellow-800 border-yellow-500';
+      case 'Aprobada': return 'bg-green-100 text-green-800 border-green-500';
+      case 'Rechazada': return 'bg-red-100 text-red-800 border-red-500';
+      case 'En Proceso': return 'bg-blue-100 text-blue-800 border-blue-500';
+      case 'Enviada':
+      default: return 'bg-yellow-100 text-yellow-800 border-yellow-500';
     }
   };
 
@@ -73,21 +73,21 @@ export default function Solicitudes() {
     setSelectedSolicitud(solicitud);
     // Inicializar el formulario con los datos actuales de la solicitud
     setGestionData({
-        estadoSolicitudId: solicitud.estadoSolicitud?.estadoSolicitudId || null,
-        notasInternas: solicitud.notasInternas || '',
-        mensajeAlAdoptante: solicitud.mensajeAlAdoptante || '',
+      estadoSolicitudId: solicitud.estadoSolicitud?.estadoSolicitudId || null,
+      notasInternas: solicitud.notasInternas || '',
+      mensajeAlAdoptante: solicitud.mensajeAlAdoptante || '',
     });
     setGestionError(null);
     setIsModalOpen(true);
   };
-  
+
   // Función para manejar el cambio en el formulario del modal
   const handleChange = (e) => {
     const { name, value } = e.target;
     setGestionData(prev => ({
-        ...prev,
-        // Convertir estadoSolicitudId a número
-        [name]: name === 'estadoSolicitudId' ? parseInt(value) : value,
+      ...prev,
+      // Convertir estadoSolicitudId a número
+      [name]: name === 'estadoSolicitudId' ? parseInt(value) : value,
     }));
   };
 
@@ -98,26 +98,25 @@ export default function Solicitudes() {
     setGestionError(null);
 
     if (!gestionData.estadoSolicitudId) {
-        setGestionError("Debes seleccionar un estado para la solicitud.");
-        setSubmitting(false);
-        return;
+      setGestionError("Debes seleccionar un estado para la solicitud.");
+      setSubmitting(false);
+      return;
     }
-    
+
     try {
-        // Endpoint PUT /api/solicitudes/{id} con el DTO completo
-        await solicitudService.updateSolicitud(selectedSolicitud.id, gestionData, token);
-        
-        // Éxito: Cerrar modal y refrescar la lista
-        setIsModalOpen(false);
-        fetchSolicitudes(); 
-        alert(`Solicitud #${selectedSolicitud.id} actualizada a: ${Object.keys(ESTADO_IDS).find(key => ESTADO_IDS[key] === gestionData.estadoSolicitudId)}`);
+      // Endpoint PUT /api/solicitudes/{id} con el DTO completo
+      await solicitudService.updateSolicitud(selectedSolicitud.id, gestionData, token);
+
+      setIsModalOpen(false);
+      fetchSolicitudes();
+      alert(`Solicitud #${selectedSolicitud.id} actualizada a: ${Object.keys(ESTADO_IDS).find(key => ESTADO_IDS[key] === gestionData.estadoSolicitudId)}`);
 
     } catch (err) {
-        console.error("Error al actualizar la solicitud:", err);
-        const errMsg = err.response?.data?.message || "Error al actualizar la solicitud. Verifica el ID del estado.";
-        setGestionError(errMsg);
+      console.error("Error al actualizar la solicitud:", err);
+      const errMsg = err.response?.data?.message || "Error al actualizar la solicitud. Verifica el ID del estado.";
+      setGestionError(errMsg);
     } finally {
-        setSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -128,73 +127,79 @@ export default function Solicitudes() {
       setLoading(false);
     }
   }, [token, authLoading]);
-
-  // Si el componente necesita el nombre real del animal/adoptante, debe usar sol.animal.nombre, sol.adoptante.nombreCompleto, etc.
-  
-  // Reemplazamos el renderizado de lista simple por la vista detallada
   const renderSolicitudes = () => (
-    <div className="space-y-6">
-        {solicitudes.map((solicitud) => (
-            <div key={solicitud.id} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                <div className="p-5 border-b flex justify-between items-start">
-                    <div>
-                        <h2 className="text-2xl font-bold text-[#316B7A]">
-                            Solicitud #{solicitud.id} para {solicitud.animal.nombre}
-                        </h2>
-                        <p className="text-sm text-gray-500 mt-1">
-                            Enviada por: <span className="font-semibold text-gray-700">{solicitud.adoptante.nombreCompleto}</span>
-                        </p>
-                    </div>
-                    <span className={`px-3 py-1 text-sm font-medium rounded-full border ${getEstadoClass(solicitud.estadoSolicitud?.nombre)}`}>
-                        {solicitud.estadoSolicitud?.nombre || 'Desconocido'}
-                    </span>
-                </div>
+  <div className="space-y-6">
+    {solicitudes.map((solicitud) => {
+      console.log(
+        `Solicitud #${solicitud.id} - mensaje del adoptante:`,
+        solicitud.mensaje_adoptante,
+        solicitud.mensajeAdoptante
+      );
 
-                <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    
-                    {/* Detalles del Adoptante y Mensaje Inicial */}
-                    <div className="space-y-3 md:col-span-2 border-r pr-6">
-                        <h3 className="text-lg font-semibold text-indigo-600 flex items-center">
-                            <User className="w-4 h-4 mr-2" /> Datos de Contacto
-                        </h3>
-                        <p className="text-sm"><span className="font-medium">Email:</span> {solicitud.adoptante.email}</p>
-                        <p className="text-sm"><span className="font-medium">Teléfono:</span> {solicitud.adoptante.telefono || 'N/A'}</p>
-
-                        <h3 className="text-lg font-semibold text-indigo-600 flex items-center pt-3">
-                            <MessageSquare className="w-4 h-4 mr-2" /> Mensaje Inicial
-                        </h3>
-                        <blockquote className="text-gray-700 border-l-4 border-[#FDB2A0] pl-3 italic bg-gray-50 p-3 rounded-md">
-                            {solicitud.mensajeAdoptante || 'Sin mensaje de presentación.'}
-                        </blockquote>
-                    </div>
-
-                    {/* Acciones */}
-                    <div className="md:col-span-1 space-y-3 pt-4 md:pt-0">
-                        <h3 className="text-lg font-semibold text-gray-700">Gestión</h3>
-                        <p className="text-sm text-gray-500">
-                            Última Actualización: {new Date(solicitud.fechaActualizacion).toLocaleDateString()}
-                        </p>
-                        <button
-                            onClick={() => openGestionModal(solicitud)}
-                            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-150 flex items-center justify-center"
-                        >
-                            <Check className="w-4 h-4 mr-2" />
-                            Gestionar Solicitud
-                        </button>
-                    </div>
-                </div>
+      return (
+        <div key={solicitud.id} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="p-5 border-b flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-[#316B7A]">
+                Solicitud #{solicitud.id} para {solicitud.animal.nombre}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Enviada por: <span className="font-semibold text-gray-700">{solicitud.adoptante.nombreCompleto}</span>
+              </p>
             </div>
-        ))}
-    </div>
-  );
+            <span className={`px-3 py-1 text-sm font-medium rounded-full border ${getEstadoClass(solicitud.estadoSolicitud?.nombre)}`}>
+              {solicitud.estadoSolicitud?.nombre || 'Desconocido'}
+            </span>
+          </div>
+
+          <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            {/* Detalles del Adoptante y Mensaje Inicial */}
+            <div className="space-y-3 md:col-span-2 border-r pr-6">
+              <h3 className="text-lg font-semibold text-[#316B7A] flex items-center">
+                <User className="w-4 h-4 mr-2" /> Datos de Contacto
+              </h3>
+              <p className="text-sm"><span className="font-medium">Email:</span> {solicitud.adoptante.email}</p>
+              <p className="text-sm"><span className="font-medium">Teléfono:</span> {solicitud.adoptante.telefono || 'N/A'}</p>
+
+              <h3 className="text-lg font-semibold text-[#316B7A] flex items-center pt-3">
+                <MessageSquare className="w-4 h-4 mr-2" /> Mensaje Inicial
+              </h3>
+              <blockquote className="text-gray-700 border-l-4 border-[#FDB2A0] pl-3 italic bg-gray-50 p-3 rounded-md">
+                {solicitud.mensajeAdoptante || 'Sin mensaje de presentación.'}
+              </blockquote>
+            </div>
+
+            {/* Acciones */}
+            <div className="md:col-span-1 space-y-3 pt-4 md:pt-0">
+              <h3 className="text-lg font-semibold text-gray-700">Gestión</h3>
+              <p className="text-sm text-gray-500">
+                Última Actualización: {new Date(solicitud.fechaActualizacion).toLocaleDateString()}
+              </p>
+              <button
+                onClick={() => openGestionModal(solicitud)}
+                className="w-full bg-[#316B7A] hover:bg-[#274f5a] text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-150 flex items-center justify-center"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Gestionar Solicitud
+              </button>
+            </div>
+
+          </div>
+        </div>
+      );
+    })}
+  </div>
+);
 
   return (
-    <div className="bg-[#FFF7E6] min-h-screen p-8 font-sans">
+    <div className="min-h-screen p-8 font-sans bg-gradient-to-b from-[#FFF7E6] to-[#AEEAFD]">
+
       <div className="max-w-7xl mx-auto space-y-8">
+
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-[#FDB2A0]">
           <h1 className="text-4xl font-extrabold text-[#316B7A] flex items-center mb-4 sm:mb-0">
-            <PawPrint className="w-8 h-8 mr-3 text-[#FDB2A0]" />
-            Solicitudes de Adopción
+            Solicitudes de Adopción <PawPrint className="w-8 h-8 mr-3 text-[#FDB2A0]" />
           </h1>
         </header>
 
@@ -215,18 +220,19 @@ export default function Solicitudes() {
         {!loading && !authLoading && solicitudes.length > 0 && renderSolicitudes()}
 
         {!loading && !authLoading && solicitudes.length === 0 && isAuthenticated && (
-          <div className="text-center p-16 bg-white rounded-2xl shadow-xl">
+          <div className="text-center p-16 bg-white/70 backdrop-blur rounded-3xl shadow-xl">
             <PawPrint className="w-12 h-12 mx-auto text-[#316B7A] opacity-50 mb-4" />
             <p className="text-xl text-gray-600">No hay solicitudes de adopción por el momento.</p>
           </div>
         )}
 
         {!loading && !authLoading && !isAuthenticated && !error && (
-          <div className="text-center p-16 bg-white rounded-2xl shadow-xl">
+          <div className="text-center p-16 bg-white/70 backdrop-blur rounded-3xl shadow-xl">
             <XCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
             <p className="text-xl text-gray-600">Por favor, inicia sesión como Refugio para ver las solicitudes.</p>
           </div>
         )}
+
       </div>
 
       {/* --- Modal de Gestión de Solicitudes (PUT) --- */}
@@ -234,10 +240,10 @@ export default function Solicitudes() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-lg">
             <h3 className="text-2xl font-bold mb-4 text-gray-800">Gestionar Solicitud #{selectedSolicitud.id}</h3>
-            <p className="mb-4 text-gray-600">Para: **{selectedSolicitud.animal.nombre}** - Adoptante: **{selectedSolicitud.adoptante.nombreCompleto}**</p>
-            
+            <p className="mb-4 text-gray-600">Para: <strong>{selectedSolicitud.animal.nombre}</strong> - Adoptante: <strong>{selectedSolicitud.adoptante.nombreCompleto}</strong></p>
+
             <form onSubmit={handleUpdateSolicitud}>
-              
+
               {/* Selector de Estado */}
               <div className="mb-4">
                 <label htmlFor="estadoSolicitudId" className="block text-sm font-medium text-gray-700 mb-1">Cambiar Estado *</label>
@@ -272,7 +278,7 @@ export default function Solicitudes() {
                   placeholder="Escribe aquí la respuesta oficial que verá el adoptante."
                 ></textarea>
               </div>
-              
+
               {/* Notas Internas */}
               <div className="mb-6">
                 <label htmlFor="notasInternas" className="block text-sm font-medium text-gray-700 mb-1">Notas Internas (Solo para el Refugio)</label>
@@ -287,7 +293,7 @@ export default function Solicitudes() {
                   placeholder="Registra comentarios privados de gestión."
                 ></textarea>
               </div>
-              
+
               {gestionError && (
                 <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded-md flex items-center">
                   <AlertTriangle className="w-5 h-5 mr-3" />
@@ -306,7 +312,7 @@ export default function Solicitudes() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-150 disabled:opacity-50 flex items-center"
+                  className="px-4 py-2 bg-[#316B7A] text-white font-semibold rounded-lg hover:bg-[#274f5a] transition duration-150 disabled:opacity-50 flex items-center"
                   disabled={submitting}
                 >
                   {submitting ? (
@@ -323,4 +329,5 @@ export default function Solicitudes() {
       )}
     </div>
   );
+
 }

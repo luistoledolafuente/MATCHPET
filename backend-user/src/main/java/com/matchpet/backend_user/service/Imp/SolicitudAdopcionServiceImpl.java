@@ -101,7 +101,8 @@ public class SolicitudAdopcionServiceImpl implements SolicitudAdopcionService {
                 .fechaSolicitud(solicitud.getFechaSolicitud())
                 .fechaActualizacion(solicitud.getFechaActualizacion())
                 .notasInternas(solicitud.getNotasInternas())
-                .mensajeAlAdoptante(solicitud.getMensajeAlAdoptante())
+                .mensajeAdoptante(solicitud.getMensajeAdoptante())  // ✅ mensaje del adoptante
+                .mensajeAlAdoptante(solicitud.getMensajeAlAdoptante()) // ✅ mensaje del refugio
                 .estadoSolicitud(solicitud.getEstadoSolicitud())
                 .animal(convertAnimalToDTO(solicitud.getAnimal()))
                 .adoptante(convertAdoptanteToDTO(solicitud.getAdoptante()))

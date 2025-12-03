@@ -59,13 +59,14 @@ public class UserModel implements UserDetails {
     @Column(name = "esta_activo", nullable = false)
     private Boolean estaActivo;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "Usuario_Roles",
-            joinColumns = @JoinColumn(name = "usuario_id"),
-            inverseJoinColumns = @JoinColumn(name = "rol_id")
-    )
-    private Set<RolModel> roles;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
+@JoinTable(
+        name = "Usuario_Roles",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "rol_id")
+)
+private Set<RolModel> roles;
+
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinTable(

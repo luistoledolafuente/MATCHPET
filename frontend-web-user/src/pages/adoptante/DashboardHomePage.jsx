@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import animalService, { getFavorites } from "../../services/animalService";
-import { getMisSolicitudes } from "../../services/solicitudService";
+import { getMisSolicitudes } from "../../services/solicitudService"; import {
+  PawPrint,
+  BarChart3,
+  UserCheck,
+  Clock,
+  MapPin,
+  Loader2,
+  Heart,
+  Cpu
+} from "lucide-react";
 
-import { Loader2, MapPin, PawPrint, UserCheck, Cpu, Heart } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 import homeFamiliaImg from "../../assets/images/home_Familia.png";
 
@@ -13,7 +22,7 @@ const BACKEND_BASE_URL = "http://127.0.0.1:8081";
 const PetCard = ({ animal, onClick }) => {
   const imageUrl = animal.fotos?.[0]
     ? `${BACKEND_BASE_URL}${animal.fotos[0]}`
-    : "https://placehold.co/400x300/AEEAFD/2B6777?text=Mascota"; 
+    : "https://placehold.co/400x300/AEEAFD/2B6777?text=Mascota";
   const secondaryText = animal.refugio || animal.estadoAdopcion || "Ver Detalles";
 
   return (
@@ -42,12 +51,12 @@ const PetCard = ({ animal, onClick }) => {
 };
 
 const ApplicationCard = ({ solicitud, onClick }) => {
-  const animal = solicitud.animal || {}; 
+  const animal = solicitud.animal || {};
   const estado = solicitud.estadoSolicitud?.nombre || "Desconocido";
 
   const imageUrl = animal.fotos?.[0]
     ? `${BACKEND_BASE_URL}${animal.fotos[0]}`
-    : "https://placehold.co/400x300/FFF8F0/5E5E5E?text=Solicitud"; 
+    : "https://placehold.co/400x300/FFF8F0/5E5E5E?text=Solicitud";
   const getStateStyle = (estado) => {
     switch (estado) {
       case "Aprobada": return "bg-green-100 text-green-700";
@@ -81,14 +90,12 @@ const ApplicationCard = ({ solicitud, onClick }) => {
   );
 };
 
-
-
 export default function DashboardHome() {
   const { user, token, isAuthenticated, authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [mascotas, setMascotas] = useState([]); 
-  const [solicitudes, setSolicitudes] = useState([]); 
+  const [mascotas, setMascotas] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
   const [favoritos, setFavoritos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,9 +126,8 @@ export default function DashboardHome() {
     if (!authLoading) fetchData();
   }, [authLoading, isAuthenticated, token]);
 
-  const adoptadas = mascotas.filter(m => m.estadoAdopcion === "Adoptada").length;
-  const enProceso = mascotas.filter(m => m.estadoAdopcion === "En Proceso").length;
-
+  const solicitudesAprobadas = solicitudes.filter(s => s.estadoSolicitud?.nombre?.toLowerCase() === "aprobada").length;
+  const solicitudesEnviadas = solicitudes.length;
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-[#AEEAFD] to-[#FFF8F0] flex flex-col items-center pb-20 relative">
@@ -208,20 +214,18 @@ export default function DashboardHome() {
               <p className="mt-1 text-center text-sm text-[#5E5E5E]">Tus mascotas favoritas</p>
             </div>
 
-            {/* Mascotas adoptadas */}
+            {/* ---------- ESTADÍSTICAS ---------- */}
             <div className="bg-white rounded-xl w-64 h-40 flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-shadow duration-300 border-2 border-[#AEEAFD] p-4">
               <UserCheck className="w-12 h-12 mb-2 text-[#AEEAFD]" />
-              <p className="text-4xl text-[#2B6777]">{adoptadas}</p>
-              <p className="mt-1 text-center text-sm text-[#5E5E5E]">Mascotas adoptadas</p>
+              <p className="text-4xl text-[#2B6777]">{solicitudesAprobadas}</p>
+              <p className="mt-1 text-center text-sm text-[#5E5E5E]">Solicitudes aprobadas</p>
             </div>
-
             {/* En proceso */}
             <div className="bg-white rounded-xl w-64 h-40 flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-shadow duration-300 border-2 border-[#5E5E5E] p-4">
-              <Cpu className="w-12 h-12 mb-2 text-[#5E5E5E]" />
-              <p className="text-4xl text-[#2B6777]">{enProceso}</p>
-              <p className="mt-1 text-center text-sm text-[#5E5E5E]">En proceso de adopción</p>
+              <Clock className="w-12 h-12 mb-2 text-[#5E5E5E]" />
+              <p className="text-4xl text-[#2B6777]">{solicitudesEnviadas}</p>
+              <p className="mt-1 text-center text-sm text-[#5E5E5E]">Solicitudes enviadas</p>
             </div>
-
           </div>
         </div>
       )}
@@ -229,9 +233,11 @@ export default function DashboardHome() {
       <br />
       {!loading && !error && mascotas.length > 0 && (
         <div className="mt-10 w-full max-w-7xl px-4">
-          <h2 className="text-2xl font-bold text-[#2B6777] mb-4">Mascotas que recien fueron añadidas</h2>
+          <h2 className="text-2xl font-bold text-[#2B6777] mb-4">
+            Mascotas que recién fueron añadidas
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-            {mascotas.map((animal) => (
+            {mascotas.slice(0, 3).map((animal) => (
               <PetCard
                 key={animal.animal_id}
                 animal={animal}
@@ -241,11 +247,14 @@ export default function DashboardHome() {
           </div>
         </div>
       )}
+
       {!loading && !error && solicitudes.length > 0 && (
         <div className="mt-10 w-full max-w-7xl px-4">
-          <h2 className="text-2xl font-bold text-[#2B6777] mb-4">Tus Solicitudes Recientes</h2>
+          <h2 className="text-2xl font-bold text-[#2B6777] mb-4">
+            Tus Solicitudes Recientes
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-            {solicitudes.map((solicitud) => (
+            {solicitudes.slice(0, 3).map((solicitud) => (
               <ApplicationCard
                 key={solicitud.id}
                 solicitud={solicitud}
@@ -255,6 +264,7 @@ export default function DashboardHome() {
           </div>
         </div>
       )}
+
       <br />
       <br />
       {!loading && !error && mascotas.length === 0 && (

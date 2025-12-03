@@ -37,7 +37,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+                                    Authentication authentication) throws IOException, ServletException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
@@ -51,44 +51,41 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        // Redirige al frontend URL después de iniciar sesión exitosamente
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        // Redirige al frontend con los tokens como parámetros
+        String redirectUrl = frontendUrl + "/oauth2/redirect?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+        response.sendRedirect(redirectUrl);
 
-        // Este es el lugar donde devuelves los tokens como JSON, si es necesario redirigir:
-        // response.sendRedirect(frontendUrl + "/dashboard");  // Por ejemplo, redirigiendo al dashboard.
+        }
 
-        response.getWriter().write(
-                "{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}"
-        );
-        response.getWriter().flush();
-    }
 
-    private UserModel registerNewGoogleUser(String email, String nombreCompleto) {
+        private UserModel registerNewGoogleUser(String email, String nombreCompleto) {
+    RolModel defaultRole = rolRepository.findByNombreRol("Adoptante")
+            .orElseThrow(() -> new RuntimeException("Error: Rol 'Adoptante' no encontrado."));
 
-        RolModel defaultRole = rolRepository.findByNombreRol("Adoptante")
-                .orElseThrow(() -> new RuntimeException("Error: Rol 'Adoptante' no encontrado."));
+    String randomPassword = UUID.randomUUID().toString();
 
-        String randomPassword = UUID.randomUUID().toString();
+    String[] nombreParts = nombreCompleto.split("\\s+", 3);
+    String nombre = nombreParts.length > 0 ? nombreParts[0] : "Usuario";
+    String apellidoPaterno = nombreParts.length > 1 ? nombreParts[1] : "";
+    String apellidoMaterno = nombreParts.length > 2 ? nombreParts[2] : "";
 
-        String[] nombreParts = nombreCompleto.split("\\s+", 3);
-        String nombre = nombreParts.length > 0 ? nombreParts[0] : "Usuario";
-        String apellidoPaterno = nombreParts.length > 1 ? nombreParts[1] : "";
-        String apellidoMaterno = nombreParts.length > 2 ? nombreParts[2] : "";
+    UserModel newUser = UserModel.builder()
+            .email(email)
+            .nombre(nombre)
+            .apellidoPaterno(apellidoPaterno)
+            .apellidoMaterno(apellidoMaterno)
+            .hashContrasena(passwordEncoder.encode(randomPassword))
+            .roles(Set.of(defaultRole)) // Aquí se asigna el rol existente
+            .estaActivo(true)
+            .fechaCreacionPerfil(new Timestamp(System.currentTimeMillis()))
+            .fechaActualizacion(new Timestamp(System.currentTimeMillis()))
+            .telefono("000000000")
+            .build();
 
-        UserModel newUser = UserModel.builder()
-                .email(email)
-                .nombre(nombre)
-                .apellidoPaterno(apellidoPaterno)
-                .apellidoMaterno(apellidoMaterno)
-                .hashContrasena(passwordEncoder.encode(randomPassword))
-                .roles(Set.of(defaultRole))
-                .estaActivo(true)
-                .fechaCreacionPerfil(new Timestamp(System.currentTimeMillis()))
-                .fechaActualizacion(new Timestamp(System.currentTimeMillis()))
-                .telefono("000000000")
-                .build();
-
-        return userRepository.save(newUser);
-    }
+    return userRepository.save(newUser);
 }
+
+
+}
+
+
