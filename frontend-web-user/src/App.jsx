@@ -14,6 +14,8 @@ import UnderConstructionPage from "./pages/UnderConstructionPage.jsx";
 // --- Autenticación ---
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
+import ResetPassword from "./pages/auth/ResetPassword.jsx";
+
 
 // --- Dashboards Adoptante ---
 import DashboardHomePage from "./pages/adoptante/DashboardHomePage.jsx";
@@ -122,6 +124,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegisterPage />} />
         <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
 
 
         {/* Dashboard */}

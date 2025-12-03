@@ -143,34 +143,22 @@ export default function PerfilAdoptante() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputField
-            label="Nombre"
-            name="nombre"
-            icon={User}
-            value={formData.nombre}
-            onChange={handleChange}
+            label="Nombre" name="nombre" icon={User}value={formData.nombre} onChange={handleChange}
             disabled={!editMode}
           />
           <InputField
-            label="Apellido Paterno"
-            name="apellidoPaterno"
-            icon={User}
-            value={formData.apellidoPaterno}
-            onChange={handleChange}
+            label="Apellido Paterno" name="apellidoPaterno"icon={User}value={formData.apellidoPaterno} onChange={handleChange}
             disabled={!editMode}
           />
           <InputField
-            label="Apellido Materno"
-            name="apellidoMaterno"
-            icon={User}
+            label="Apellido Materno" name="apellidoMaterno"icon={User}
             value={formData.apellidoMaterno}
             onChange={handleChange}
             disabled={!editMode}
           />
           <InputField
             label="Teléfono"
-            name="telefono"
-            icon={Phone}
-            value={formData.telefono}
+            name="telefono" icon={Phone} value={formData.telefono}
             onChange={handleChange}
             disabled={!editMode}
           />
