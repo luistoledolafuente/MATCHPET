@@ -69,6 +69,7 @@ public class SecurityConfig {
                                 "/api/refugios/register",
                                 "/api/lookups/**",
                                 "/api/donaciones/checkout",
+                                "/api/donaciones/webhook",
                                 "/login/oauth2/**",
                                 "/",
                                 "/error"

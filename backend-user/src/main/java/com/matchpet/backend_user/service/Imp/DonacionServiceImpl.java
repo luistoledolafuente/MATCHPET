@@ -16,10 +16,12 @@ import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
 import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.resources.preference.Preference;
-import com.mercadopago.client.payment.PaymentClient; // <--- NUEVO
-import com.mercadopago.resources.payment.Payment;   // <--- NUEVO
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.resources.payment.Payment;
+import com.mercadopago.client.preference.PreferencePayerRequest;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value; // <--- Importante para @Value
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,13 @@ public class DonacionServiceImpl implements DonacionService {
     private final RefugioRepository refugioRepository;
     private final AnimalRepository animalRepository;
     private final EstadoPagoRepository estadoPagoRepository;
+
+    // --- VARIABLES DE ENTORNO (Configurables en application.yml) ---
+    @Value("${app.frontend-url:http://localhost:5173}") // Valor por defecto si no existe en yml
+    private String frontendUrl;
+
+    @Value("${app.backend-domain:http://localhost:8081}") // Valor por defecto (ojo: para webhook real necesitas https pública)
+    private String backendDomain;
 
     @Override
     @Transactional
@@ -83,43 +92,45 @@ public class DonacionServiceImpl implements DonacionService {
             List<PreferenceItemRequest> items = new ArrayList<>();
             items.add(itemRequest);
 
-            // B. LÓGICA DE URLS DINÁMICAS (Web vs Móvil)
+            // B. Configurar URLs de retorno
+            String urlSuccess = frontendUrl + "/dashboard/adoptante/donaciones?status=success";
+            String urlFailure = frontendUrl + "/dashboard/adoptante/donaciones?status=failure";
+            String urlPending = frontendUrl + "/dashboard/adoptante/donaciones?status=pending";
 
-            // Valores por defecto para la WEB
-            String urlSuccess = "http://localhost:5173/dashboard/adoptante/donaciones?status=success";
-            String urlFailure = "http://localhost:5173/dashboard/adoptante/donaciones?status=failure";
-            String urlPending = "http://localhost:5173/dashboard/adoptante/donaciones?status=pending";
-
-            // Si el request trae URLs (es decir, viene del Móvil), usamos esas
-            if (request.getSuccessUrl() != null && !request.getSuccessUrl().isEmpty()) {
-                urlSuccess = request.getSuccessUrl();
-            }
+            if (request.getSuccessUrl() != null && !request.getSuccessUrl().isEmpty()) urlSuccess = request.getSuccessUrl();
             if (request.getFailureUrl() != null && !request.getFailureUrl().isEmpty()) {
                 urlFailure = request.getFailureUrl();
-                // Usualmente si falla o está pendiente en móvil, queremos volver a la misma pantalla de error
                 urlPending = request.getFailureUrl();
             }
 
-            // Configuramos las URLs en la preferencia
             PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
                     .success(urlSuccess)
                     .pending(urlPending)
                     .failure(urlFailure)
                     .build();
 
+            // --- ¡AQUÍ ESTABA EL ERROR! FALTABA CREAR ESTE OBJETO ---
+            PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
+                    .name(donante.getNombreCompleto())
+                    .email(donante.getEmail())
+                    .build();
+            // --------------------------------------------------------
+
             // C. Crear la solicitud de preferencia
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(items)
+                    .payer(payerRequest) // Ahora sí existe esta variable
                     .backUrls(backUrls)
-                    // .autoReturn("approved") // Puedes descomentarlo si quieres redirección automática inmediata
+                    /*.autoReturn("approved")*/
                     .externalReference(String.valueOf(donacionGuardada.getId()))
+                    // IMPORTANTE: Descomenta esto y asegúrate que backendDomain sea tu URL de NGROK
+                    /*.notificationUrl(backendDomain + "/api/donaciones/webhook")*/
                     .build();
 
             // D. Llamar a Mercado Pago
             PreferenceClient client = new PreferenceClient();
             Preference preference = client.create(preferenceRequest);
 
-            // 3. Retornar los datos reales al Frontend
             return CheckoutResponseDTO.builder()
                     .preferenceId(preference.getId())
                     .url(preference.getInitPoint())
@@ -127,13 +138,13 @@ public class DonacionServiceImpl implements DonacionService {
                     .build();
 
         } catch (MPApiException e) {
-            System.err.println("❌ ERROR MP API (Detalle): " + e.getApiResponse().getContent());
+            System.err.println("❌ ERROR MP API: " + e.getApiResponse().getContent());
             e.printStackTrace();
-            throw new RuntimeException("Error MP API: " + e.getApiResponse().getContent());
+            throw new RuntimeException("Error MP API");
         } catch (Exception e) {
             System.err.println("❌ Error General: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Error General: " + e.getMessage());
+            throw new RuntimeException("Error General");
         }
     }
 
@@ -200,20 +211,31 @@ public class DonacionServiceImpl implements DonacionService {
         try {
             // 1. Validar que sea un evento de pago
             String type = (String) payload.get("type");
-            if (!"payment".equals(type)) {
-                return; // Ignoramos otros eventos (como suscripciones, etc.)
+            // A veces MP envía "payment" en topic o type, verificamos ambos por seguridad
+            if (type == null && payload.containsKey("topic")) {
+                type = (String) payload.get("topic");
             }
 
-            // 2. Obtener el ID del pago desde el JSON de Mercado Pago
-            Map<String, Object> data = (Map<String, Object>) payload.get("data");
-            String paymentId = (String) data.get("id");
+            if (!"payment".equals(type)) {
+                return; // Ignoramos otros eventos
+            }
 
-            // 3. Consultar a Mercado Pago el estado real de ese pago
+            // 2. Obtener el ID del pago
+            String paymentId = null;
+            if (payload.containsKey("data")) {
+                Map<String, Object> data = (Map<String, Object>) payload.get("data");
+                paymentId = (String) data.get("id");
+            } else if (payload.containsKey("id")) {
+                paymentId = (String) payload.get("id");
+            }
+
+            if (paymentId == null) return;
+
+            // 3. Consultar a Mercado Pago el estado real
             PaymentClient client = new PaymentClient();
             Payment payment = client.get(Long.parseLong(paymentId));
 
-            // 4. Buscar la donación en nuestra BD usando el "external_reference"
-            // (Recuerda que al crear la preferencia guardamos donacionId en external_reference)
+            // 4. Buscar la donación en BD
             String externalRef = payment.getExternalReference();
             if (externalRef == null) return;
 
@@ -221,22 +243,20 @@ public class DonacionServiceImpl implements DonacionService {
             Donacion donacion = donacionRepository.findById(donacionId)
                     .orElseThrow(() -> new RuntimeException("Donación no encontrada"));
 
-            // 5. Actualizar el estado según lo que diga Mercado Pago
-            String status = payment.getStatus(); // approved, pending, rejected...
+            // --- MEJORA: Guardamos el ID de transacción de MP ---
+            donacion.setGatewayTransaccionId(String.valueOf(payment.getId()));
 
-            // Mapeamos el status de MP a nuestros IDs de EstadoPago
-            // Asumiendo: 1=Pendiente, 2=Aprobado/Completado, 3=Rechazado (Ajusta según tu BD)
-            EstadoPago nuevoEstado;
+            // 5. Actualizar el estado
+            String status = payment.getStatus();
+            EstadoPago nuevoEstado = null;
 
             if ("approved".equals(status)) {
                 nuevoEstado = estadoPagoRepository.findById(2).orElse(null); // COMPLETADO
             } else if ("rejected".equals(status) || "cancelled".equals(status)) {
                 nuevoEstado = estadoPagoRepository.findById(3).orElse(null); // RECHAZADO
-            } else {
-                return; // Si sigue pendiente, no hacemos nada
             }
 
-            if (nuevoEstado != null) {
+            if (nuevoEstado != null && !nuevoEstado.equals(donacion.getEstadoPago())) {
                 donacion.setEstadoPago(nuevoEstado);
                 donacionRepository.save(donacion);
                 System.out.println("✅ Webhook: Donación #" + donacionId + " actualizada a " + status);
@@ -244,7 +264,6 @@ public class DonacionServiceImpl implements DonacionService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            // No lanzamos error para que Mercado Pago no siga reintentando infinitamente
             System.err.println("Error procesando webhook: " + e.getMessage());
         }
     }
