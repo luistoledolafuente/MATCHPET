@@ -31,7 +31,22 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#FFF7E6] flex items-center justify-center">
       <div className="flex w-full max-w-5xl min-h-[60vh] rounded-xl overflow-hidden shadow-lg bg-white/90">
 
+
         {/* Formulario */}
+        <div className="absolute top-4 left-4">
+          <Link
+            to="/"
+            className="inline-flex items-center text-xl font-bold text-[#407581]"
+          >
+            <img
+              src="/src/assets/images/logo_matchpet.png"
+              alt="Pata de mascota"
+              className="w-26 h-12 mr-2"
+            />
+            MatchPet
+          </Link>
+        </div>
+
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="w-full max-w-md space-y-6">
             <div className="text-center">
