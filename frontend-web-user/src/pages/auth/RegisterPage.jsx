@@ -51,57 +51,57 @@ export default function RegisterPage() {
   }, []);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-  setSuccess('');
-  setLoading(true);
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
 
-  if (formData.password !== formData.confirmPassword) {
-    setError('Las contraseñas no coinciden');
-    setLoading(false);
-    return;
-  }
-
-  try {
-    if (userType === 'adoptante') {
-      const [nombre, apellidoPaterno, apellidoMaterno] = formData.nombreCompleto.split(' ');
-      await authService.register({
-        email: formData.email,
-        password: formData.password,
-        nombre: nombre || '',
-        apellidoPaterno: apellidoPaterno || '',
-        apellidoMaterno: apellidoMaterno || '',
-        telefono: formData.telefono,
-        fechaNacimiento: formData.fechaNacimiento,
-        direccion: formData.direccion,
-        ciudad: formData.ciudad,
-        pais: formData.pais || 'Perú',
-      });
-      setSuccess('¡Adoptante registrado exitosamente!');
-    } else {
-      await authService.registerRefugio({
-        emailLogin: formData.email,
-        password: formData.password,
-        nombreRefugio: formData.nombreRefugio,
-        descripcion: formData.descripcion || 'Refugio en MatchPet',
-        direccion: formData.direccion,
-        ciudad: formData.ciudad,
-        pais: formData.pais || 'Perú',
-        emailRefugio: formData.email,
-        personaContacto: formData.personaContacto,
-        telefonoContacto: formData.telefono,
-        urlSitioWeb: formData.urlSitioWeb || '',
-      });
-      setSuccess('¡Refugio registrado exitosamente!');
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      setLoading(false);
+      return;
     }
-    setTimeout(() => navigate('/login'), 2000);
-  } catch (err) {
-    console.error('Error API:', err.response ? err.response.data : err.message);
-    setError(err.response?.data?.message || 'Error en el registro. Revisa los datos.');
-  } finally {
-    setLoading(false);
-  }
-};
+
+    try {
+      if (userType === 'adoptante') {
+        const [nombre, apellidoPaterno, apellidoMaterno] = formData.nombreCompleto.split(' ');
+        await authService.register({
+          email: formData.email,
+          password: formData.password,
+          nombre: nombre || '',
+          apellidoPaterno: apellidoPaterno || '',
+          apellidoMaterno: apellidoMaterno || '',
+          telefono: formData.telefono,
+          fechaNacimiento: formData.fechaNacimiento,
+          direccion: formData.direccion,
+          ciudad: formData.ciudad,
+          pais: formData.pais || 'Perú',
+        });
+        setSuccess('¡Adoptante registrado exitosamente!');
+      } else {
+        await authService.registerRefugio({
+          emailLogin: formData.email,
+          password: formData.password,
+          nombreRefugio: formData.nombreRefugio,
+          descripcion: formData.descripcion || 'Refugio en MatchPet',
+          direccion: formData.direccion,
+          ciudad: formData.ciudad,
+          pais: formData.pais || 'Perú',
+          emailRefugio: formData.email,
+          personaContacto: formData.personaContacto,
+          telefonoContacto: formData.telefono,
+          urlSitioWeb: formData.urlSitioWeb || '',
+        });
+        setSuccess('¡Refugio registrado exitosamente!');
+      }
+      setTimeout(() => navigate('/login'), 2000);
+    } catch (err) {
+      console.error('Error API:', err.response ? err.response.data : err.message);
+      setError(err.response?.data?.message || 'Error en el registro. Revisa los datos.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -113,6 +113,20 @@ export default function RegisterPage() {
             className="w-full h-full bg-cover bg-center"
             style={{ backgroundImage: "url('/src/assets/images/gato_home.png')" }}
           ></div>
+        </div>
+
+        <div className="absolute top-4 left-4">
+          <Link
+            to="/"
+            className="inline-flex items-center text-xl font-bold text-[#407581]"
+          >
+            <img
+              src="/src/assets/images/logo_matchpet.png"
+              alt="Pata de mascota"
+              className="w-26 h-12 mr-2"
+            />
+            MatchPet
+          </Link>
         </div>
 
         {/* Formulario */}
@@ -130,11 +144,10 @@ export default function RegisterPage() {
                   key={type}
                   type="button"
                   onClick={() => setUserType(type)}
-                  className={`flex-1 py-2 text-center text-md font-semibold transition-all duration-300 ${
-                    userType === type
+                  className={`flex-1 py-2 text-center text-md font-semibold transition-all duration-300 ${userType === type
                       ? 'bg-white text-[#2B6777]'
                       : 'text-black hover:bg-white hover:text-[#2B6777]'
-                  } ${type === 'adoptante' ? 'rounded-l-xl' : 'rounded-r-xl'}`}
+                    } ${type === 'adoptante' ? 'rounded-l-xl' : 'rounded-r-xl'}`}
                 >
                   {type === 'adoptante' ? 'Adoptante' : 'Refugio'}
                 </button>
