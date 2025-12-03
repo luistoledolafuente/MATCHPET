@@ -73,7 +73,7 @@ export default function DashboardHome() {
     a.estadoAdopcion?.trim().toLowerCase() === "en proceso"
   ).length;
   const estadoAdoptada = animals.filter(a =>
-    a.estadoAdopcion?.trim().toLowerCase() === "adoptada"
+    a.estadoAdopcion?.trim().toLowerCase() === "adoptado"
   ).length;
 
   // Datos para gráficos
@@ -121,14 +121,92 @@ export default function DashboardHome() {
           <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#007C91] rounded-full opacity-10 blur-3xl"></div>
         </header>
 
-        {/* Estadísticas */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          <StatCard title="Total Mascotas" value={totalAnimals} Icon={PawPrint} colorClass={PRIMARY_COLOR} gradientClass="bg-gradient-to-br from-[#FFF7E6] to-[#FFE0B2]" />
-          <StatCard title="Machos" value={males} Icon={UserCheck} colorClass={PRIMARY_COLOR} gradientClass="bg-gradient-to-br from-[#D6F0E0] to-[#407581]/30" />
-          <StatCard title="Hembras" value={females} Icon={UserCheck} colorClass={ACCENT_COLOR} gradientClass="bg-gradient-to-br from-[#FFD6D6] to-[#FDB2A0]" />
-          <StatCard title="Disponibles" value={estadoDisponible} Icon={Clock} colorClass={PRIMARY_COLOR} gradientClass="bg-gradient-to-br from-[#DFF3FF] to-[#A8D8E0]" />
-          <StatCard title="En Proceso" value={estadoProceso} Icon={Clock} colorClass={ACCENT_COLOR} gradientClass="bg-gradient-to-br from-[#FFF0B2] to-[#FFB400]" />
-          <StatCard title="Adoptadas" value={estadoAdoptada} Icon={Clock} colorClass={PRIMARY_COLOR} gradientClass="bg-gradient-to-br from-[#D6F0E0] to-[#28B463]/50" />
+        <div className="w-full max-w-7xl px-4 mt-12 mx-auto">
+          <h2 className="text-3xl font-bold text-[#2B6777] mb-8 text-center">Tus Estadísticas</h2>
+          <div className="flex flex-row justify-center gap-10 flex-wrap-0">
+
+            {/* Total Mascotas */}
+            <div className="bg-white rounded-xl w-64 h-40 flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-shadow duration-300 border-2 border-[#FFB6A3] p-4">
+              <PawPrint className="w-12 h-12 mb-2 text-[#FFB6A3]" />
+              <p className="text-4xl text-[#2B6777]">{totalAnimals}</p>
+              <p className="mt-1 text-center text-sm text-[#5E5E5E]">Mascotas recientes</p>
+            </div>
+
+            {/* Machos */}
+            <div className="bg-white rounded-xl w-64 h-40 flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-shadow duration-300 border-2 border-[#2B6777] p-4">
+              <UserCheck className="w-12 h-12 mb-2 text-[#2B6777]" />
+              <p className="text-4xl text-[#2B6777]">{males}</p>
+              <p className="mt-1 text-center text-sm text-[#5E5E5E]">Machos</p>
+            </div>
+
+            {/* Hembras */}
+            <div className="bg-white rounded-xl w-64 h-40 flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-shadow duration-300 border-2 border-[#AEEAFD] p-4">
+              <UserCheck className="w-12 h-12 mb-2 text-[#AEEAFD]" />
+              <p className="text-4xl text-[#2B6777]">{females}</p>
+              <p className="mt-1 text-center text-sm text-[#5E5E5E]">Hembras</p>
+            </div>
+
+            {/* En proceso */}
+            <div className="bg-white rounded-xl w-64 h-40 flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-shadow duration-300 border-2 border-[#5E5E5E] p-4">
+              <Clock className="w-12 h-12 mb-2 text-[#5E5E5E]" />
+              <p className="text-4xl text-[#2B6777]">{estadoProceso}</p>
+              <p className="mt-1 text-center text-sm text-[#5E5E5E]">En proceso de adopción</p>
+            </div>
+
+            {/* Adoptadas */}
+            <div className="bg-white rounded-xl w-64 h-40 flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-shadow duration-300 border-2 border-[#28B463] p-4">
+              <UserCheck className="w-12 h-12 mb-2 text-[#28B463]" />
+              <p className="text-4xl text-[#2B6777]">{estadoAdoptada}</p>
+              <p className="mt-1 text-center text-sm text-[#5E5E5E]">Adoptadas</p>
+            </div>
+
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+          {/* Gráfico de barras */}
+          <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-200 flex flex-col justify-between transition-shadow duration-300 hover:shadow-2xl" style={{ height: 400 }}>
+            <h3 className="text-lg font-semibold text-[#007C91] mb-4 self-start border-b border-gray-200 pb-2">Mascotas por Estado</h3>
+            <div className="flex-grow p-2">
+              <Bar
+                data={barData}
+                options={{
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: true, position: "top", labels: { font: { size: 14 }, color: '#316B7A' } },
+                    tooltip: { enabled: true }
+                  },
+                  layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } },
+                  scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { ticks: { color: '#316B7A', font: { size: 14 } } } }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Gráfico Doughnut */}
+          <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-200 flex flex-col justify-between transition-shadow duration-300 hover:shadow-2xl" style={{ height: 400 }}>
+            <h3 className="text-lg font-semibold text-[#007C91] mb-4 self-start border-b border-gray-200 pb-2">Distribución por Género</h3>
+            <div className="flex-grow p-2">
+              <Doughnut
+                data={doughnutData}
+                options={{
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: true,
+                      position: "top",
+                      labels: {
+                        font: { size: 14 },
+                        color: ['#007C91', '#FDB2A0'],
+                      }
+                    },
+                    tooltip: { enabled: true }
+                  }
+                }}
+              />
+            </div>
+          </div>
+
         </div>
 
         {/* Últimas mascotas */}
@@ -139,65 +217,6 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Gráficos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-200 flex flex-col items-center justify-center" style={{ height: 400 }}>
-            <h3 className="text-lg font-semibold text-[#007C91] mb-6 self-start">Mascotas por Estado</h3>
-            <Bar
-              data={barData}
-              options={{
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: true,
-                    position: "top",
-                    labels: { font: { size: 14 }, color: '#316B7A' }
-                  },
-                  tooltip: { enabled: true }
-                },
-                scales: {
-                  y: { beginAtZero: true, ticks: { stepSize: 1 } },
-                  x: { ticks: { color: '#316B7A', font: { size: 14 } } }
-                }
-              }}
-              style={{ width: "100%", height: "calc(100% - 40px)" }}
-            />
-          </div>
-
-          <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-200 flex flex-col items-center justify-center" style={{ height: 400 }}>
-            <h3 className="text-lg font-semibold text-[#007C91] mb-6 self-start">Distribución por Género</h3>
-            <Doughnut
-              data={doughnutData}
-              options={{
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: true,
-                    position: "top",
-                    labels: {
-                      font: { size: 14 },
-                      color: ['#007C91', '#FDB2A0'],
-                      generateLabels: (chart) => {
-                        const data = chart.data;
-                        if (data.labels.length && data.datasets.length) {
-                          return data.labels.map((label, i) => ({
-                            text: label,
-                            fillStyle: data.datasets[0].backgroundColor[i],
-                            strokeStyle: "#000",
-                            index: i,
-                          }));
-                        }
-                        return [];
-                      }
-                    }
-                  },
-                  tooltip: { enabled: true }
-                }
-              }}
-              style={{ width: "100%", height: "calc(100% - 40px)" }}
-            />
-          </div>
-        </div>
 
       </div>
     </div>

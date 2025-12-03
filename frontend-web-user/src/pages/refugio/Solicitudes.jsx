@@ -107,7 +107,6 @@ export default function Solicitudes() {
         // Endpoint PUT /api/solicitudes/{id} con el DTO completo
         await solicitudService.updateSolicitud(selectedSolicitud.id, gestionData, token);
         
-        // Éxito: Cerrar modal y refrescar la lista
         setIsModalOpen(false);
         fetchSolicitudes(); 
         alert(`Solicitud #${selectedSolicitud.id} actualizada a: ${Object.keys(ESTADO_IDS).find(key => ESTADO_IDS[key] === gestionData.estadoSolicitudId)}`);
@@ -128,10 +127,6 @@ export default function Solicitudes() {
       setLoading(false);
     }
   }, [token, authLoading]);
-
-  // Si el componente necesita el nombre real del animal/adoptante, debe usar sol.animal.nombre, sol.adoptante.nombreCompleto, etc.
-  
-  // Reemplazamos el renderizado de lista simple por la vista detallada
   const renderSolicitudes = () => (
     <div className="space-y-6">
         {solicitudes.map((solicitud) => (
@@ -154,13 +149,13 @@ export default function Solicitudes() {
                     
                     {/* Detalles del Adoptante y Mensaje Inicial */}
                     <div className="space-y-3 md:col-span-2 border-r pr-6">
-                        <h3 className="text-lg font-semibold text-indigo-600 flex items-center">
+                        <h3 className="text-lg font-semibold text-[#316B7A] flex items-center">
                             <User className="w-4 h-4 mr-2" /> Datos de Contacto
                         </h3>
                         <p className="text-sm"><span className="font-medium">Email:</span> {solicitud.adoptante.email}</p>
                         <p className="text-sm"><span className="font-medium">Teléfono:</span> {solicitud.adoptante.telefono || 'N/A'}</p>
 
-                        <h3 className="text-lg font-semibold text-indigo-600 flex items-center pt-3">
+                        <h3 className="text-lg font-semibold text-[#316B7A] flex items-center pt-3">
                             <MessageSquare className="w-4 h-4 mr-2" /> Mensaje Inicial
                         </h3>
                         <blockquote className="text-gray-700 border-l-4 border-[#FDB2A0] pl-3 italic bg-gray-50 p-3 rounded-md">
@@ -176,7 +171,7 @@ export default function Solicitudes() {
                         </p>
                         <button
                             onClick={() => openGestionModal(solicitud)}
-                            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-150 flex items-center justify-center"
+                            className="w-full bg-[#316B7A] hover:bg-[#274f5a] text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-150 flex items-center justify-center"
                         >
                             <Check className="w-4 h-4 mr-2" />
                             Gestionar Solicitud
@@ -187,140 +182,142 @@ export default function Solicitudes() {
         ))}
     </div>
   );
+return (
+  <div className="min-h-screen p-8 font-sans bg-gradient-to-b from-[#FFF7E6] to-[#AEEAFD]">
 
-  return (
-    <div className="bg-[#FFF7E6] min-h-screen p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-[#FDB2A0]">
-          <h1 className="text-4xl font-extrabold text-[#316B7A] flex items-center mb-4 sm:mb-0">
-            <PawPrint className="w-8 h-8 mr-3 text-[#FDB2A0]" />
-            Solicitudes de Adopción
-          </h1>
-        </header>
+    <div className="max-w-7xl mx-auto space-y-8">
 
-        {(loading || authLoading) && (
-          <div className="text-center p-8 text-[#316B7A]">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" />
-            Cargando solicitudes...
-          </div>
-        )}
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-[#FDB2A0]">
+        <h1 className="text-4xl font-extrabold text-[#316B7A] flex items-center mb-4 sm:mb-0">
+          Solicitudes de Adopción <PawPrint className="w-8 h-8 mr-3 text-[#FDB2A0]" />
+        </h1>
+      </header>
 
-        {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg flex items-center">
-            <XCircle className="w-5 h-5 mr-3" />
-            {error}
-          </div>
-        )}
-
-        {!loading && !authLoading && solicitudes.length > 0 && renderSolicitudes()}
-
-        {!loading && !authLoading && solicitudes.length === 0 && isAuthenticated && (
-          <div className="text-center p-16 bg-white rounded-2xl shadow-xl">
-            <PawPrint className="w-12 h-12 mx-auto text-[#316B7A] opacity-50 mb-4" />
-            <p className="text-xl text-gray-600">No hay solicitudes de adopción por el momento.</p>
-          </div>
-        )}
-
-        {!loading && !authLoading && !isAuthenticated && !error && (
-          <div className="text-center p-16 bg-white rounded-2xl shadow-xl">
-            <XCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
-            <p className="text-xl text-gray-600">Por favor, inicia sesión como Refugio para ver las solicitudes.</p>
-          </div>
-        )}
-      </div>
-
-      {/* --- Modal de Gestión de Solicitudes (PUT) --- */}
-      {isModalOpen && selectedSolicitud && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-lg">
-            <h3 className="text-2xl font-bold mb-4 text-gray-800">Gestionar Solicitud #{selectedSolicitud.id}</h3>
-            <p className="mb-4 text-gray-600">Para: **{selectedSolicitud.animal.nombre}** - Adoptante: **{selectedSolicitud.adoptante.nombreCompleto}**</p>
-            
-            <form onSubmit={handleUpdateSolicitud}>
-              
-              {/* Selector de Estado */}
-              <div className="mb-4">
-                <label htmlFor="estadoSolicitudId" className="block text-sm font-medium text-gray-700 mb-1">Cambiar Estado *</label>
-                <select
-                  id="estadoSolicitudId"
-                  name="estadoSolicitudId"
-                  value={gestionData.estadoSolicitudId || ''}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                  disabled={submitting}
-                  required
-                >
-                  <option value="">-- Seleccionar Nuevo Estado --</option>
-                  <option value={ESTADO_IDS.ENVIADA}>1. Enviada (Recibida)</option>
-                  <option value={ESTADO_IDS.EN_PROCESO}>2. En Proceso (Revisando)</option>
-                  <option value={ESTADO_IDS.APROBADA}>3. Aprobada</option>
-                  <option value={ESTADO_IDS.RECHAZADA}>4. Rechazada</option>
-                </select>
-              </div>
-
-              {/* Mensaje al Adoptante */}
-              <div className="mb-4">
-                <label htmlFor="mensajeAlAdoptante" className="block text-sm font-medium text-gray-700 mb-1">Mensaje al Adoptante (Opcional)</label>
-                <textarea
-                  id="mensajeAlAdoptante"
-                  name="mensajeAlAdoptante"
-                  rows="3"
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                  value={gestionData.mensajeAlAdoptante}
-                  onChange={handleChange}
-                  disabled={submitting}
-                  placeholder="Escribe aquí la respuesta oficial que verá el adoptante."
-                ></textarea>
-              </div>
-              
-              {/* Notas Internas */}
-              <div className="mb-6">
-                <label htmlFor="notasInternas" className="block text-sm font-medium text-gray-700 mb-1">Notas Internas (Solo para el Refugio)</label>
-                <textarea
-                  id="notasInternas"
-                  name="notasInternas"
-                  rows="3"
-                  className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500"
-                  value={gestionData.notasInternas}
-                  onChange={handleChange}
-                  disabled={submitting}
-                  placeholder="Registra comentarios privados de gestión."
-                ></textarea>
-              </div>
-              
-              {gestionError && (
-                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded-md flex items-center">
-                  <AlertTriangle className="w-5 h-5 mr-3" />
-                  <p className="text-sm">{gestionError}</p>
-                </div>
-              )}
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-150"
-                  disabled={submitting}
-                >
-                  Cerrar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-150 disabled:opacity-50 flex items-center"
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  ) : (
-                    <Check className="w-4 h-4 mr-2" />
-                  )}
-                  {submitting ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
-              </div>
-            </form>
-          </div>
+      {(loading || authLoading) && (
+        <div className="text-center p-8 text-[#316B7A]">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" />
+          Cargando solicitudes...
         </div>
       )}
+
+      {error && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg flex items-center">
+          <XCircle className="w-5 h-5 mr-3" />
+          {error}
+        </div>
+      )}
+
+      {!loading && !authLoading && solicitudes.length > 0 && renderSolicitudes()}
+
+      {!loading && !authLoading && solicitudes.length === 0 && isAuthenticated && (
+        <div className="text-center p-16 bg-white/70 backdrop-blur rounded-3xl shadow-xl">
+          <PawPrint className="w-12 h-12 mx-auto text-[#316B7A] opacity-50 mb-4" />
+          <p className="text-xl text-gray-600">No hay solicitudes de adopción por el momento.</p>
+        </div>
+      )}
+
+      {!loading && !authLoading && !isAuthenticated && !error && (
+        <div className="text-center p-16 bg-white/70 backdrop-blur rounded-3xl shadow-xl">
+          <XCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
+          <p className="text-xl text-gray-600">Por favor, inicia sesión como Refugio para ver las solicitudes.</p>
+        </div>
+      )}
+
     </div>
-  );
+
+    {/* --- Modal de Gestión de Solicitudes (PUT) --- */}
+    {isModalOpen && selectedSolicitud && (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-lg">
+          <h3 className="text-2xl font-bold mb-4 text-gray-800">Gestionar Solicitud #{selectedSolicitud.id}</h3>
+          <p className="mb-4 text-gray-600">Para: <strong>{selectedSolicitud.animal.nombre}</strong> - Adoptante: <strong>{selectedSolicitud.adoptante.nombreCompleto}</strong></p>
+          
+          <form onSubmit={handleUpdateSolicitud}>
+            
+            {/* Selector de Estado */}
+            <div className="mb-4">
+              <label htmlFor="estadoSolicitudId" className="block text-sm font-medium text-gray-700 mb-1">Cambiar Estado *</label>
+              <select
+                id="estadoSolicitudId"
+                name="estadoSolicitudId"
+                value={gestionData.estadoSolicitudId || ''}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                disabled={submitting}
+                required
+              >
+                <option value="">-- Seleccionar Nuevo Estado --</option>
+                <option value={ESTADO_IDS.ENVIADA}>1. Enviada (Recibida)</option>
+                <option value={ESTADO_IDS.EN_PROCESO}>2. En Proceso (Revisando)</option>
+                <option value={ESTADO_IDS.APROBADA}>3. Aprobada</option>
+                <option value={ESTADO_IDS.RECHAZADA}>4. Rechazada</option>
+              </select>
+            </div>
+
+            {/* Mensaje al Adoptante */}
+            <div className="mb-4">
+              <label htmlFor="mensajeAlAdoptante" className="block text-sm font-medium text-gray-700 mb-1">Mensaje al Adoptante (Opcional)</label>
+              <textarea
+                id="mensajeAlAdoptante"
+                name="mensajeAlAdoptante"
+                rows="3"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                value={gestionData.mensajeAlAdoptante}
+                onChange={handleChange}
+                disabled={submitting}
+                placeholder="Escribe aquí la respuesta oficial que verá el adoptante."
+              ></textarea>
+            </div>
+            
+            {/* Notas Internas */}
+            <div className="mb-6">
+              <label htmlFor="notasInternas" className="block text-sm font-medium text-gray-700 mb-1">Notas Internas (Solo para el Refugio)</label>
+              <textarea
+                id="notasInternas"
+                name="notasInternas"
+                rows="3"
+                className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500"
+                value={gestionData.notasInternas}
+                onChange={handleChange}
+                disabled={submitting}
+                placeholder="Registra comentarios privados de gestión."
+              ></textarea>
+            </div>
+            
+            {gestionError && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded-md flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-3" />
+                <p className="text-sm">{gestionError}</p>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-150"
+                disabled={submitting}
+              >
+                Cerrar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#316B7A] text-white font-semibold rounded-lg hover:bg-[#274f5a] transition duration-150 disabled:opacity-50 flex items-center"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : (
+                  <Check className="w-4 h-4 mr-2" />
+                )}
+                {submitting ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 }
