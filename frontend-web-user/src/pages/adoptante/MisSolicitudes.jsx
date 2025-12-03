@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Mail, Home, Search, Heart, Loader, User, Compass, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMisSolicitudes } from '../../services/solicitudService';
+import { useNavigate } from 'react-router-dom';
+
 
 const BACKEND_BASE_URL = "http://127.0.0.1:8081";
 
@@ -9,19 +11,19 @@ const SolicitudDetailModal = ({ solicitud, onClose }) => {
     if (!solicitud) return null;
     const getStateStyle = (estado) => {
         switch (estado) {
-            case "Aprobada": return "text-white bg-[#2B6777]"; 
-            case "Rechazada": return "text-white bg-[#FFB6A3]"; 
+            case "Aprobada": return "text-white bg-[#2B6777]";
+            case "Rechazada": return "text-white bg-[#FFB6A3]";
             case "En Proceso": return "text-[#2B6777] bg-[#AEEAFD]";
-            case "Pendiente": 
+            case "Pendiente":
             default: return "text-gray-800 bg-gray-200";
         }
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div 
+            <div
                 className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all duration-300 scale-100"
-                onClick={(e) => e.stopPropagation()} 
+                onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 bg-[#2B6777] text-white flex justify-between items-center">
                     <h2 className="text-2xl font-bold">Detalles de la Solicitud</h2>
@@ -81,10 +83,10 @@ const SolicitudDetailModal = ({ solicitud, onClose }) => {
 const SolicitudCard = ({ solicitud, onOpenModal }) => {
     const getStateStyle = (estado) => {
         switch (estado) {
-            case "Aprobada": return "text-white bg-[#2B6777]"; 
-            case "Rechazada": return "text-white bg-[#FFB6A3]"; 
-            case "En Proceso": return "text-[#2B6777] bg-[#AEEAFD]"; 
-            case "Pendiente": 
+            case "Aprobada": return "text-white bg-[#2B6777]";
+            case "Rechazada": return "text-white bg-[#FFB6A3]";
+            case "En Proceso": return "text-[#2B6777] bg-[#AEEAFD]";
+            case "Pendiente":
             default: return "text-gray-800 bg-gray-200";
         }
     };
@@ -93,13 +95,13 @@ const SolicitudCard = ({ solicitud, onOpenModal }) => {
         ? `${BACKEND_BASE_URL}${solicitud.animal.fotos[0]}`
         : `https://placehold.co/300x230/E0E0E0/2B6777?text=Mascota`;
 
-    const age = solicitud.animal.raza || 'N/A'; 
+    const age = solicitud.animal.raza || 'N/A';
     const gender = solicitud.animal.genero || 'N/A';
-    const species = solicitud.animal.especie || 'N/A'; 
+    const species = solicitud.animal.especie || 'N/A';
 
     return (
         <div className="bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">
-            
+
             {/* Imagen con badge de estado */}
             <div className="relative">
                 <img
@@ -107,7 +109,7 @@ const SolicitudCard = ({ solicitud, onOpenModal }) => {
                     alt={`Foto de ${solicitud.animal.nombre}`}
                     className="w-full h-64 object-cover"
                     onError={(e) => {
-                        e.target.onerror = null; 
+                        e.target.onerror = null;
                         e.target.src = `https://placehold.co/300x230/E0E0E0/2B6777?text=${solicitud.animal.nombre}`;
                     }}
                 />
@@ -123,7 +125,7 @@ const SolicitudCard = ({ solicitud, onOpenModal }) => {
 
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-[#5E5E5E]">
                     <span className="flex items-center">
-                        <Heart className="w-4 h-4 mr-1 text-[#2B6777]" /> 
+                        <Heart className="w-4 h-4 mr-1 text-[#2B6777]" />
                         {species}
                     </span>
                     <span className="flex items-center">
@@ -135,7 +137,7 @@ const SolicitudCard = ({ solicitud, onOpenModal }) => {
                         {gender}
                     </span>
                 </div>
-                <button 
+                <button
                     onClick={() => onOpenModal(solicitud)}
                     className="w-full mt-4 py-3 text-base font-semibold text-white bg-[#2B6777] rounded-lg hover:bg-[#1f4a56] transition-colors shadow-md"
                 >
@@ -151,11 +153,13 @@ const MisSolicitudes = () => {
     const [solicitudes, setSolicitudes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
+
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterState, setFilterState] = useState('Todas');
     const [availableStates, setAvailableStates] = useState(['Todas']);
-    
+
     // ESTADOS DEL MODAL
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
@@ -174,9 +178,9 @@ const MisSolicitudes = () => {
 
     // Función para simular navegación
     const handleNavigate = (path) => {
-        console.log(`Navegando a: ${path}`);
-        alert(`Navegando a la sección de mascotas: ${path}`);
+        navigate(path);
     };
+
 
     // --- Lógica de Carga de Datos REALES ---
     useEffect(() => {
@@ -188,7 +192,7 @@ const MisSolicitudes = () => {
                 }
                 const data = await getMisSolicitudes(token);
                 setSolicitudes(data);
-                
+
                 const states = new Set(data.map(s => s.estadoSolicitud.nombre));
                 setAvailableStates(['Todas', ...Array.from(states)]);
 
@@ -211,7 +215,7 @@ const MisSolicitudes = () => {
         }
 
         if (searchTerm) {
-            result = result.filter(sol => 
+            result = result.filter(sol =>
                 sol.animal.nombre.toLowerCase().includes(lowerCaseSearch) ||
                 sol.animal.raza.toLowerCase().includes(lowerCaseSearch) ||
                 sol.animal.refugioNombre.toLowerCase().includes(lowerCaseSearch)
@@ -240,13 +244,13 @@ const MisSolicitudes = () => {
 
                 {/* ---------- TÍTULO Y FILTROS ---------- */}
                 <div className="w-full max-w-7xl px-4 pt-10 pb-8">
-                    
+
                     <h1 className="text-4xl font-extrabold text-[#2B6777] tracking-tighter mb-6">
                         Tus Solicitudes
                     </h1>
 
                     <div className="space-y-4 md:space-y-0 md:flex md:justify-between md:items-center">
-                        
+
                         <div className="relative w-full md:w-1/3">
                             <input
                                 type="text"
@@ -280,10 +284,10 @@ const MisSolicitudes = () => {
                     {filteredSolicitudes.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                             {filteredSolicitudes.map(solicitud => (
-                                <SolicitudCard 
-                                    key={solicitud.id} 
-                                    solicitud={solicitud} 
-                                    onOpenModal={handleOpenModal} 
+                                <SolicitudCard
+                                    key={solicitud.id}
+                                    solicitud={solicitud}
+                                    onOpenModal={handleOpenModal}
                                 />
                             ))}
                         </div>
@@ -298,9 +302,9 @@ const MisSolicitudes = () => {
                         </div>
                     )}
                 </div>
-                
+
                 {/* ---------- "BUSCAR MASCOTAS" ---------- */}
-                <div className="mt-20 pt-16 pb-12 px-4 w-full max-w-7xl border-t-2 border-dashed border-gray-300 rounded-3xl bg-[#FFF8F0]">
+                <div className="mt-20 pt-16 pb-12 px-4 w-full max-w-7xl border-2 border-gray-400 rounded-3xl bg-[#FFF8F0]">
                     <div className="text-center max-w-md mx-auto">
                         <div className="flex justify-center mb-4">
                             <Compass className="w-10 h-10 text-gray-600 stroke-[1.5]" />
@@ -319,6 +323,7 @@ const MisSolicitudes = () => {
                         </button>
                     </div>
                 </div>
+
             </div>
             {isModalOpen && <SolicitudDetailModal solicitud={selectedSolicitud} onClose={handleCloseModal} />}
         </>
