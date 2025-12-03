@@ -3,17 +3,22 @@ package com.example.matchpet.ui.screens.refugio
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -22,7 +27,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.matchpet.data.model.refugio.RefugioUpdateRequest
 import com.example.matchpet.data.network.RetrofitClient
 import com.example.matchpet.data.repository.RefugioRepository
-import com.example.matchpet.ui.theme.PrimaryTeal
+import com.example.matchpet.ui.theme.WebSalmon
+import com.example.matchpet.ui.theme.WebTeal
 import com.example.matchpet.viewmodel.refugio.RefugioViewModel
 import com.example.matchpet.viewmodel.refugio.RefugioViewModelFactory
 
@@ -54,6 +60,9 @@ fun RefugioProfileScreen(
     var telefono by remember { mutableStateOf("") }
     var urlSitioWeb by remember { mutableStateOf("") }
 
+    val scroll = rememberScrollState()
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.loadProfile(token)
     }
@@ -72,135 +81,193 @@ fun RefugioProfileScreen(
         }
     }
 
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFFDFF3FF), Color(0xFFFDE8E4)) // Gradiente Web
+                )
+            )
     ) {
-        item {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scroll)
+                .padding(20.dp)
+        ) {
             // HEADER
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { onBack() }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = PrimaryTeal
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = WebSalmon)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Perfil del Refugio",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = WebTeal
                     )
                 }
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "Perfil del Refugio",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
+
+                IconButton(onClick = { onBack() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = WebTeal
+                    )
+                }
             }
-        }
 
-        item { Spacer(Modifier.height(16.dp)) }
+            Spacer(modifier = Modifier.height(24.dp))
 
-        item {
-            // FOTO / ICONO DE PERFIL
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(PrimaryTeal.copy(0.2f)),
-                contentAlignment = Alignment.Center
+            if (loading) {
+                CircularProgressIndicator(color = WebTeal, modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+
+            error?.let {
+                Text(text = it, color = Color.Red, fontSize = 14.sp)
+            }
+
+            success?.let {
+                Text(text = it, color = Color(0xFF2E7D32), fontSize = 14.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // CARD PRINCIPAL
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
+                elevation = CardDefaults.cardElevation(8.dp)
             ) {
-                Icon(
-                    Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    tint = PrimaryTeal,
-                    modifier = Modifier.size(90.dp)
-                )
-            }
-        }
+                Column(modifier = Modifier.padding(24.dp)) {
 
-        item { Spacer(Modifier.height(16.dp)) }
-
-        item {
-            Text(
-                text = nombre.takeIf { it.isNotBlank() } ?: "Cargando...",
-                fontWeight = FontWeight.Bold,
-                fontSize = 22.sp
-            )
-            Text(email, color = Color.Gray, fontSize = 14.sp)
-        }
-
-        item { Spacer(Modifier.height(20.dp)) }
-
-        if (loading) {
-            item { CircularProgressIndicator(color = PrimaryTeal) }
-        }
-
-        error?.let {
-            item { Text(text = it, color = Color.Red, fontSize = 14.sp) }
-        }
-
-        success?.let {
-            item { Text(text = it, color = Color(0xFF2E7D32), fontSize = 14.sp) }
-        }
-
-        item { Spacer(Modifier.height(20.dp)) }
-
-        // CAMPOS DEL PERFIL
-        item { ProfileInputField("Nombre", nombre, { nombre = it }, editMode) }
-        item { ProfileInputField("Descripción", descripcion, { descripcion = it }, editMode) }
-        item { ProfileInputField("País", pais, { pais = it }, editMode) }
-        item { ProfileInputField("Ciudad", ciudad, { ciudad = it }, editMode) }
-        item { ProfileInputField("Dirección", direccion, { direccion = it }, editMode) }
-        item { ProfileInputField("Email", email, { email = it }, editMode) }
-        item { ProfileInputField("Persona de contacto", personaContacto, { personaContacto = it }, editMode) }
-        item { ProfileInputField("Teléfono", telefono, { telefono = it }, editMode, KeyboardType.Phone) }
-        item { ProfileInputField("Sitio Web", urlSitioWeb, { urlSitioWeb = it }, editMode) }
-
-        item { Spacer(Modifier.height(25.dp)) }
-
-        // BOTONES
-        item {
-            if (!editMode) {
-                Button(
-                    onClick = { editMode = true },
-                    colors = ButtonDefaults.buttonColors(PrimaryTeal)
-                ) {
-                    Text("Editar perfil", color = Color.White)
-                }
-            } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutlinedButton(onClick = { editMode = false }) {
-                        Text("Cancelar")
-                    }
-                    Button(
-                        onClick = {
-                            refugio?.let {
-                                viewModel.updateRefugio(
-                                    refugioId = it.id,
-                                    token = token,
-                                    request = RefugioUpdateRequest(
-                                        nombre = nombre,
-                                        descripcion = descripcion,
-                                        pais = pais,
-                                        ciudad = ciudad,
-                                        direccion = direccion,
-                                        email = email,
-                                        personaContacto = personaContacto,
-                                        telefono = telefono,
-                                        urlSitioWeb = urlSitioWeb
-                                    )
-                                )
-                            }
-                            editMode = false
-                        },
-                        colors = ButtonDefaults.buttonColors(PrimaryTeal)
+                    // FOTO DE PERFIL
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Guardar cambios", color = Color.White)
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
+                                .background(WebTeal.copy(0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Home,
+                                contentDescription = null,
+                                tint = WebTeal,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = nombre.takeIf { it.isNotBlank() } ?: "Cargando...",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = WebTeal
+                            )
+                            Text(email, color = Color.Gray, fontSize = 12.sp)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // CAMPOS DEL PERFIL
+                    ProfileInputField("Nombre", nombre, Icons.Default.Person, !editMode) { nombre = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("Descripción", descripcion, Icons.Default.Info, !editMode) { descripcion = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("País", pais, Icons.Default.Public, !editMode) { pais = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("Ciudad", ciudad, Icons.Default.LocationOn, !editMode) { ciudad = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("Dirección", direccion, Icons.Default.Home, !editMode) { direccion = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("Email", email, Icons.Default.Email, !editMode) { email = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("Persona de contacto", personaContacto, Icons.Default.Person, !editMode) { personaContacto = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("Teléfono", telefono, Icons.Default.Phone, !editMode, KeyboardType.Phone) { telefono = it }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    ProfileInputField("Sitio Web", urlSitioWeb, Icons.Default.Language, !editMode) { urlSitioWeb = it }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // BOTONES
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        if (!editMode) {
+                            Button(
+                                onClick = { editMode = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Editar perfil", color = Color.White)
+                            }
+                        } else {
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                OutlinedButton(
+                                    onClick = { editMode = false },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = WebTeal)
+                                ) {
+                                    Text("Cancelar")
+                                }
+                                Button(
+                                    onClick = {
+                                        refugio?.let {
+                                            viewModel.updateRefugio(
+                                                refugioId = it.id,
+                                                token = token,
+                                                request = RefugioUpdateRequest(
+                                                    nombre = nombre,
+                                                    descripcion = descripcion,
+                                                    pais = pais,
+                                                    ciudad = ciudad,
+                                                    direccion = direccion,
+                                                    email = email,
+                                                    personaContacto = personaContacto,
+                                                    telefono = telefono,
+                                                    urlSitioWeb = urlSitioWeb
+                                                )
+                                            )
+                                        }
+                                        editMode = false
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Guardar", color = Color.White)
+                                }
+                            }
+                        }
                     }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -210,21 +277,28 @@ fun RefugioProfileScreen(
 fun ProfileInputField(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit,
-    enabled: Boolean,
-    keyboard: KeyboardType = KeyboardType.Text
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    readOnly: Boolean,
+    keyboard: KeyboardType = KeyboardType.Text,
+    onValueChange: (String) -> Unit
 ) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+    Column {
+        Text(label, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF4A5568))
+        Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
-            enabled = enabled,
+            onValueChange = { if (!readOnly) onValueChange(it) },
             modifier = Modifier.fillMaxWidth(),
+            readOnly = readOnly,
+            singleLine = true,
+            leadingIcon = { Icon(icon, contentDescription = null, tint = Color.Gray) },
             keyboardOptions = KeyboardOptions(keyboardType = keyboard),
+            shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryTeal,
-                cursorColor = PrimaryTeal
+                focusedBorderColor = WebSalmon,
+                unfocusedBorderColor = Color.LightGray,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = if (readOnly) Color(0xFFF7FAFC) else Color.White
             )
         )
     }

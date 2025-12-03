@@ -32,6 +32,7 @@ import com.example.matchpet.ui.theme.WebSalmon
 import com.example.matchpet.ui.theme.WebTeal
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     token: String,
@@ -79,59 +80,52 @@ fun ProfileScreen(
     }
 
     // --- UI ---
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFFDFF3FF), Color(0xFFFDE8E4)) // Gradiente Web
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Mi Perfil", color = WebTeal) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = WebTeal
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFDFF3FF)
                 )
             )
-    ) {
-        Column(
+        }
+    ) { paddingValues ->
+        // Content with gradient background
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scroll)
-                .padding(20.dp)
+                .padding(paddingValues)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color(0xFFDFF3FF), Color(0xFFFDE8E4)) // Gradiente Web
+                    )
+                )
         ) {
-
-            // HEADER
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = WebSalmon)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Mi Perfil",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = WebTeal
-                    )
+            // Handle loading and error states
+            when {
+                error != null -> {
+                    Text("Error: $error", color = Color.Red, modifier = Modifier.align(Alignment.Center))
                 }
-
-                IconButton(onClick = { onBack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = WebTeal
-                    )
+                profile == null -> {
+                    CircularProgressIndicator(color = WebTeal, modifier = Modifier.align(Alignment.Center))
                 }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            if (error != null) {
-                Text("Error: $error", color = Color.Red)
-                return@Column
-            }
-
-            if (profile == null) {
-                CircularProgressIndicator(color = WebTeal, modifier = Modifier.align(Alignment.CenterHorizontally))
-                return@Column
-            }
+                else -> {
+                    // Main content when profile is loaded
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scroll)
+                            .padding(20.dp)
+                    ) {
 
             // CARD PRINCIPAL
             Card(
@@ -147,13 +141,30 @@ fun ProfileScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        AsyncImage(
-                            model = "https://ui-avatars.com/api/?name=${nombre}+${apellidoPaterno}&background=FDB2A0&color=fff",
-                            contentDescription = "Foto",
+                        Box(
                             modifier = Modifier
                                 .size(80.dp)
                                 .clip(CircleShape)
-                        )
+                                .background(WebTeal.copy(0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = null,
+                                tint = WebTeal,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = "$nombre $apellidoPaterno".takeIf { it.isNotBlank() } ?: "Cargando...",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = WebTeal
+                            )
+                            Text(profile?.email ?: "", color = Color.Gray, fontSize = 12.sp)
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -276,6 +287,9 @@ fun ProfileScreen(
             }
             
             Spacer(modifier = Modifier.height(32.dp))
+                    }
+                }
+            }
         }
     }
 }

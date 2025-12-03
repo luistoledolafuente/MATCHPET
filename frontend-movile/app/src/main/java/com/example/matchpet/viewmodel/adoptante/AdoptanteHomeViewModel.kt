@@ -7,6 +7,8 @@ import com.example.matchpet.data.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class DashboardStats(
@@ -32,6 +34,29 @@ class AdoptanteHomeViewModel : ViewModel() {
 
     private val _dashboardState = MutableStateFlow<DashboardState>(DashboardState.Idle)
     val dashboardState: StateFlow<DashboardState> = _dashboardState.asStateFlow()
+
+    // Estado para el buscador
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _allPets = MutableStateFlow<List<Animal>>(emptyList())
+
+    // Resultados de la búsqueda (filtrados)
+    val searchResults: StateFlow<List<Animal>> = combine(_allPets, _searchQuery) { pets, query ->
+        if (query.isBlank()) {
+            emptyList()
+        } else {
+            pets.filter { animal ->
+                animal.nombre.contains(query, ignoreCase = true) ||
+                (animal.raza?.contains(query, ignoreCase = true) == true) ||
+                (animal.refugioNombre?.contains(query, ignoreCase = true) == true)
+            }
+        }
+    }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+    }
 
     fun loadDashboardStats(token: String) {
         viewModelScope.launch {
@@ -64,6 +89,7 @@ class AdoptanteHomeViewModel : ViewModel() {
                 // 2. Obtener todas las mascotas disponibles
                 val animalesResponse = RetrofitClient.api.getAnimales(page = 0, size = 50)
                 val todasMascotas = animalesResponse.body()?.content ?: emptyList()
+                _allPets.value = todasMascotas
                 
                 // 3. Tomar 3 mascotas aleatorias
                 val mascotasRecomendadas = todasMascotas.shuffled().take(3)

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -37,6 +38,8 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
 
     val viewModel: AdoptanteHomeViewModel = viewModel()
     val dashboardState by viewModel.dashboardState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
 
     // Cargar datos al iniciar
     LaunchedEffect(token) {
@@ -126,10 +129,17 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
         // --- BUSCADOR ---
         item {
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
                 placeholder = { Text("Buscar mascota por tipo, refugio o raza…") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp)
@@ -145,44 +155,74 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
             )
         }
 
-        // --- RECOMENDADAS PARA TI (Mascotas aleatorias) ---
-        when (val state = dashboardState) {
-            is DashboardState.Success -> {
-                if (state.data.mascotasRecomendadas.isNotEmpty()) {
-                    item { SectionTitle("Recomendadas Para Ti", Modifier.padding(start = 16.dp)) }
-                    item {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp)
-                        ) {
-                            items(state.data.mascotasRecomendadas) { animal ->
-                                RealMascotaCard(animal) { 
-                                    navController.navigate("animal_detail/${animal.animal_id}") 
-                                }
-                            }
-                        }
+        // --- RESULTADOS DE BÚSQUEDA O DASHBOARD ---
+        if (searchQuery.isNotEmpty()) {
+            if (searchResults.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("No se encontraron mascotas", color = Color.Gray)
                     }
                 }
-
-                // --- TUS SOLICITUDES (Mascotas solicitadas) ---
-                if (state.data.mascotasSolicitadas.isNotEmpty()) {
-                    item { SectionTitle("Tus Solicitudes", Modifier.padding(start = 16.dp)) }
-                    item {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp)
-                        ) {
-                            items(state.data.mascotasSolicitadas) { animal ->
-                                RealMascotaCard(animal) { 
-                                    navController.navigate("animal_detail/${animal.animal_id}") 
-                                }
+            } else {
+                // Mostrar resultados en Grid (usando LazyColumn items con Rows o FlowRow, pero aquí usaremos items simples para la lista vertical por ahora, o mejor, un Grid adaptado)
+                // Como estamos dentro de un LazyColumn, no podemos meter un LazyVerticalGrid directamente sin altura fija.
+                // Una solución simple es renderizar filas de 2 elementos manualmente o usar FlowRow (si está disponible y estable).
+                // Para simplificar y mantener el scroll de la pantalla completa, renderizaremos filas de 2 items.
+                
+                val rows = searchResults.chunked(2)
+                items(rows) { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        for (animal in rowItems) {
+                            RealMascotaCard(animal) {
+                                navController.navigate("animal_detail/${animal.animal_id}")
                             }
                         }
                     }
                 }
             }
-            else -> {
-                // Mostrar loading o placeholder
+        } else {
+            // --- RECOMENDADAS PARA TI (Mascotas aleatorias) ---
+            when (val state = dashboardState) {
+                is DashboardState.Success -> {
+                    if (state.data.mascotasRecomendadas.isNotEmpty()) {
+                        item { SectionTitle("Recomendadas Para Ti", Modifier.padding(start = 16.dp)) }
+                        item {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp)
+                            ) {
+                                items(state.data.mascotasRecomendadas) { animal ->
+                                    RealMascotaCard(animal) { 
+                                        navController.navigate("animal_detail/${animal.animal_id}") 
+                                    }
+                                }
+                            }
+                        }
+                    }
+    
+                    // --- TUS SOLICITUDES (Mascotas solicitadas) ---
+                    if (state.data.mascotasSolicitadas.isNotEmpty()) {
+                        item { SectionTitle("Tus Solicitudes", Modifier.padding(start = 16.dp)) }
+                        item {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp)
+                            ) {
+                                items(state.data.mascotasSolicitadas) { animal ->
+                                    RealMascotaCard(animal) { 
+                                        navController.navigate("animal_detail/${animal.animal_id}") 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    // Mostrar loading o placeholder
+                }
             }
         }
     }
