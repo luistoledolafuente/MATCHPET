@@ -14,7 +14,8 @@ import kotlinx.coroutines.launch
 data class DashboardStats(
     val solicitudesPendientes: Int = 0,
     val adopcionesAprobadas: Int = 0,
-    val totalDonaciones: Int = 0
+    val totalDonaciones: Int = 0,
+    val totalFavoritos: Int = 0
 )
 
 data class DashboardData(
@@ -80,10 +81,19 @@ class AdoptanteHomeViewModel : ViewModel() {
                     it.estadoSolicitud.nombre.uppercase() in listOf("APROBADA", "APROBADO")
                 }
                 
+                // Obtener cantidad de favoritos
+                val favoritosResponse = RetrofitClient.api.getFavorites("Bearer $token")
+                val totalFavoritos = if (favoritosResponse.isSuccessful) {
+                    favoritosResponse.body()?.size ?: 0
+                } else {
+                    0
+                }
+                
                 val stats = DashboardStats(
                     solicitudesPendientes = pendientes,
                     adopcionesAprobadas = aprobadas,
-                    totalDonaciones = 0
+                    totalDonaciones = 0,
+                    totalFavoritos = totalFavoritos
                 )
                 
                 // 2. Obtener todas las mascotas disponibles

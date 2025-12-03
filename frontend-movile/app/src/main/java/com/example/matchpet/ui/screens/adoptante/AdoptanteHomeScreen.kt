@@ -93,15 +93,28 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                 }
                 is DashboardState.Success -> {
                     val data = (dashboardState as DashboardState.Success).data
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        StatCard("Pendientes", data.stats.solicitudesPendientes.toString(), Color(0xFFEF6C00))
-                        StatCard("Aprobadas", data.stats.adopcionesAprobadas.toString(), Color(0xFF2E7D32))
-                        StatCard("Donaciones", "$${data.stats.totalDonaciones}", Color(0xFFC62828))
+                        // First row: Pendientes and Aprobadas
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            StatCard("Pendientes", data.stats.solicitudesPendientes.toString(), Color(0xFFEF6C00))
+                            StatCard("Aprobadas", data.stats.adopcionesAprobadas.toString(), Color(0xFF2E7D32))
+                        }
+                        // Second row: Favoritos and Donaciones
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            StatCard("Favoritos", data.stats.totalFavoritos.toString(), Color(0xFFE91E63))
+                            StatCard("Donaciones", "$${data.stats.totalDonaciones}", Color(0xFFC62828))
+                        }
                     }
                 }
                 is DashboardState.Error -> {
@@ -230,11 +243,11 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
 
 // --- COMPONENTES AUXILIARES ---
 @Composable
-fun StatCard(title: String, value: String, color: Color) {
+fun RowScope.StatCard(title: String, value: String, color: Color) {
     Card(
         modifier = Modifier
-            .height(80.dp)
-            .width(110.dp),
+            .weight(1f)
+            .height(80.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
