@@ -144,4 +144,22 @@ interface ApiService {
 
     @GET("/api/lookups/temperamentos")
     suspend fun getTemperamentos(): Response<List<TemperamentoItem>>
+
+    // --------------- FAVORITOS ------------------------------------
+    @POST("/api/adoptantes/favoritos/{animalId}")
+    suspend fun addFavorite(
+        @Header("Authorization") token: String,
+        @Path("animalId") animalId: Int
+    ): Response<Map<String, String>>
+
+    @DELETE("/api/adoptantes/favoritos/{animalId}")
+    suspend fun removeFavorite(
+        @Header("Authorization") token: String,
+        @Path("animalId") animalId: Int
+    ): Response<Map<String, String>>
+
+    @GET("/api/adoptantes/favoritos")
+    suspend fun getFavorites(
+        @Header("Authorization") token: String
+    ): Response<List<Animal>>
 }

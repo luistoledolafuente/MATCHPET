@@ -6,11 +6,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.matchpet.ui.screens.adoptante.AdoptanteHomeScreen
 import com.example.matchpet.ui.screens.adoptante.AdoptanteMascotasScreen
 import com.example.matchpet.ui.screens.adoptante.AdoptanteSolicitudesScreen
+import com.example.matchpet.ui.screens.adoptante.AnimalDetailScreen
+import com.example.matchpet.ui.screens.adoptante.FavoritesScreen
 
 @Composable
 fun AdoptanteDashboardNavHost(
@@ -35,14 +39,18 @@ fun AdoptanteDashboardNavHost(
 
         // 2. Pestaña de Favoritos
         composable("adoptante_favoritos") {
-            Text("Pantalla de Favoritos (Contenido)", modifier.fillMaxSize())
+            FavoritesScreen(
+                token = token,
+                navController = navController
+            )
         }
 
         // 3. Pestaña de Mascotas
         composable("adoptante_mascotas") {
             AdoptanteMascotasScreen(
                 token = token,
-                paddingValues = paddingValues
+                paddingValues = paddingValues,
+                navController = navController
             )
         }
 
@@ -56,6 +64,19 @@ fun AdoptanteDashboardNavHost(
             AdoptanteSolicitudesScreen(
                 token = token,
                 paddingValues = paddingValues
+            )
+        }
+        
+        // 6. Detalles de Animal
+        composable(
+            route = "animal_detail/{animalId}",
+            arguments = listOf(navArgument("animalId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val animalId = backStackEntry.arguments?.getInt("animalId") ?: 0
+            AnimalDetailScreen(
+                animalId = animalId,
+                token = token,
+                navController = navController
             )
         }
     }
