@@ -17,6 +17,7 @@ public class AnimalDTO {
 
     private Integer animal_id; // El ServiceImpl mapea animal.getId() a este campo
     private String nombre;
+    private Integer refugioId; // <--- ¡Faltaba esto!
 
     // CAMBIO: Tipo de dato actualizado
     private LocalDate fechaNacimientoAprox;

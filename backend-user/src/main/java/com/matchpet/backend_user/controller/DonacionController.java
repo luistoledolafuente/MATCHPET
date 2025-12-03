@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/donaciones")
@@ -73,6 +74,16 @@ public class DonacionController {
         String adoptanteEmail = principal.getName();
         List<DonacionResponseDTO> donaciones = donacionService.getMisDonaciones(adoptanteEmail);
         return ResponseEntity.ok(donaciones);
+    }
+
+    @Operation(summary = "Recibe notificaciones de Mercado Pago (Webhooks)")
+    @PostMapping("/webhook")
+    public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> payload) {
+        // Ejecutamos la lógica en segundo plano o directo
+        donacionService.receiveWebhook(payload);
+
+        // SIEMPRE responder 200 OK a Mercado Pago, o te bloquearán el webhook
+        return ResponseEntity.ok("OK");
     }
 
     // NOTA: En un proyecto real, aquí faltaría un endpoint público (Webhook)
