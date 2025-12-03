@@ -21,6 +21,7 @@ public class EmailService {
         // Enlace de restablecimiento de contraseña
         String resetUrl = "http://localhost:5173/reset-password?token=" + token;
 
+
         message.setText("Haz clic en el siguiente enlace para resetear tu contraseña: " + resetUrl);
         mailSender.send(message);
     }
