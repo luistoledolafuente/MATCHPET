@@ -44,6 +44,7 @@ fun AdoptanteMascotasScreen(
     favoritesViewModel: FavoritesViewModel = viewModel(factory = Injection.provideFavoritesViewModelFactory())
 ) {
     var mascotas by remember { mutableStateOf<List<Animal>>(emptyList()) }
+    var misSolicitudes by remember { mutableStateOf<List<com.example.matchpet.data.model.SolicitudResponse>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     
@@ -67,17 +68,27 @@ fun AdoptanteMascotasScreen(
         }
     }
 
-    // Cargar Mascotas y Favoritos
+    // Cargar Mascotas, Favoritos y Solicitudes
     LaunchedEffect(Unit) {
-        // Toast.makeText(context, "Token: ${token.take(10)}...", Toast.LENGTH_SHORT).show()
         favoritesViewModel.loadFavorites(token)
         try {
+            // Cargar mascotas
             val response = RetrofitClient.api.getAnimales()
             if (response.isSuccessful) {
-                mascotas = response.body()?.content ?: emptyList()
+                val allMascotas = response.body()?.content ?: emptyList()
+                mascotas = allMascotas.filter { 
+                    !it.estadoAdopcion.equals("Adoptado", ignoreCase = true)
+                }
             } else {
                 error = "Error al cargar mascotas: ${response.message()}"
             }
+            
+            // Cargar mis solicitudes
+            val solicitudesResp = RetrofitClient.api.getMisSolicitudes("Bearer $token")
+            if (solicitudesResp.isSuccessful) {
+                misSolicitudes = solicitudesResp.body() ?: emptyList()
+            }
+
         } catch (e: Exception) {
             error = "Error de conexión: ${e.message}"
         } finally {
@@ -123,9 +134,12 @@ fun AdoptanteMascotasScreen(
                     ) {
                         items(mascotas) { animal ->
                             val isFavorite = favorites.any { it.animal_id == animal.animal_id }
+                            val isRequested = misSolicitudes.any { it.animal.id == animal.animal_id }
+                            
                             MascotaGridItem(
                                 animal = animal,
                                 isFavorite = isFavorite,
+                                isRequested = isRequested,
                                 onToggleFavorite = {
                                     if (isFavorite) {
                                         favoritesViewModel.removeFavorite(token, animal.animal_id)
@@ -186,8 +200,23 @@ fun AdoptanteMascotasScreen(
                                     val response = RetrofitClient.api.createSolicitud("Bearer $token", request)
                                     if (response.isSuccessful) {
                                         Toast.makeText(context, "Solicitud enviada con éxito", Toast.LENGTH_LONG).show()
+                                        
+                                        // Actualizar estado de la mascota a "En proceso" (ID 2)
+                                        try {
+                                            RetrofitClient.api.updateAnimal(
+                                                id = selectedAnimal!!.animal_id,
+                                                token = "Bearer $token",
+                                                request = com.example.matchpet.data.model.animal.AnimalUpdateRequest(estadoAdopcionId = 2)
+                                            )
+                                        } catch (_: Exception) {}
+
                                         showDialog = false
                                         mensajeAdoptante = ""
+                                        // Recargar solicitudes para actualizar UI
+                                        val solicitudesResp = RetrofitClient.api.getMisSolicitudes("Bearer $token")
+                                        if (solicitudesResp.isSuccessful) {
+                                            misSolicitudes = solicitudesResp.body() ?: emptyList()
+                                        }
                                     } else {
                                         Toast.makeText(context, "Error al enviar: ${response.message()}", Toast.LENGTH_SHORT).show()
                                     }
@@ -223,6 +252,7 @@ fun AdoptanteMascotasScreen(
 fun MascotaGridItem(
     animal: Animal,
     isFavorite: Boolean,
+    isRequested: Boolean,
     onToggleFavorite: () -> Unit,
     onSolicitarClick: () -> Unit,
     onItemClick: () -> Unit
@@ -273,11 +303,14 @@ fun MascotaGridItem(
                     Button(
                         onClick = onSolicitarClick,
                         modifier = Modifier.fillMaxWidth().height(36.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isRequested) Color.Gray else WebTeal
+                        ),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(0.dp)
+                        contentPadding = PaddingValues(0.dp),
+                        enabled = !isRequested
                     ) {
-                        Text("Solicitar", fontSize = 12.sp)
+                        Text(if (isRequested) "Solicitado" else "Solicitar", fontSize = 12.sp)
                     }
                 }
             }

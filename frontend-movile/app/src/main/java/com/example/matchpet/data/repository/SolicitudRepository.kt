@@ -1,6 +1,7 @@
 package com.example.matchpet.data.repository
 
 import com.example.matchpet.data.model.SolicitudResponse
+import com.example.matchpet.data.model.SolicitudRequest
 import com.example.matchpet.data.model.SolicitudUpdateRequest
 import com.example.matchpet.data.network.ApiService
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +63,21 @@ class SolicitudRepository(private val apiService: ApiService) {
 
                 if (response.isSuccessful && response.body() != null) {
                     Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Error ${response.code()}: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    suspend fun createSolicitud(token: String, request: SolicitudRequest): Resource<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.createSolicitud("Bearer $token", request)
+                if (response.isSuccessful) {
+                    Resource.Success(Unit)
                 } else {
                     Resource.Error("Error ${response.code()}: ${response.errorBody()?.string()}")
                 }

@@ -162,4 +162,10 @@ interface ApiService {
     suspend fun getFavorites(
         @Header("Authorization") token: String
     ): Response<List<Animal>>
+
+    // --------------- RECOMENDACIONES IA ------------------------------------
+    @GET("/api/animales/recomendados")
+    suspend fun getRecomendaciones(
+        @Header("Authorization") token: String
+    ): Response<List<Animal>>
 }

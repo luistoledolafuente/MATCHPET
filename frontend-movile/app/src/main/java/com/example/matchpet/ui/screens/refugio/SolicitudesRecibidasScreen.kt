@@ -141,6 +141,7 @@ fun SolicitudCard(
     var showDropdown by remember { mutableStateOf(false) }
 
     val estadoNombre = solicitud.estadoSolicitud.nombre
+    val estadoNombreUpper = estadoNombre.uppercase()
     val adoptanteNombre = solicitud.adoptante.nombreCompleto
     val animalNombre = solicitud.animal.nombre
 
@@ -160,6 +161,12 @@ fun SolicitudCard(
         "Aprobada" -> Color(0xFFC8E6C9)
         "Rechazada" -> Color(0xFFFFCDD2)
         else -> Color.White
+    }
+
+    val estadoTextColor = when (estadoNombreUpper) {
+        "APROBADA" -> Color(0xFF2E7D32)
+        "RECHAZADA" -> Color(0xFFD32F2F)
+        else -> WebTeal
     }
 
     Card(
@@ -194,7 +201,7 @@ fun SolicitudCard(
                     Text(
                         text = estadoNombre,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (isPending) WebTeal else Color.Black
+                        color = estadoTextColor
                     )
                     Icon(
                         Icons.Filled.ExpandMore,
@@ -225,26 +232,44 @@ fun SolicitudCard(
 
                 Spacer(Modifier.height(12.dp))
 
-                Box {
-                    OutlinedButton(onClick = { showDropdown = true }) {
-                        Text("Cambiar Estado")
-                        Icon(Icons.Filled.ExpandMore, contentDescription = null)
-                    }
+                Text("Cambiar Estado:", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
 
-                    DropdownMenu(
-                        expanded = showDropdown,
-                        onDismissRequest = { showDropdown = false }
-                    ) {
-                        estadosDisponibles.forEach { estado ->
-                            DropdownMenuItem(
-                                text = { Text(estado.nombre) },
-                                onClick = {
-                                    onStatusChange(estado.id)
-                                    showDropdown = false
-                                }
-                            )
-                        }
-                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // En revisión (ID 2)
+                    FilterChip(
+                        selected = solicitud.estadoSolicitud.id == 2,
+                        onClick = { onStatusChange(2) },
+                        label = { Text("En revisión") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFFFFF176), // Amarillo claro
+                            selectedLabelColor = Color.Black
+                        )
+                    )
+
+                    // Aprobar (ID 3)
+                    FilterChip(
+                        selected = solicitud.estadoSolicitud.id == 3,
+                        onClick = { onStatusChange(3) },
+                        label = { Text("Aprobar") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFF81C784), // Verde claro
+                            selectedLabelColor = Color.Black
+                        )
+                    )
+
+                    // Rechazar (ID 4)
+                    FilterChip(
+                        selected = solicitud.estadoSolicitud.id == 4,
+                        onClick = { onStatusChange(4) },
+                        label = { Text("Rechazar") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFFE57373), // Rojo claro
+                            selectedLabelColor = Color.Black
+                        )
+                    )
                 }
             }
         }
