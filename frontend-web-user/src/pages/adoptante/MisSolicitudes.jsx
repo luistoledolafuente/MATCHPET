@@ -9,6 +9,7 @@ const BACKEND_BASE_URL = "http://127.0.0.1:8081";
 
 const SolicitudDetailModal = ({ solicitud, onClose }) => {
     if (!solicitud) return null;
+    console.log("Solicitud recibida en modal:", solicitud);
     const getStateStyle = (estado) => {
         switch (estado) {
             case "Aprobada": return "text-white bg-[#2B6777]";
@@ -55,6 +56,8 @@ const SolicitudDetailModal = ({ solicitud, onClose }) => {
                             <p className="text-gray-700 italic">
                                 {solicitud.mensajeAdoptante || "No se adjuntó un mensaje específico."}
                             </p>
+
+
                         </div>
                     </div>
                     <div className="space-y-2">
