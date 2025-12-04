@@ -80,18 +80,7 @@ fun RefugioDrawerContent(
             icon = { Icon(Icons.Default.Person, contentDescription = null) }
         )
 
-        // --- 2. Opción: Configuración (Navegación principal/global) ---
-        NavigationDrawerItem(
-            label = { Text("Configuración") },
-            selected = false,
-            onClick = {
-                closeDrawer()
-                mainNavController.navigate("settings") // Ruta global (AppNavigation)
-            },
-            icon = { Icon(Icons.Default.Settings, contentDescription = null) }
-        )
-
-        // --- 3. Opción: Acerca de la App (Navegación principal/global) ---
+        // --- 2. Opción: Acerca de la App (Navegación principal/global) ---
         NavigationDrawerItem(
             label = { Text("Acerca de la App") },
             selected = false,
@@ -102,7 +91,7 @@ fun RefugioDrawerContent(
             icon = { Icon(Icons.Default.Info, contentDescription = null) }
         )
 
-        // --- 4. CERRAR SESIÓN ---
+        // --- 3. CERRAR SESIÓN ---
         Spacer(Modifier.weight(1f)) // Empuja el Logout hacia abajo
         Divider(Modifier.padding(vertical = 8.dp))
 

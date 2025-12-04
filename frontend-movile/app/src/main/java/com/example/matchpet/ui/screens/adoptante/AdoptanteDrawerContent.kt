@@ -77,18 +77,7 @@ fun AdoptanteDrawerContent(
             icon = { Icon(Icons.Default.Person, contentDescription = null) }
         )
 
-        // --- 2. Opción: Configuración ---
-        NavigationDrawerItem(
-            label = { Text("Configuración") },
-            selected = false,
-            onClick = {
-                closeDrawer()
-                mainNavController.navigate("settings")
-            },
-            icon = { Icon(Icons.Default.Settings, contentDescription = null) }
-        )
-
-        // --- 3. Opción: Donar ---
+        // --- 2. Opción: Donar ---
         NavigationDrawerItem(
             label = { Text("Donar") },
             selected = false,
@@ -99,7 +88,7 @@ fun AdoptanteDrawerContent(
             icon = { Icon(Icons.Default.Favorite, contentDescription = null) }
         )
 
-        // --- 4. Opción: Acerca de la App ---
+        // --- 3. Opción: Acerca de la App ---
         NavigationDrawerItem(
             label = { Text("Acerca de la App") },
             selected = false,
