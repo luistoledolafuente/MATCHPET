@@ -93,27 +93,7 @@ DATABASES = {
 }
 
 
-# Password validationclient:733 [vite] connecting...
-client:827 [vite] connected.
-installHook.js:1 API Error: AxiosError
-overrideMethod @ installHook.js:1
-:8000/api/adoptantes/:1  Failed to load resource: net::ERR_CONNECTION_REFUSED
-:8000/api/adoptantes/?page=3:1  Failed to load resource: the server responded with a status of 404 (Not Found)
-installHook.js:1 API Error: Object
-overrideMethod @ installHook.js:1
-installHook.js:1 Error fetching adoptantes: AxiosError
-overrideMethod @ installHook.js:1
-:8000/api/adoptantes/?page=3:1  Failed to load resource: the server responded with a status of 404 (Not Found)
-installHook.js:1 API Error: Object
-overrideMethod @ installHook.js:1
-installHook.js:1 Error fetching adoptantes: AxiosError
-overrideMethod @ installHook.js:1
-:8000/api/adoptantes/?page=4:1  Failed to load resource: the server responded with a status of 404 (Not Found)
-installHook.js:1 API Error: Object
-overrideMethod @ installHook.js:1
-installHook.js:1 Error fetching adoptantes: AxiosError
-overrideMethod @ installHook.js:1
-
+# Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [

@@ -1,14 +1,16 @@
 from rest_framework import serializers
 from django.db import transaction
 from django.utils import timezone
-from django.contrib.auth.hashers import make_password
-from .models import (
-    UsuarioSpring, PerfilAdoptante, PerfilRefugio, UsuarioRol, Refugio, Animal, AnimalFoto,
-    SolicitudAdopcion, Donacion, Donante,
-    Raza, Especie, Temperamento, EstadoSolicitud, EstadoAdopcion, EstadoPago, Genero, Tamano, NivelEnergia,
-    Rol
-)
+import bcrypt
+from .models import *
 
+# --- FUNCIÓN AUXILIAR PARA ENCRIPTAR (Compatibilidad Spring Boot) ---
+def encriptar_password(password_raw):
+    # Genera el hash con bcrypt
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_raw.encode('utf-8'), salt)
+    # Convertimos a string y cambiamos la versión $2b$ a $2a$ para que Spring Java no se queje
+    return hashed.decode('utf-8').replace('$2b$', '$2a$')
 
 # --- SERIALIZERS CATÁLOGOS ---
 class EspecieSerializer(serializers.ModelSerializer):
@@ -83,7 +85,7 @@ class RefugioSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         raw_password = validated_data.pop('password', 'Refugio123!')
-        hashed_password = make_password(raw_password)
+        hashed_password = encriptar_password(raw_password)
         now = timezone.now()
 
         with transaction.atomic():
@@ -111,10 +113,12 @@ class RefugioSerializer(serializers.ModelSerializer):
 
             # 4. Asignar Rol 2 (Refugio)
             try:
-                rol = Rol.objects.get(id=2)
+                rol = Rol.objects.get(nombre_rol='Refugio')
                 UsuarioRol.objects.create(usuario=usuario, rol=rol)
             except Rol.DoesNotExist:
-                pass
+                raise serializers.ValidationError(
+                    {"rol": "Error crítico: El rol 'Refugio' no existe en la base de datos."}
+                )
 
         return refugio
 
@@ -163,32 +167,54 @@ class PerfilAdoptanteSerializer(serializers.ModelSerializer):
                   'direccion', 'fecha_nacimiento', 'pais']
 
     def create(self, validated_data):
+        # 1. Extraemos datos
         usuario_data = validated_data.pop('usuario')
         raw_password = validated_data.pop('password', 'MatchPet123!')
-        hashed_password = make_password(raw_password)
+        hashed_password = encriptar_password(raw_password)
         now = timezone.now()
 
+        # Usamos transaction.atomic para que si algo falla, no se guarde nada (integridad)
         with transaction.atomic():
-            # 1. Crear Usuario
+            print(">>> INICIO: Creando Adoptante...")
+
+            # -----------------------------------------------------
+            # PASO 1: CREAR USUARIO (Base)
+            # -----------------------------------------------------
             usuario = UsuarioSpring.objects.create(
                 email=usuario_data['email'],
                 nombre=usuario_data['nombre'],
                 apellido_paterno=usuario_data['apellido_paterno'],
-                apellido_materno=usuario_data.get('apellido_materno', ''),  # NOT NULL handling
+                apellido_materno=usuario_data.get('apellido_materno', ''),
                 telefono=usuario_data['telefono'],
-                esta_activo_raw=b'\x01',
+                esta_activo_raw=b'\x01',  # 1 en binario (Activo)
                 fecha_creacion_perfil=now,
                 hash_contrasena=hashed_password
             )
-            # 2. Crear Perfil Adoptante
-            perfil = PerfilAdoptante.objects.create(usuario=usuario, **validated_data)
+            print(f">>> PASO 1 OK: Usuario creado (ID: {usuario.id})")
 
-            # 3. Asignar Rol 1 (Adoptante)
+            # -----------------------------------------------------
+            # PASO 2: ASIGNAR ROL (Estricto: 'Adoptante')
+            # -----------------------------------------------------
             try:
-                rol = Rol.objects.get(id=1)
+                # Buscamos EXACTAMENTE "Adoptante" como indicaste
+                rol = Rol.objects.get(nombre_rol='Adoptante')
+
+                # Creamos la relación en la tabla intermedia
                 UsuarioRol.objects.create(usuario=usuario, rol=rol)
+                print(f">>> PASO 2 OK: Rol '{rol.nombre_rol}' asignado.")
+
             except Rol.DoesNotExist:
-                pass
+                # Esto es vital: Si no existe 'Adoptante' en la BD, cancelamos todo.
+                print("!!! ERROR CRÍTICO: No existe el rol 'Adoptante' en la base de datos.")
+                raise serializers.ValidationError(
+                    {"rol": "Error interno: El rol 'Adoptante' no está registrado en la base de datos."}
+                )
+
+            # -----------------------------------------------------
+            # PASO 3: CREAR PERFIL (Datos específicos)
+            # -----------------------------------------------------
+            perfil = PerfilAdoptante.objects.create(usuario=usuario, **validated_data)
+            print(">>> PASO 3 OK: Perfil de adoptante guardado.")
 
         return perfil
 

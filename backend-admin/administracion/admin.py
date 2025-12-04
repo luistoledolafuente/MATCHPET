@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django import forms
+import bcrypt
 from .models import (
-    UsuarioSpring, PerfilAdoptante, Refugio, Animal, AnimalFoto,
-    SolicitudAdopcion, Donacion, Donante,
+    UsuarioSpring, UsuarioRol, PerfilAdoptante, PerfilRefugio,
+    Refugio, Animal, AnimalFoto, SolicitudAdopcion, Donacion, Donante,
     Raza, Especie, Temperamento, Rol,
     EstadoSolicitud, EstadoAdopcion, EstadoPago, Genero, Tamano, NivelEnergia
 )
@@ -33,22 +35,89 @@ class PerfilAdoptanteInline(admin.StackedInline):
     verbose_name_plural = 'Perfil de Adoptante'
 
 
-# --- ADMINS PERSONALIZADOS ---
+class UsuarioSpringAdminForm(forms.ModelForm):
+    password_nueva = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False,
+        label="Contraseña (Login)",
+        help_text="Escribe aquí para asignar/cambiar la contraseña. Se encriptará automáticamente para Spring Boot."
+    )
+
+    class Meta:
+        model = UsuarioSpring
+        fields = '__all__'
+        widgets = {
+            'hash_contrasena': forms.HiddenInput(),
+            'esta_activo_raw': forms.CheckboxInput(), # Para editar el bit(1) como checkbox
+        }
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        password = self.cleaned_data.get('password_nueva')
+        if password:
+            # Encriptación compatible con Spring Security (BCrypt)
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+            usuario.hash_contrasena = hashed.decode('utf-8')
+        if commit:
+            usuario.save()
+        return usuario
+
+# --- INLINES (Pestañas dentro del Usuario) ---
+
+class UsuarioRolInline(admin.TabularInline):
+    model = UsuarioRol
+    extra = 1
+    max_num = 1
+    verbose_name = "Asignar Rol"
+    verbose_name_plural = "Rol del Usuario (Obligatorio)"
+    # Esto permite seleccionar 'Adoptante' o 'Refugio' desde un dropdown
+
+class PerfilAdoptanteInline(admin.StackedInline):
+    model = PerfilAdoptante
+    can_delete = False
+    verbose_name = "Datos de Adoptante"
+    verbose_name_plural = "Perfil de Adoptante (Llenar si es Adoptante)"
+    extra = 0 # No se muestra abierto por defecto, solo si se agrega
+
+class PerfilRefugioInline(admin.StackedInline):
+    model = PerfilRefugio
+    can_delete = False
+    verbose_name = "Vinculación con Refugio"
+    verbose_name_plural = "Perfil de Refugio (Llenar si es Refugio)"
+    extra = 0
+
 
 @admin.register(UsuarioSpring)
 class UsuarioSpringAdmin(admin.ModelAdmin):
-    list_display = ('id', 'email', 'nombre_completo', 'telefono', 'ver_activo', 'fecha_creacion_perfil')
+    form = UsuarioSpringAdminForm
+
+    # Columnas que ves en la lista principal
+    list_display = ('id', 'email', 'nombre_completo', 'ver_rol', 'ver_activo')
+    list_filter = ('usuariorol__rol__nombre_rol', 'esta_activo_raw')
     search_fields = ('email', 'nombre', 'apellido_paterno')
-    # Opcional: Mostrar perfil inline si existe
-    inlines = [PerfilAdoptanteInline]
+
+    # AQUÍ OCURRE LA MAGIA: Todo en una sola pantalla
+    inlines = [UsuarioRolInline, PerfilAdoptanteInline, PerfilRefugioInline]
 
     def nombre_completo(self, obj):
         return f"{obj.nombre} {obj.apellido_paterno}"
 
-    # Método para mostrar el icono boolean (✅/❌) basado en la propiedad
+    # Ver si está activo (convirtiendo el binario a boolean visual)
     @admin.display(boolean=True, description='Activo')
     def ver_activo(self, obj):
-        return obj.esta_activo
+        if isinstance(obj.esta_activo_raw, bytes):
+            return obj.esta_activo_raw == b'\x01'
+        return bool(obj.esta_activo_raw)
+
+    # Ver el rol en la lista
+    def ver_rol(self, obj):
+        # 'usuariorol' es el nombre automático que Django le da a la relación inversa
+        if hasattr(obj, 'usuariorol'):
+            return obj.usuariorol.rol.nombre_rol
+        return "-"
+
+    ver_rol.short_description = "Rol"
 
 
 @admin.register(Animal)

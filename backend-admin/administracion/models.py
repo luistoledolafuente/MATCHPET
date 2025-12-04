@@ -177,7 +177,7 @@ class Refugio(models.Model):
 class PerfilRefugio(models.Model):
     # Tabla intermedia perfil_refugio
     usuario = models.OneToOneField(UsuarioSpring, primary_key=True, on_delete=models.DO_NOTHING, db_column='usuario_id')
-    refugio = models.ForeignKey(Refugio, on_delete=models.DO_NOTHING, db_column='refugio_id', unique=True)
+    refugio = models.OneToOneField(Refugio, on_delete=models.DO_NOTHING, db_column='refugio_id')
 
     class Meta: managed = False; db_table = 'perfil_refugio'
 
