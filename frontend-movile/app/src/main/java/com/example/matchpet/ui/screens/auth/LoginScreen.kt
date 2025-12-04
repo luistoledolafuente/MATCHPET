@@ -170,7 +170,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                GoogleSignInButton(onClick = { /* TODO: Google Auth */ })
+                GoogleSignInButton()
 
                 Spacer(modifier = Modifier.height(20.dp))
 

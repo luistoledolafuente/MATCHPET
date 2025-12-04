@@ -24,12 +24,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp // Importado para reducir el tamaño del texto si es necesario
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.data.model.SolicitudResponse
 import com.example.matchpet.data.network.RetrofitClient
 import com.example.matchpet.data.repository.SolicitudRepository
+import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.SolicitudesRecibidasState
 import com.example.matchpet.viewmodel.SolicitudesRecibidasViewModel
 
@@ -53,30 +55,62 @@ fun SolicitudesRecibidasScreen(token: String) {
 
     LaunchedEffect(Unit) { viewModel.loadSolicitudes(token) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Solicitudes de Adopción Recibidas", color = Color.White) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = WebTeal),
-                actions = {
-                    IconButton(onClick = { viewModel.loadSolicitudes(token) }) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Recargar", tint = Color.White)
-                    }
-                }
-            )
-        },
-        containerColor = PaleTeal
-    ) { paddingValues ->
-
+    // Usaremos Box como contenedor principal para el color de fondo y para el layout manual.
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(PaleTeal) // Color de fondo aplicado aquí
+    ) {
+        // --- 1. Encabezado Personalizado (Sustituto del TopAppBar) ---
+        // Esto define la barra verde oscura con el título que quieres hacer más pequeño.
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .fillMaxWidth()
+                .background(WebTeal) // Color de la barra superior (verde oscuro)
         ) {
+            // Fila para el título y el botón de recarga (Header)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // **ALTURA REDUCIDA:** Puedes cambiar 48.dp a un valor más pequeño si quieres menos altura.
+                    .height(48.dp)
+                    .padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Título
+                Text(
+                    text = "Solicitudes de Adopción Recibidas",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp, // Tamaño de fuente para que no parezca un TopAppBar gigante
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+
+                // Botón de Recargar
+                IconButton(onClick = { viewModel.loadSolicitudes(token) }) {
+                    Icon(Icons.Filled.Refresh, contentDescription = "Recargar", tint = Color.White)
+                }
+            }
+        }
+
+        // --- 2. Contenido Principal usando un Scaffold sin TopBar ---
+        // El Scaffold maneja el padding inferior (BottomBar)
+        Scaffold(
+            containerColor = Color.Transparent, // Transparente para usar el fondo PaleTeal
+            // Aplicamos un padding superior que iguala la altura del encabezado personalizado (48.dp)
+            modifier = Modifier.padding(top = 48.dp)
+        ) { paddingValues -> // paddingValues ahora contiene solo el padding inferior del BottomBar
+
             when (state) {
 
                 is SolicitudesRecibidasState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues), // Sin padding extra superior
+                        contentAlignment = Alignment.Center
+                    ) {
                         CircularProgressIndicator(color = WebTeal)
                     }
                 }
@@ -88,26 +122,43 @@ fun SolicitudesRecibidasScreen(token: String) {
                         Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                     }
 
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues), // Sin padding extra superior
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
                             text = "Error al cargar datos. Toca para reintentar.",
                             color = Color.Red,
                             modifier = Modifier
-                                .padding(16.dp)
                                 .clickable { viewModel.loadSolicitudes(token) }
+                                .padding(16.dp)
                         )
                     }
                 }
 
                 else -> {
                     if (solicitudes.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues), // Sin padding extra superior
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text("No hay solicitudes de adopción recibidas.")
                         }
                     } else {
                         LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            contentPadding = PaddingValues(
+                                // *** AQUÍ SE PUSO 8.dp para separar un poco del encabezado (antes era 0.dp) ***
+                                top = 8.dp,
+                                bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                                start = 16.dp,
+                                end = 16.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             items(
                                 items = solicitudes,
@@ -143,7 +194,7 @@ fun SolicitudCard(
     var expanded by remember { mutableStateOf(false) }
     var showDropdown by remember { mutableStateOf(false) }
     var mensajeRefugio by remember { mutableStateOf("") }
-    
+
     val context = LocalContext.current
 
     val estadoNombre = solicitud.estadoSolicitud.nombre
@@ -151,9 +202,10 @@ fun SolicitudCard(
     val adoptanteNombre = solicitud.adoptante.nombreCompleto
     val animalNombre = solicitud.animal.nombre
 
-    val foto =
-        solicitud.animal.fotos?.firstOrNull()
-            ?: "https://placehold.co/100x100/CCCCCC/000000?text=SIN+FOTO"
+    val foto = solicitud.animal.fotos?.firstOrNull()?.let {
+        if (it.startsWith("/")) "${Injection.BACKEND_BASE_URL}$it" else it
+    } ?: "https://placehold.co/100x100/CCCCCC/000000?text=SIN+FOTO"
+
 
     val mensaje = solicitud.mensajeAdoptante ?: "No hay mensaje."
     val fecha = solicitud.fechaSolicitud
@@ -224,7 +276,7 @@ fun SolicitudCard(
             if (expanded) {
 
                 Divider(Modifier.padding(vertical = 8.dp))
-                
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -249,7 +301,7 @@ fun SolicitudCard(
                     )
 
                     Spacer(Modifier.height(12.dp))
-                    
+
                     // Mensaje del Refugio (si ya existe)
                     val mensajeRefugioExistente = solicitud.mensajeAlAdoptante
                     if (!mensajeRefugioExistente.isNullOrBlank()) {
@@ -263,7 +315,7 @@ fun SolicitudCard(
                         )
                         Spacer(Modifier.height(12.dp))
                     }
-                    
+
                     // Campo de mensaje para el refugio (solo si está pendiente y no hay respuesta)
                     if (isPending) {
                         Text("Tu Mensaje al Adoptante (detalles de entrega):", fontWeight = FontWeight.SemiBold)
@@ -304,7 +356,7 @@ fun SolicitudCard(
                     // Aprobar (ID 3)
                     FilterChip(
                         selected = solicitud.estadoSolicitud.id == 3,
-                        onClick = { 
+                        onClick = {
                             if (mensajeRefugio.isNotBlank()) {
                                 onStatusChange(3, mensajeRefugio)
                             } else {

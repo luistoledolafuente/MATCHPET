@@ -2,6 +2,8 @@ package com.example.matchpet.ui.components
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,19 +20,15 @@ import com.example.matchpet.R
 
 @Composable
 fun GoogleSignInButton(
-    onClick: (() -> Unit)? = null
+    onTokenReceived: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
 
     Button(
         onClick = {
-            // Abrimos el navegador con el endpoint de Google de tu backend
-            val intent = Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("http://10.0.2.2:8081/oauth2/authorization/google")
-            )
+            val url = "https://df64697be772.ngrok-free.app/oauth2/authorization/google?redirect_uri=matchpet://login-callback"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             context.startActivity(intent)
-            onClick?.invoke()
         },
         modifier = Modifier
             .fillMaxWidth()
