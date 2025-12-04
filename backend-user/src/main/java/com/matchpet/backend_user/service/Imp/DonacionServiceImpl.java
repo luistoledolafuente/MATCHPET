@@ -124,7 +124,7 @@ public class DonacionServiceImpl implements DonacionService {
                     /*.autoReturn("approved")*/
                     .externalReference(String.valueOf(donacionGuardada.getId()))
                     // IMPORTANTE: Descomenta esto y asegúrate que backendDomain sea tu URL de NGROK
-                    .notificationUrl("https://7613df9598cb.ngrok-free.app/api/donaciones/webhook")
+                    .notificationUrl("https://df64697be772.ngrok-free.app/api/donaciones/webhook")
                     .build();
 
             // D. Llamar a Mercado Pago
