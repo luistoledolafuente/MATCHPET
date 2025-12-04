@@ -95,6 +95,7 @@ data class SolicitudResponse(
     @SerializedName("fechaSolicitud") val fechaSolicitud: String,
     @SerializedName("fechaActualizacion") val fechaActualizacion: String?,
     @SerializedName("notasInternas") val notasInternas: String?,
+    @SerializedName("mensajeAdoptante") val mensajeAdoptante: String?,
     @SerializedName("mensajeAlAdoptante") val mensajeAlAdoptante: String?,
     @SerializedName("estadoSolicitud") val estadoSolicitud: EstadoSolicitudDto,
     @SerializedName("animal") val animal: AnimalSummary,

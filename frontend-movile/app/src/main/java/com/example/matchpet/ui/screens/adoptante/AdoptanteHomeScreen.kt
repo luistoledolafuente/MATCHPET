@@ -10,12 +10,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +80,53 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
             }
         }
 
+        // --- CTA Recomendaciones IA ---
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(PaleTeal.copy(alpha = 0.25f), Color(0xFFBAE6FD).copy(alpha = 0.25f))
+                            )
+                        )
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Star, contentDescription = null, tint = WebTeal)
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "Tu Match Perfecto (IA)",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = WebTeal
+                            )
+                        }
+                        Text(
+                            text = "Descubre mascotas recomendadas según tu perfil de adoptante.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF00695C)
+                        )
+                        Button(
+                            onClick = { navController.navigate("adoptante_recomendaciones") },
+                            colors = ButtonDefaults.buttonColors(containerColor = WebTeal)
+                        ) {
+                            Text("Ver Recomendaciones IA")
+                        }
+                    }
+                }
+            }
+        }
+
         // --- ESTADÍSTICAS ---
         item {
             when (dashboardState) {
@@ -114,6 +163,21 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
                         ) {
                             StatCard("Favoritos", data.stats.totalFavoritos.toString(), Color(0xFFE91E63))
                             StatCard("Donaciones", "$${data.stats.totalDonaciones}", Color(0xFFC62828))
+                        }
+
+                        // Lista de Solicitudes Pendientes
+                        if (data.solicitudesPendientesAnimales.isNotEmpty()) {
+                            Text("Solicitudes Pendientes", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = WebTeal)
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                contentPadding = PaddingValues(horizontal = 0.dp)
+                            ) {
+                                items(data.solicitudesPendientesAnimales) { animal ->
+                                    RealMascotaCard(animal) {
+                                        navController.navigate("animal_detail/${animal.animal_id}")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -201,7 +265,7 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
             when (val state = dashboardState) {
                 is DashboardState.Success -> {
                     if (state.data.mascotasRecomendadas.isNotEmpty()) {
-                        item { SectionTitle("Recomendadas Para Ti", Modifier.padding(start = 16.dp)) }
+                        item { SectionTitle("Mascotas que podrían gustarte", Modifier.padding(start = 16.dp)) }
                         item {
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(14.dp),

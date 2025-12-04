@@ -8,6 +8,9 @@ import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.data.model.SolicitudResponse
 import com.example.matchpet.data.repository.Resource
 import com.example.matchpet.data.repository.SolicitudRepository
+
+import com.example.matchpet.data.model.animal.AnimalUpdateRequest
+import com.example.matchpet.data.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,12 +57,57 @@ class SolicitudesRecibidasViewModel(
         }
     }
 
-    fun updateSolicitudStatus(token: String, solicitudId: Int, nuevoEstadoId: Int) {
+    fun updateSolicitudStatus(
+        token: String,
+        solicitudId: Int,
+        nuevoEstadoId: Int,
+        mensajeAlAdoptante: String? = null
+    ) {
         viewModelScope.launch {
-            when (solicitudRepository.updateSolicitudStatus(token, solicitudId, nuevoEstadoId)) {
-                is Resource.Success -> loadSolicitudes(token)
+            // 1. Actualizar el estado de la solicitud
+            when (solicitudRepository.updateSolicitudStatus(
+                token,
+                solicitudId,
+                nuevoEstadoId,
+                mensaje = mensajeAlAdoptante
+            )) {
+                is Resource.Success -> {
+                    // 2. Actualizar el estado de la mascota según el estado de la solicitud
+                    val solicitud = _solicitudes.value.find { it.id == solicitudId }
+                    if (solicitud != null) {
+                        try {
+                            val estadosResp = RetrofitClient.api.getEstadosAdopcion()
+                            if (estadosResp.isSuccessful) {
+                                val estadosAdopcion = estadosResp.body() ?: emptyList()
+                                
+                                // Mapeo de estados
+                                // En revisión (2) -> En proceso (2)
+                                // Aprobada (3) -> Adoptado (3)
+                                // Rechazada (4) -> Disponible (1)
+                                
+                                val nuevoEstadoAnimalId = when (nuevoEstadoId) {
+                                    2 -> estadosAdopcion.firstOrNull { it.nombre.equals("En proceso", true) }?.id
+                                    3 -> estadosAdopcion.firstOrNull { it.nombre.equals("Adoptado", true) }?.id
+                                    4 -> estadosAdopcion.firstOrNull { it.nombre.equals("Disponible", true) }?.id
+                                    else -> null
+                                }
+
+                                if (nuevoEstadoAnimalId != null) {
+                                    RetrofitClient.api.updateAnimal(
+                                        id = solicitud.animal.id,
+                                        token = "Bearer $token",
+                                        request = AnimalUpdateRequest(estadoAdopcionId = nuevoEstadoAnimalId)
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // Manejar error silenciosamente o loguear
+                        }
+                    }
+                    loadSolicitudes(token)
+                }
                 is Resource.Error -> _state.value =
-                    SolicitudesRecibidasState.Error("No se pudo actualizar.")
+                    SolicitudesRecibidasState.Error("No se pudo actualizar el estado.")
                 else -> {}
             }
         }

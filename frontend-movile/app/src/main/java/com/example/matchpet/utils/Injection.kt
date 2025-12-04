@@ -4,12 +4,14 @@ import android.content.Context
 import com.example.matchpet.data.network.ApiService
 import com.example.matchpet.data.repository.AnimalRepository
 import com.example.matchpet.data.repository.FavoritesRepository
+import com.example.matchpet.data.repository.RecomendacionRepository
 import com.example.matchpet.data.repository.RefugioRepository
 import com.example.matchpet.data.repository.SolicitudRepository
 import com.example.matchpet.viewmodel.MisMascotasViewModel
 import com.example.matchpet.viewmodel.NuevaMascotaViewModel
 import com.example.matchpet.viewmodel.adoptante.AdoptanteSolicitudesViewModel
 import com.example.matchpet.viewmodel.adoptante.FavoritesViewModel
+import com.example.matchpet.viewmodel.adoptante.RecomendacionesViewModel
 import com.example.matchpet.viewmodel.refugio.RefugioViewModelFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -46,6 +48,11 @@ object Injection {
         FavoritesRepository(apiService)
     }
 
+    // 🔑 Repositorio de Recomendaciones IA
+    val recomendacionRepository: RecomendacionRepository by lazy {
+        RecomendacionRepository(apiService)
+    }
+
     // 🔑 3. Función para inicializar el Context
     fun initialize(context: Context) {
         this.appContext = context.applicationContext
@@ -57,9 +64,10 @@ object Injection {
     }
 
     private val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .writeTimeout(20, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .callTimeout(60, TimeUnit.SECONDS)
         .addInterceptor(loggingInterceptor)
         .build()
 
@@ -94,6 +102,11 @@ object Injection {
     // 🔑 Factory para FavoritesViewModel
     fun provideFavoritesViewModelFactory(): FavoritesViewModel.Factory {
         return FavoritesViewModel.Factory(favoritesRepository)
+    }
+
+    // Factory para RecomendacionesViewModel
+    fun provideRecomendacionesViewModelFactory(): RecomendacionesViewModel.Factory {
+        return RecomendacionesViewModel.Factory(recomendacionRepository)
     }
 
     // 5. Constante para la URL base (para Coil)

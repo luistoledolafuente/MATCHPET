@@ -61,7 +61,7 @@ fun AdoptanteSolicitudesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             when (state) {
@@ -209,65 +209,52 @@ fun SolicitudCard(solicitud: SolicitudResponse) {
             Divider()
 
             Spacer(Modifier.height(12.dp))
-
-            // Información adicional
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            
+            // Contenido con mensajes (se expande según el contenido)
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    Icons.Default.Store,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = Color(0xFF757575)
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = "Refugio",
-                    fontSize = 14.sp,
-                    color = Color(0xFF757575)
-                )
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.CalendarToday,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = Color(0xFF757575)
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = "Solicitado: ${formatDate(solicitud.fechaSolicitud)}",
-                    fontSize = 14.sp,
-                    color = Color(0xFF757575)
-                )
-            }
-
-            // Mensaje del refugio si existe
-            if (!solicitud.mensajeAlAdoptante.isNullOrBlank()) {
-                Spacer(Modifier.height(12.dp))
-                Divider()
-                Spacer(Modifier.height(12.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                // Mi mensaje al refugio
+                if (!solicitud.mensajeAdoptante.isNullOrBlank()) {
+                    Text(
+                        text = "Tu mensaje:",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF757575)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
                         Text(
-                            text = "💬 Mensaje del refugio:",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF757575)
+                            text = solicitud.mensajeAdoptante,
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
                         )
-                        Spacer(Modifier.height(4.dp))
+                    }
+                    Spacer(Modifier.height(12.dp))
+                }
+
+                // Mensaje del refugio si existe
+                if (!solicitud.mensajeAlAdoptante.isNullOrBlank()) {
+                    Text(
+                        text = "💬 Respuesta del refugio:",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF757575)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFC8E6C9)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
                         Text(
                             text = solicitud.mensajeAlAdoptante,
+                            modifier = Modifier.padding(12.dp),
                             fontSize = 14.sp,
                             color = Color(0xFF424242)
                         )

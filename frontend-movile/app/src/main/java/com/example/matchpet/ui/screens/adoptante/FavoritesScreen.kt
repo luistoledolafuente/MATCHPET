@@ -29,6 +29,7 @@ import com.example.matchpet.ui.theme.PaleTeal
 import com.example.matchpet.ui.theme.WebTeal
 import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.adoptante.FavoritesViewModel
+import com.example.matchpet.ui.components.PetCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,13 +85,14 @@ fun FavoritesScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(favorites) { animal ->
-                        FavoriteGridItem(
+                        PetCard(
                             animal = animal,
+                            isFavorite = true,
+                            onToggleFavorite = {
+                                viewModel.removeFavorite(token, animal.animal_id)
+                            },
                             onViewProfile = {
                                 navController.navigate("animal_detail/${animal.animal_id}")
-                            },
-                            onRemove = {
-                                viewModel.removeFavorite(token, animal.animal_id)
                             }
                         )
                     }
@@ -100,59 +102,4 @@ fun FavoritesScreen(
     }
 }
 
-@Composable
-fun FavoriteGridItem(
-    animal: Animal,
-    onViewProfile: () -> Unit,
-    onRemove: () -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(4.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column {
-            // Imagen
-            AsyncImage(
-                model = if (!animal.fotos.isNullOrEmpty()) "http://10.0.2.2:8081${animal.fotos[0]}" else "https://placehold.co/400x300/B2D8D8/004D40?text=No+Photo",
-                contentDescription = animal.nombre,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                contentScale = ContentScale.Crop
-            )
 
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = animal.nombre,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color(0xFF004D40)
-                )
-                Text(
-                    text = "${animal.raza ?: "Mestizo"} • ${animal.genero ?: "?"}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                // Botones de acción
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(onClick = onViewProfile) {
-                        Icon(Icons.Default.Pets, contentDescription = "Ver Detalles", tint = WebTeal)
-                    }
-                    IconButton(onClick = onRemove) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Desmarcar", tint = Color.Red)
-                    }
-                }
-            }
-        }
-    }
-}

@@ -21,7 +21,8 @@ data class DashboardStats(
 data class DashboardData(
     val stats: DashboardStats,
     val mascotasRecomendadas: List<Animal>,
-    val mascotasSolicitadas: List<Animal>
+    val mascotasSolicitadas: List<Animal>,
+    val solicitudesPendientesAnimales: List<Animal>
 )
 
 sealed class DashboardState {
@@ -73,7 +74,7 @@ class AdoptanteHomeViewModel : ViewModel() {
                 val solicitudes = solicitudesResponse.body() ?: emptyList()
                 
                 // Contar estadísticas
-                val pendientes = solicitudes.count { 
+                val pendientes = solicitudes.count {
                     it.estadoSolicitud.nombre.uppercase() in listOf("PENDIENTE", "ENVIADA", "EN REVISIÓN")
                 }
                 
@@ -98,7 +99,11 @@ class AdoptanteHomeViewModel : ViewModel() {
                 
                 // 2. Obtener todas las mascotas disponibles
                 val animalesResponse = RetrofitClient.api.getAnimales(page = 0, size = 50)
-                val todasMascotas = animalesResponse.body()?.content ?: emptyList()
+                val todasMascotas = (animalesResponse.body()?.content ?: emptyList())
+                    .filter { 
+                        it.estadoAdopcion.equals("Disponible", ignoreCase = true) || 
+                        it.estadoAdopcion.equals("En proceso", ignoreCase = true)
+                    }
                 _allPets.value = todasMascotas
                 
                 // 3. Tomar 3 mascotas aleatorias
@@ -120,12 +125,30 @@ class AdoptanteHomeViewModel : ViewModel() {
                         fotos = solicitud.animal.fotos
                     )
                 }.take(6) // Mostrar máximo 6 solicitudes
+
+                val pendientesAnimales = solicitudes.filter {
+                    it.estadoSolicitud.nombre.uppercase() in listOf("PENDIENTE", "ENVIADA", "EN REVISIÓN")
+                }.map { solicitud ->
+                    Animal(
+                        animal_id = solicitud.animal.id,
+                        nombre = solicitud.animal.nombre,
+                        raza = null,
+                        genero = null,
+                        edad = null,
+                        descripcionPersonalidad = null,
+                        estadoAdopcion = "",
+                        refugioNombre = null,
+                        refugioCiudad = null,
+                        fotos = solicitud.animal.fotos
+                    )
+                }.take(6)
                 
                 _dashboardState.value = DashboardState.Success(
                     DashboardData(
                         stats = stats,
                         mascotasRecomendadas = mascotasRecomendadas,
-                        mascotasSolicitadas = mascotasSolicitadas
+                        mascotasSolicitadas = mascotasSolicitadas,
+                        solicitudesPendientesAnimales = pendientesAnimales
                     )
                 )
                 
