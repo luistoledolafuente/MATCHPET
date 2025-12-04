@@ -1,26 +1,27 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import AdminLayout from './layout/AdminLayout';
-import Dashboard from './pages/Dashboard';
-import Animales from './pages/Animales';
-import Usuarios from './pages/Usuarios';
-import Refugios from './pages/Refugios';       
-import Solicitudes from './pages/Solicitudes'; 
-import Donaciones from './pages/Donaciones';   
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AdminLayout from './layout/AdminLayout';  // Layout con Sidebar
+import CreateAdoptante from './pages/adoptante/CreateAdoptante';
+import AdoptantesList from './pages/adoptante/AdoptantesList';
+import EditAdoptante from './pages/adoptante/EditAdoptante';
+
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
         <Route path="/" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="animales" element={<Animales />} />
-          <Route path="usuarios" element={<Usuarios />} />
-          <Route path="refugios" element={<Refugios />} />       
-          <Route path="solicitudes" element={<Solicitudes />} /> 
-          <Route path="donaciones" element={<Donaciones />} />   
+          {/* Ruta para el Dashboard */}
+          <Route index element={<h1 className="text-2xl font-bold text-gray-700">Bienvenido al Dashboard</h1>} />
+          
+          {/* Rutas de Adoptantes */}
+          <Route path="create" element={<CreateAdoptante />} />
+          <Route path="adoptantes" element={<AdoptantesList />} />
+          <Route path="adoptantes/editar/:id" element={<EditAdoptante />} />
+
         </Route>
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 

@@ -93,7 +93,27 @@ DATABASES = {
 }
 
 
-# Password validation
+# Password validationclient:733 [vite] connecting...
+client:827 [vite] connected.
+installHook.js:1 API Error: AxiosError
+overrideMethod @ installHook.js:1
+:8000/api/adoptantes/:1  Failed to load resource: net::ERR_CONNECTION_REFUSED
+:8000/api/adoptantes/?page=3:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+installHook.js:1 API Error: Object
+overrideMethod @ installHook.js:1
+installHook.js:1 Error fetching adoptantes: AxiosError
+overrideMethod @ installHook.js:1
+:8000/api/adoptantes/?page=3:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+installHook.js:1 API Error: Object
+overrideMethod @ installHook.js:1
+installHook.js:1 Error fetching adoptantes: AxiosError
+overrideMethod @ installHook.js:1
+:8000/api/adoptantes/?page=4:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+installHook.js:1 API Error: Object
+overrideMethod @ installHook.js:1
+installHook.js:1 Error fetching adoptantes: AxiosError
+overrideMethod @ installHook.js:1
+
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -130,13 +150,12 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # Configuración REST Framework
+# settings.py
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'PAGE_SIZE': 5,
 }
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
