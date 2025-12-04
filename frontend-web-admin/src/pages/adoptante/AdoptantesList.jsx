@@ -1,125 +1,182 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Asegúrate de importar Link
+import { Link } from 'react-router-dom';
 import { fetchAdoptantes } from '../../api/fetchAdoptantes';
-import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline'; // Asegúrate de tener heroicons
-import client from '../../api/client'; // Para hacer solicitudes API
+import client from '../../api/client';
+import { PencilIcon, TrashIcon, PlusIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const AdoptantesList = () => {
     const [adoptantes, setAdoptantes] = useState([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    // ESTADOS PARA PAGINACIÓN REAL
+    const [totalCount, setTotalCount] = useState(0);
+    const [hasNext, setHasNext] = useState(false);
+    const [hasPrev, setHasPrev] = useState(false);
 
     useEffect(() => {
-        const loadAdoptantes = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchAdoptantes(page);
-                setAdoptantes(data.results);
-            } catch (err) {
-                setError('Error al cargar los adoptantes');
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadAdoptantes();
+        loadAdoptantes(page);
     }, [page]);
 
-    const handlePageChange = (newPage) => {
-        setPage(newPage);
-    };
-
-    const handleDelete = async (id) => {
+    const loadAdoptantes = async (currentPage) => {
+        setLoading(true);
+        setError(null);
         try {
-            const confirmDelete = window.confirm('¿Estás seguro de eliminar este adoptante?');
-            if (confirmDelete) {
-                await client.delete(`/adoptantes/${id}/`);
-                alert('Adoptante eliminado');
-                setAdoptantes(adoptantes.filter(adoptante => adoptante.id !== id));
+            const data = await fetchAdoptantes(currentPage);
+            
+            // Verificamos si la respuesta es paginada (DRF standard)
+            if (data.results) {
+                setAdoptantes(data.results);
+                setTotalCount(data.count);
+                
+                // LA CLAVE: Usamos las URLs que nos da el backend para saber si hay más
+                setHasNext(!!data.next); 
+                setHasPrev(!!data.previous);
+            } else {
+                // Fallback si no hay paginación
+                setAdoptantes(Array.isArray(data) ? data : []);
+                setTotalCount(data.length || 0);
+                setHasNext(false);
+                setHasPrev(false);
             }
-        } catch (error) {
-            setError('Error al eliminar el adoptante');
+        } catch (err) {
+            console.error(err);
+            // Si la página no existe (404), volvemos a la 1 automáticamente
+            if (currentPage > 1) {
+                setPage(1);
+            } else {
+                setError('No se pudieron cargar los adoptantes.');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleEdit = (id) => {
-        // Redirige a la página de edición, pasando el ID del adoptante
-        window.location.href = `/adoptantes/editar/${id}`;
+    const handleDelete = async (id) => {
+        if (window.confirm('¿Estás seguro de eliminar este adoptante?')) {
+            try {
+                await client.delete(`/adoptantes/${id}/`);
+                // Recargar la misma página para actualizar la lista
+                loadAdoptantes(page);
+            } catch (error) {
+                alert('Error al eliminar el adoptante. Puede tener datos asociados.');
+            }
+        }
+    };
+
+    const handlePrevious = () => {
+        if (hasPrev) setPage(prev => prev - 1);
+    };
+
+    const handleNext = () => {
+        if (hasNext) setPage(prev => prev + 1);
     };
 
     return (
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl mx-auto space-y-8">
+        <div className="p-6 bg-gray-50 min-h-screen">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-semibold text-gray-700">Lista de Adoptantes</h1>
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Directorio de Adoptantes</h1>
+                    <p className="text-sm text-gray-500">Total registrados: {totalCount}</p>
+                </div>
                 <Link
                     to="/adoptantes/create"
-                    className="bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 flex items-center transition duration-300"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow flex items-center gap-2"
                 >
-                    <PlusIcon className="w-5 h-5 mr-2" /> Nuevo Adoptante
+                    <PlusIcon className="w-5 h-5" /> Nuevo Adoptante
                 </Link>
             </div>
 
-            {/* Loading and Error State */}
-            {loading && <p className="text-gray-500">Cargando...</p>}
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>}
 
-            {/* Tabla */}
-            <div className="overflow-x-auto">
-                <table className="min-w-full table-auto bg-white rounded-xl shadow-sm border border-gray-200">
-                    <thead>
-                        <tr className="text-left bg-indigo-100 text-gray-700">
-                            <th className="px-6 py-3 text-sm font-medium">ID</th>
-                            <th className="px-6 py-3 text-sm font-medium">Nombre</th>
-                            <th className="px-6 py-3 text-sm font-medium">Email</th>
-                            <th className="px-6 py-3 text-sm font-medium">Teléfono</th>
-                            <th className="px-6 py-3 text-sm font-medium">Ciudad</th>
-                            <th className="px-6 py-3 text-sm font-medium text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {adoptantes.map((adoptante) => (
-                            <tr key={adoptante.id} className="hover:bg-indigo-50 transition duration-300">
-                                <td className="px-6 py-4 text-sm text-gray-500">#{adoptante.id}</td>
-                                <td className="px-6 py-4 text-sm text-gray-700">{adoptante.nombre} {adoptante.apellido_paterno}</td>
-                                <td className="px-6 py-4 text-sm text-gray-600">{adoptante.email}</td>
-                                <td className="px-6 py-4 text-sm text-gray-600">{adoptante.telefono}</td>
-                                <td className="px-6 py-4 text-sm text-gray-600">{adoptante.ciudad}</td>
-                                <td className="px-6 py-4 text-right space-x-2">
-                                    <button
-                                        onClick={() => handleEdit(adoptante.id)}
-                                        className="text-blue-600 hover:text-blue-800 inline-flex items-center"
-                                    >
-                                        <PencilIcon className="w-5 h-5 inline-block" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(adoptante.id)}
-                                        className="text-red-600 hover:text-red-800 inline-flex items-center"
-                                    >
-                                        <TrashIcon className="w-5 h-5 inline-block" />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[400px]">
+                {loading ? (
+                    <div className="flex-1 flex items-center justify-center text-gray-500">
+                        Cargando registros...
+                    </div>
+                ) : (
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-100 border-b border-gray-200">
+                                    <tr>
+                                        <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Nombre</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Contacto</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Ubicación</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {adoptantes.map((adoptante) => (
+                                        <tr key={adoptante.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-900">
+                                                    {adoptante.nombre} {adoptante.apellido_paterno}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                                <div className="flex flex-col">
+                                                    <span>{adoptante.email}</span>
+                                                    <span className="text-xs text-gray-400">{adoptante.telefono}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                                {adoptante.ciudad || "No especificada"}
+                                            </td>
+                                            <td className="px-6 py-4 text-right space-x-3">
+                                                <Link 
+                                                    to={`/adoptantes/editar/${adoptante.id}`}
+                                                    className="text-blue-600 hover:text-blue-800 inline-flex items-center"
+                                                    title="Editar"
+                                                >
+                                                    <PencilIcon className="w-4 h-4" />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(adoptante.id)}
+                                                    className="text-red-600 hover:text-red-800 inline-flex items-center"
+                                                    title="Eliminar"
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {adoptantes.length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" className="p-8 text-center text-gray-400">
+                                                No hay adoptantes registrados.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-            {/* Paginación */}
-            <div className="flex justify-between items-center mt-6">
-                <button
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page === 1}
-                    className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition duration-300"
-                >
-                    Anterior
-                </button>
-                <span className="text-gray-700">Página {page}</span>
-                <button
-                    onClick={() => handlePageChange(page + 1)}
-                    className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition duration-300"
-                >
-                    Siguiente
-                </button>
+                        {/* CONTROLES DE PAGINACIÓN CORREGIDOS */}
+                        <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-between bg-gray-50 mt-auto">
+                            <span className="text-sm text-gray-700">
+                                Página actual: <span className="font-semibold">{page}</span>
+                            </span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handlePrevious}
+                                    disabled={!hasPrev} // Solo activo si el backend dice que hay "previous"
+                                    className="px-3 py-1 border rounded-md bg-white text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all"
+                                >
+                                    <ChevronLeftIcon className="w-4 h-4 mr-1" /> Anterior
+                                </button>
+                                <button
+                                    onClick={handleNext}
+                                    disabled={!hasNext} // Solo activo si el backend dice que hay "next"
+                                    className="px-3 py-1 border rounded-md bg-white text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all"
+                                >
+                                    Siguiente <ChevronRightIcon className="w-4 h-4 ml-1" />
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

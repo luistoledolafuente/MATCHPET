@@ -133,14 +133,14 @@ STATIC_URL = 'static/'
 # settings.py
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,
+    'PAGE_SIZE': 100,
 }
 
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:5173", # Puerto por defecto de Vite
-    "http://127.0.0.1:5173",
+    "http://localhost:5174", # Puerto por defecto de Vite
+    "http://127.0.0.1:5174",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

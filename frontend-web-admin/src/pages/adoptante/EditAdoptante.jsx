@@ -4,7 +4,7 @@ import client from '../../api/client';
 
 const EditAdoptante = () => {
     const { id } = useParams();
-    const navigate = useNavigate();  // Para redirigir después de guardar
+    const navigate = useNavigate();  // Para redirigir después de guardar o cancelar
     const [adoptante, setAdoptante] = useState(null);
     const [formData, setFormData] = useState({
         email: '',
@@ -48,6 +48,10 @@ const EditAdoptante = () => {
             console.error('Error al actualizar adoptante', err);
             alert('Hubo un error al guardar los cambios');
         }
+    };
+
+    const handleCancel = () => {
+        navigate('/adoptantes'); // Redirige al listado de adoptantes al cancelar
     };
 
     if (!adoptante) return <p>Cargando...</p>;
@@ -181,11 +185,18 @@ const EditAdoptante = () => {
                     />
                 </div>
 
-                {/* Botón para guardar */}
-                <div className="col-span-2 flex justify-end mt-6">
+                {/* Botones para guardar y cancelar */}
+                <div className="col-span-2 flex justify-end gap-3 mt-6">
+                    <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="px-6 py-3 text-sm text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                    >
+                        Cancelar
+                    </button>
                     <button
                         type="submit"
-                        className="px-6 py-3 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+                        className="px-6 py-3 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
                     >
                         Guardar Cambios
                     </button>
