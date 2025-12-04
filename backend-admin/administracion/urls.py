@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
+from .views import *
 
 router = DefaultRouter()
 router.register(r'usuarios', UsuarioViewSet)
@@ -23,4 +24,4 @@ router.register(r'estados_adopcion', EstadoAdopcionViewSet)
 router.register(r'estados_solicitud', EstadoSolicitudViewSet)
 router.register(r'estados_pago', EstadoPagoViewSet)
 
-urlpatterns = [path('', include(router.urls))]
+urlpatterns = [path('', include(router.urls)), path('dashboard/stats/', dashboard_stats, name='dashboard-stats'),]
