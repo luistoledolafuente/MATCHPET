@@ -15,6 +15,9 @@ import com.example.matchpet.ui.theme.PrimaryTeal
 import kotlinx.coroutines.delay
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import com.example.matchpet.R
 
 @Composable
 fun SplashScreen(navController: NavController) {
@@ -33,11 +36,10 @@ fun SplashScreen(navController: NavController) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = Icons.Filled.Pets,
+            Image(
+                painter = painterResource(id = R.drawable.logo_matchpet),
                 contentDescription = "Logo MatchPet",
-                tint = PrimaryTeal,
-                modifier = Modifier.size(90.dp)
+                modifier = Modifier.size(200.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))

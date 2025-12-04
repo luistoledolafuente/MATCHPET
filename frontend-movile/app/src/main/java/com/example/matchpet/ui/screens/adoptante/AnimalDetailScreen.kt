@@ -28,6 +28,10 @@ import com.example.matchpet.data.network.RetrofitClient
 import com.example.matchpet.ui.theme.WebTeal
 import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.adoptante.FavoritesViewModel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import com.example.matchpet.data.model.SolicitudRequest
+import kotlinx.coroutines.launch
 
 // Función para calcular la edad desde la fecha de nacimiento
 // (Mantengo la función existente)
@@ -62,10 +66,26 @@ fun AnimalDetailScreen(
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var selectedImageIndex by remember { mutableStateOf(0) }
+    var isRequested by remember { mutableStateOf(false) }
+
+    // Estados para el Modal de Solicitud
+    var showDialog by remember { mutableStateOf(false) }
+    var mensajeAdoptante by remember { mutableStateOf("") }
+    var submitting by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     
     // Estado de favoritos
     val favorites by favoritesViewModel.favorites.collectAsState()
+    val favoritesError by favoritesViewModel.error.collectAsState()
     val isFavorite = favorites.any { it.animal_id == animalId }
+
+    // Debugging Toasts for Favorites
+    LaunchedEffect(favoritesError) {
+        favoritesError?.let {
+            Toast.makeText(context, "Error Favoritos: $it", Toast.LENGTH_LONG).show()
+        }
+    }
 
     // Cargar favoritos al inicio
     LaunchedEffect(Unit) {
@@ -78,6 +98,13 @@ fun AnimalDetailScreen(
             val response = RetrofitClient.api.getAnimalDetails(animalId, "Bearer $token")
             if (response.isSuccessful) {
                 animal = response.body()
+                
+                // Verificar si ya existe una solicitud
+                val requestsResponse = RetrofitClient.api.getMisSolicitudes("Bearer $token")
+                if (requestsResponse.isSuccessful) {
+                    val requests = requestsResponse.body() ?: emptyList()
+                    isRequested = requests.any { it.animal.id == animalId }
+                }
             } else {
                 error = "Error al cargar la mascota"
             }
@@ -140,8 +167,93 @@ fun AnimalDetailScreen(
                         } else {
                             favoritesViewModel.addFavorite(token, animalId)
                         }
-                    }
+                    },
+                    onRequestAdoption = { showDialog = true },
+                    isRequested = isRequested
                 )
+
+                // Modal de Solicitud
+                if (showDialog && animal != null) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Adoptar a ${animal!!.nombre}", color = WebTeal) },
+                        text = {
+                            Column {
+                                Text("Escribe un mensaje al refugio explicando por qué eres el adoptante ideal:")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = mensajeAdoptante,
+                                    onValueChange = { mensajeAdoptante = it },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    minLines = 3,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = WebTeal,
+                                        cursorColor = WebTeal
+                                    )
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    if (mensajeAdoptante.isBlank()) {
+                                        Toast.makeText(context, "El mensaje es obligatorio", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
+                                    scope.launch {
+                                        submitting = true
+                                        try {
+                                            val request = SolicitudRequest(
+                                                animalId = animal!!.id,
+                                                mensajeAdoptante = mensajeAdoptante
+                                            )
+                                            val response = RetrofitClient.api.createSolicitud("Bearer $token", request)
+                                            if (response.isSuccessful) {
+                                                Toast.makeText(context, "Solicitud enviada con éxito", Toast.LENGTH_LONG).show()
+                                                
+                                                // Actualizar estado de la mascota a "En proceso" (ID 2)
+                                                try {
+                                                    RetrofitClient.api.updateAnimal(
+                                                        id = animal!!.id,
+                                                        token = "Bearer $token",
+                                                        request = com.example.matchpet.data.model.animal.AnimalUpdateRequest(estadoAdopcionId = 2)
+                                                    )
+                                                } catch (_: Exception) {}
+
+                                                showDialog = false
+                                                mensajeAdoptante = ""
+                                                isRequested = true // Actualizar estado localmente
+                                                // navController.popBackStack() // Opcional: Mantener en pantalla para ver cambio
+                                                Toast.makeText(context, "Solicitud enviada. Botón deshabilitado.", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "Error al enviar: ${response.message()}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        } finally {
+                                            submitting = false
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                                enabled = !submitting
+                            ) {
+                                if (submitting) {
+                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                                } else {
+                                    Text("Enviar Solicitud")
+                                }
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Cancelar", color = Color.Gray)
+                            }
+                        },
+                        containerColor = Color.White
+                    )
+                }
             }
         }
     }
@@ -155,7 +267,9 @@ fun AnimalDetailContent(
     modifier: Modifier = Modifier,
     navController: NavController,
     isFavorite: Boolean,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    onRequestAdoption: () -> Unit,
+    isRequested: Boolean
 ) {
     val scrollState = rememberScrollState()
     val imagenes = if (!animal.fotos.isNullOrEmpty()) {
@@ -381,20 +495,27 @@ fun AnimalDetailContent(
 
             // Botón de Adopción
             Button(
-                onClick = { /* TODO: Abrir modal de solicitud */ },
+                onClick = onRequestAdoption,
                 modifier = Modifier
                     .weight(0.7f)
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = WebTeal)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isRequested) Color.Gray else WebTeal
+                ),
+                enabled = !isRequested
             ) {
                 Icon(Icons.Default.Pets, contentDescription = null, modifier = Modifier.size(24.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("¡Quiero Adoptarlo!", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isRequested) "Solicitud Enviada" else "¡Quiero Adoptarlo!",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
         
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(80.dp))
     }
 }
 

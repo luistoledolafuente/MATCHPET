@@ -12,7 +12,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,6 +37,7 @@ import com.example.matchpet.ui.theme.WebTeal
 import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.adoptante.FavoritesViewModel
 import kotlinx.coroutines.launch
+import com.example.matchpet.ui.components.PetCard
 
 @Composable
 fun AdoptanteMascotasScreen(
@@ -47,6 +50,7 @@ fun AdoptanteMascotasScreen(
     var misSolicitudes by remember { mutableStateOf<List<com.example.matchpet.data.model.SolicitudResponse>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
     
     // Estados para el Modal de Solicitud
     var showDialog by remember { mutableStateOf(false) }
@@ -124,22 +128,49 @@ fun AdoptanteMascotasScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                if (mascotas.isEmpty()) {
-                    Text("No hay mascotas disponibles por ahora.", color = Color.Gray)
+                // Barra de búsqueda
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    placeholder = { Text("Buscar por nombre o refugio...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = WebTeal,
+                        cursorColor = WebTeal
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
+                )
+
+                val filteredMascotas = mascotas.filter { animal ->
+                    val matchesSearch = animal.nombre.contains(searchQuery, true) ||
+                            (animal.refugioNombre?.contains(searchQuery, true) == true)
+
+                    if (searchQuery.isBlank()) {
+                        !animal.estadoAdopcion.equals("Adoptado", ignoreCase = true)
+                    } else {
+                        matchesSearch
+                    }
+                }
+
+                if (filteredMascotas.isEmpty()) {
+                    Text("No se encontraron mascotas.", color = Color.Gray)
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(mascotas) { animal ->
+                        items(filteredMascotas) { animal ->
                             val isFavorite = favorites.any { it.animal_id == animal.animal_id }
                             val isRequested = misSolicitudes.any { it.animal.id == animal.animal_id }
                             
-                            MascotaGridItem(
+                            PetCard(
                                 animal = animal,
                                 isFavorite = isFavorite,
-                                isRequested = isRequested,
                                 onToggleFavorite = {
                                     if (isFavorite) {
                                         favoritesViewModel.removeFavorite(token, animal.animal_id)
@@ -147,11 +178,7 @@ fun AdoptanteMascotasScreen(
                                         favoritesViewModel.addFavorite(token, animal.animal_id)
                                     }
                                 },
-                                onSolicitarClick = {
-                                    selectedAnimal = animal
-                                    showDialog = true
-                                },
-                                onItemClick = {
+                                onViewProfile = {
                                     navController.navigate("animal_detail/${animal.animal_id}")
                                 }
                             )
@@ -248,89 +275,4 @@ fun AdoptanteMascotasScreen(
     }
 }
 
-@Composable
-fun MascotaGridItem(
-    animal: Animal,
-    isFavorite: Boolean,
-    isRequested: Boolean,
-    onToggleFavorite: () -> Unit,
-    onSolicitarClick: () -> Unit,
-    onItemClick: () -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(4.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onItemClick)
-    ) {
-        Box {
-            Column {
-                // Imagen
-                AsyncImage(
-                    model = if (!animal.fotos.isNullOrEmpty()) "http://10.0.2.2:8081${animal.fotos[0]}" else "https://placehold.co/400x300/B2D8D8/004D40?text=No+Photo",
-                    contentDescription = animal.nombre,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                    contentScale = ContentScale.Crop
-                )
 
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = animal.nombre,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Color(0xFF004D40)
-                    )
-                    Text(
-                        text = "${animal.raza ?: "Mestizo"} • ${animal.genero ?: "?"}",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = animal.refugioNombre ?: "Refugio",
-                        fontSize = 12.sp,
-                        color = WebTeal,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    Button(
-                        onClick = onSolicitarClick,
-                        modifier = Modifier.fillMaxWidth().height(36.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isRequested) Color.Gray else WebTeal
-                        ),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(0.dp),
-                        enabled = !isRequested
-                    ) {
-                        Text(if (isRequested) "Solicitado" else "Solicitar", fontSize = 12.sp)
-                    }
-                }
-            }
-
-            // Botón de Favorito (Superpuesto)
-            IconButton(
-                onClick = onToggleFavorite,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .background(Color.White.copy(alpha = 0.7f), CircleShape)
-                    .size(32.dp)
-            ) {
-                Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorito",
-                    tint = if (isFavorite) Color.Red else Color.Gray,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-    }
-}

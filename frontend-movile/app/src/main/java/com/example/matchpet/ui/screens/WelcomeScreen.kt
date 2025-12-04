@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.sp
 import com.example.matchpet.ui.components.PrimaryButton
 import com.example.matchpet.ui.components.SecondaryButton
 import com.example.matchpet.ui.theme.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import com.example.matchpet.R
 
 @Composable
 fun WelcomeScreen(
@@ -34,7 +37,15 @@ fun WelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight),
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        WebBlueLight,
+                        WebCream,
+                        WebCream
+                    )
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         // Scroll global para todo el contenido dentro del Card
@@ -61,25 +72,24 @@ fun WelcomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Ícono del logo (patita)
-                    Icon(
-                        imageVector = Icons.Filled.Pets,
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_matchpet),
                         contentDescription = "Logo MatchPet",
-                        tint = PrimaryTeal,
-                        modifier = Modifier.size(70.dp)
+                        modifier = Modifier.size(150.dp)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
                         text = "MatchPet",
-                        color = PrimaryTeal,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
+                        color = WebTeal,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.ExtraBold
                     )
 
                     Text(
                         text = "Encuentra a tu compañero ideal",
-                        color = PrimaryTeal.copy(alpha = 0.8f),
+                        color = TextSecondary,
                         fontSize = 16.sp,
                         textAlign = TextAlign.Center
                     )
@@ -87,20 +97,46 @@ fun WelcomeScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Botones principales
-                    PrimaryButton(text = "Adoptar", onClick = onAdoptClick)
+                    Button(
+                        onClick = onAdoptClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = WebTeal),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    ) {
+                        Text(text = "Adoptar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
                     Spacer(modifier = Modifier.height(12.dp))
-                    SecondaryButton(text = "Donar", onClick = onDonateClick)
+                    
+                    Button(
+                        onClick = onDonateClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = WebSalmon),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    ) {
+                        Text(text = "Donar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
                     Spacer(modifier = Modifier.height(12.dp))
-                    PrimaryButton(text = "Soy Refugio", onClick = onShelterClick)
+                    
+                    OutlinedButton(
+                        onClick = onShelterClick,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = WebTeal),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, WebTeal),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    ) {
+                        Text(text = "Soy Refugio", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
 
                     Spacer(modifier = Modifier.height(28.dp))
 
                     // Sección informativa
                     Text(
                         text = "¿Cómo te ayuda MatchPet?",
-                        color = TextPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        color = WebTeal,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
 
@@ -147,37 +183,49 @@ fun WelcomeScreen(
 
 @Composable
 fun InfoCard(icon: ImageVector, title: String, description: String) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(2.dp, shape = RoundedCornerShape(12.dp))
             .background(
-                color = BackgroundBeige,
+                color = Color.White,
                 shape = RoundedCornerShape(12.dp)
             )
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = PrimaryTeal,
+        // Circle background for icon
+        Box(
             modifier = Modifier
-                .size(32.dp)
-                .padding(end = 12.dp)
-        )
-
-        Column {
-            Text(
-                text = title,
-                color = PrimaryTeal,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp
-            )
-            Text(
-                text = description,
-                color = TextSecondary,
-                fontSize = 13.sp
+                .size(64.dp)
+                .background(WebBlueLight.copy(alpha = 0.3f), shape = androidx.compose.foundation.shape.CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = WebTeal,
+                modifier = Modifier.size(32.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = title,
+            color = TextPrimary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = description,
+            color = TextSecondary,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }

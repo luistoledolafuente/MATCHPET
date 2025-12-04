@@ -265,7 +265,7 @@ fun AdoptanteHomeScreen(navController: NavController, token: String, paddingValu
             when (val state = dashboardState) {
                 is DashboardState.Success -> {
                     if (state.data.mascotasRecomendadas.isNotEmpty()) {
-                        item { SectionTitle("Recomendadas Para Ti", Modifier.padding(start = 16.dp)) }
+                        item { SectionTitle("Mascotas que podrían gustarte", Modifier.padding(start = 16.dp)) }
                         item {
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(14.dp),

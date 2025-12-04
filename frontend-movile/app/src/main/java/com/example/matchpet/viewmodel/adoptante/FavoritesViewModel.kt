@@ -37,9 +37,15 @@ class FavoritesViewModel(private val repository: FavoritesRepository) : ViewMode
 
     fun addFavorite(token: String, animalId: Int) {
         viewModelScope.launch {
+            // Check if already in favorites to prevent duplicate requests
+            if (_favorites.value.any { it.animal_id == animalId }) {
+                return@launch
+            }
+            
             val result = repository.addFavorite(token, animalId)
             result.onSuccess {
-                loadFavorites(token) // Reload to update list
+                // Reload favorites to get the complete animal data
+                loadFavorites(token)
             }.onFailure {
                 _error.value = it.message
             }
@@ -50,7 +56,8 @@ class FavoritesViewModel(private val repository: FavoritesRepository) : ViewMode
         viewModelScope.launch {
             val result = repository.removeFavorite(token, animalId)
             result.onSuccess {
-                loadFavorites(token) // Reload to update list
+                // Immediately update local state by removing the animal
+                _favorites.value = _favorites.value.filter { it.animal_id != animalId }
             }.onFailure {
                 _error.value = it.message
             }
