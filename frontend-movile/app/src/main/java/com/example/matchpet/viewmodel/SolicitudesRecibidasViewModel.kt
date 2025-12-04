@@ -57,10 +57,20 @@ class SolicitudesRecibidasViewModel(
         }
     }
 
-    fun updateSolicitudStatus(token: String, solicitudId: Int, nuevoEstadoId: Int) {
+    fun updateSolicitudStatus(
+        token: String,
+        solicitudId: Int,
+        nuevoEstadoId: Int,
+        mensajeAlAdoptante: String? = null
+    ) {
         viewModelScope.launch {
             // 1. Actualizar el estado de la solicitud
-            when (solicitudRepository.updateSolicitudStatus(token, solicitudId, nuevoEstadoId)) {
+            when (solicitudRepository.updateSolicitudStatus(
+                token,
+                solicitudId,
+                nuevoEstadoId,
+                mensaje = mensajeAlAdoptante
+            )) {
                 is Resource.Success -> {
                     // 2. Actualizar el estado de la mascota según el estado de la solicitud
                     val solicitud = _solicitudes.value.find { it.id == solicitudId }

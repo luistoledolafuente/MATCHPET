@@ -7,7 +7,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Refresh
@@ -114,11 +116,12 @@ fun SolicitudesRecibidasScreen(token: String) {
                                 SolicitudCard(
                                     solicitud = solicitud,
                                     estadosDisponibles = estadosDisponibles,
-                                    onStatusChange = { nuevoEstadoId ->
+                                    onStatusChange = { nuevoEstadoId, mensaje ->
                                         viewModel.updateSolicitudStatus(
                                             token,
                                             solicitud.id,
-                                            nuevoEstadoId
+                                            nuevoEstadoId,
+                                            mensaje
                                         )
                                     }
                                 )
@@ -135,10 +138,13 @@ fun SolicitudesRecibidasScreen(token: String) {
 fun SolicitudCard(
     solicitud: SolicitudResponse,
     estadosDisponibles: List<LookupItem>,
-    onStatusChange: (Int) -> Unit
+    onStatusChange: (Int, String?) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showDropdown by remember { mutableStateOf(false) }
+    var mensajeRefugio by remember { mutableStateOf("") }
+    
+    val context = LocalContext.current
 
     val estadoNombre = solicitud.estadoSolicitud.nombre
     val estadoNombreUpper = estadoNombre.uppercase()
@@ -149,7 +155,7 @@ fun SolicitudCard(
         solicitud.animal.fotos?.firstOrNull()
             ?: "https://placehold.co/100x100/CCCCCC/000000?text=SIN+FOTO"
 
-    val mensaje = solicitud.mensajeAlAdoptante ?: "No hay mensaje."
+    val mensaje = solicitud.mensajeAdoptante ?: "No hay mensaje."
     val fecha = solicitud.fechaSolicitud
     val email = solicitud.adoptante.email
     val telefono = solicitud.adoptante.telefono ?: "N/D"
@@ -177,7 +183,11 @@ fun SolicitudCard(
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
 
@@ -214,23 +224,65 @@ fun SolicitudCard(
             if (expanded) {
 
                 Divider(Modifier.padding(vertical = 8.dp))
-
-                Text("Fecha: $fecha")
-                Text("Email: $email")
-                Text("Teléfono: $telefono")
-
-                Spacer(Modifier.height(8.dp))
-
-                Text("Mensaje del Adoptante:", fontWeight = FontWeight.SemiBold)
-                Text(
-                    text = mensaje,
+                
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(PaleTeal.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                        .padding(8.dp)
-                )
+                        .heightIn(max = 500.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
 
-                Spacer(Modifier.height(12.dp))
+                    Text("Fecha: $fecha")
+                    Text("Email: $email")
+                    Text("Teléfono: $telefono")
+
+                    Spacer(Modifier.height(12.dp))
+
+                    // Mensaje del Adoptante
+                    Text("Mensaje del Adoptante:", fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = mensaje,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFE3F2FD), RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+                    
+                    // Mensaje del Refugio (si ya existe)
+                    val mensajeRefugioExistente = solicitud.mensajeAlAdoptante
+                    if (!mensajeRefugioExistente.isNullOrBlank()) {
+                        Text("Respuesta del Refugio:", fontWeight = FontWeight.SemiBold)
+                        Text(
+                            text = mensajeRefugioExistente,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFC8E6C9), RoundedCornerShape(8.dp))
+                                .padding(8.dp)
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    
+                    // Campo de mensaje para el refugio (solo si está pendiente y no hay respuesta)
+                    if (isPending) {
+                        Text("Tu Mensaje al Adoptante (detalles de entrega):", fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(4.dp))
+                        OutlinedTextField(
+                            value = mensajeRefugio,
+                            onValueChange = { mensajeRefugio = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Horario, dirección, documentos necesarios, etc.") },
+                            minLines = 3,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = WebTeal,
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
+                }
 
                 Text("Cambiar Estado:", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
 
@@ -241,7 +293,7 @@ fun SolicitudCard(
                     // En revisión (ID 2)
                     FilterChip(
                         selected = solicitud.estadoSolicitud.id == 2,
-                        onClick = { onStatusChange(2) },
+                        onClick = { onStatusChange(2, null) },
                         label = { Text("En revisión") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFFFFF176), // Amarillo claro
@@ -252,7 +304,13 @@ fun SolicitudCard(
                     // Aprobar (ID 3)
                     FilterChip(
                         selected = solicitud.estadoSolicitud.id == 3,
-                        onClick = { onStatusChange(3) },
+                        onClick = { 
+                            if (mensajeRefugio.isNotBlank()) {
+                                onStatusChange(3, mensajeRefugio)
+                            } else {
+                                Toast.makeText(context, "Escribe un mensaje con los detalles de entrega", Toast.LENGTH_SHORT).show()
+                            }
+                        },
                         label = { Text("Aprobar") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFF81C784), // Verde claro
@@ -263,7 +321,7 @@ fun SolicitudCard(
                     // Rechazar (ID 4)
                     FilterChip(
                         selected = solicitud.estadoSolicitud.id == 4,
-                        onClick = { onStatusChange(4) },
+                        onClick = { onStatusChange(4, null) },
                         label = { Text("Rechazar") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFFE57373), // Rojo claro
