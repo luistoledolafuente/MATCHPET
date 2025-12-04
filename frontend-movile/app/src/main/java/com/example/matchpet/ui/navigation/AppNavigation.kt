@@ -11,6 +11,7 @@ import com.example.matchpet.viewmodel.refugio.RefugioViewModel // 🔑 Importaci
 import com.example.matchpet.ui.screens.*
 import com.example.matchpet.ui.screens.adoptante.DashboardScreen
 import com.example.matchpet.ui.screens.adoptante.ProfileScreen
+import com.example.matchpet.ui.screens.adoptante.DonacionScreen
 import com.example.matchpet.ui.screens.auth.LoginScreen
 import com.example.matchpet.ui.screens.auth.RegisterScreen
 import com.example.matchpet.ui.screens.refugio.RefugioDashboardScreen
@@ -58,9 +59,6 @@ fun AppNavigation(
 
 
         // Dashboard Refugio
-        // En AppNavigation.kt
-
-// Dashboard Refugio
         composable("refugio/dashboard/{token}") { backStackEntry ->
             val token = backStackEntry.arguments?.getString("token") ?: ""
 
@@ -68,7 +66,6 @@ fun AppNavigation(
             val factory = Injection.provideRefugioViewModelFactory()
 
             // 🔑 PASO 2: USAR LA FACTORY para crear el ViewModel
-            // Importamos androidx.lifecycle.viewmodel.compose.viewModel
             val refugioViewModel: RefugioViewModel = viewModel(factory = factory)
 
             // Pasamos el controlador principal y las dependencias (Repositorio y ViewModel)
@@ -95,6 +92,28 @@ fun AppNavigation(
             ProfileScreen(
                 token = token,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Pantalla de Donación
+        composable("donacion/{token}") { backStackEntry ->
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+            DonacionScreen(
+                navController = navController,
+                token = token
+            )
+        }
+
+        // Pantalla de Donación a un Refugio específico
+        composable("donacion/{token}/{refugioId}/{refugioNombre}") { backStackEntry ->
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+            val refugioId = backStackEntry.arguments?.getString("refugioId")?.toIntOrNull()
+            val refugioNombre = backStackEntry.arguments?.getString("refugioNombre")
+            DonacionScreen(
+                navController = navController,
+                token = token,
+                refugioId = refugioId,
+                refugioNombre = refugioNombre
             )
         }
     }

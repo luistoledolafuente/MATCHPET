@@ -65,7 +65,10 @@ fun AdoptanteDashboardNavHost(
 
         // 4. Pestaña de Donaciones
         composable("adoptante_donaciones") {
-            Text("Pantalla de Donaciones (Contenido)", modifier.fillMaxSize())
+            com.example.matchpet.ui.screens.adoptante.DonacionScreen(
+                navController = navController,
+                token = token
+            )
         }
 
         // 5. Pestaña de Solicitudes

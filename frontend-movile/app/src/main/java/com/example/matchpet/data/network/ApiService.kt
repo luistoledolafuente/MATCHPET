@@ -18,6 +18,9 @@ import com.example.matchpet.data.model.auth.UserProfileResponse
 import com.example.matchpet.data.model.refugio.RefugioProfileResponse
 import com.example.matchpet.data.model.refugio.RefugioUpdateRequest
 import com.example.matchpet.data.model.refugio.ShelterRegisterRequest
+import com.example.matchpet.data.model.donacion.CreateDonacionRequest
+import com.example.matchpet.data.model.donacion.CheckoutResponse
+import com.example.matchpet.data.model.donacion.DonacionResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -168,4 +171,21 @@ interface ApiService {
     suspend fun getRecomendaciones(
         @Header("Authorization") token: String
     ): Response<List<Animal>>
+
+    // --------------- DONACIONES ------------------------------------
+    @POST("/api/donaciones/checkout")
+    suspend fun createDonacion(
+        @Header("Authorization") token: String,
+        @Body request: CreateDonacionRequest
+    ): Response<CheckoutResponse>
+
+    @POST("/api/donaciones/checkout")
+    suspend fun createDonacionAnonymous(
+        @Body request: CreateDonacionRequest
+    ): Response<CheckoutResponse>
+
+    @GET("/api/donaciones/mis-donaciones")
+    suspend fun getMisDonaciones(
+        @Header("Authorization") token: String
+    ): Response<List<DonacionResponse>>
 }

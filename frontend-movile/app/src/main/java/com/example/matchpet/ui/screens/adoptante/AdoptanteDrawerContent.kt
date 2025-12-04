@@ -88,7 +88,18 @@ fun AdoptanteDrawerContent(
             icon = { Icon(Icons.Default.Settings, contentDescription = null) }
         )
 
-        // --- 3. Opción: Acerca de la App ---
+        // --- 3. Opción: Donar ---
+        NavigationDrawerItem(
+            label = { Text("Donar") },
+            selected = false,
+            onClick = {
+                closeDrawer()
+                mainNavController.navigate("donacion/$token")
+            },
+            icon = { Icon(Icons.Default.Favorite, contentDescription = null) }
+        )
+
+        // --- 4. Opción: Acerca de la App ---
         NavigationDrawerItem(
             label = { Text("Acerca de la App") },
             selected = false,
