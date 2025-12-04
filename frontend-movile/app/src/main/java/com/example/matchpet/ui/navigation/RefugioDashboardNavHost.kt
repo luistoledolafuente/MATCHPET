@@ -16,6 +16,7 @@ import com.example.matchpet.ui.screens.refugio.NuevaMascotaScreen
 import com.example.matchpet.ui.screens.refugio.RefugioHomeScreen
 import com.example.matchpet.ui.screens.refugio.RefugioProfileScreen
 import com.example.matchpet.ui.screens.refugio.SolicitudesRecibidasScreen
+import com.example.matchpet.ui.screens.refugio.RefugioDonacionesScreen
 
 @Composable
 fun RefugioDashboardNavHost(
@@ -76,7 +77,7 @@ fun RefugioDashboardNavHost(
 
         // 4. DONACIONES
         composable("refugio_donaciones") {
-            Text("Pantalla: Donaciones (Contenido)", modifier.fillMaxSize())
+            RefugioDonacionesScreen()
         }
 
         // 6. PERFIL
