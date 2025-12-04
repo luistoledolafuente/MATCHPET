@@ -351,7 +351,12 @@ fun AnimalDetailContent(
                     )
                     
                     Surface(
-                        color = if (animal.estadoAdopcion == "Disponible") Color(0xFF4CAF50) else Color(0xFFFF9800),
+                        color = when (animal.estadoAdopcion) {
+                            "Disponible" -> Color(0xFF4CAF50)  // Green
+                            "En proceso" -> Color(0xFFFF9800)  // Orange
+                            "Adoptado" -> Color(0xFFF44336)    // Red
+                            else -> Color.Gray
+                        },
                         shape = RoundedCornerShape(20.dp)
                     ) {
                         Text(

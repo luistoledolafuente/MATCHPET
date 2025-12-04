@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,11 +32,11 @@ import com.example.matchpet.data.model.animal.LookupItem
 import com.example.matchpet.utils.Injection
 import com.example.matchpet.viewmodel.AnimalFormState
 import com.example.matchpet.viewmodel.NuevaMascotaViewModel
-import com.example.matchpet.ui.theme.PrimaryTeal
 
 // Definición de colores
 val PrimaryTeal = Color(0xFF316B7A)
 val SalmonAccent = Color(0xFFFDB2A0)
+val LightBlueBg = Color(0xFFE8F6FA)
 
 // --- Secciones del Formulario (Enum) ---
 enum class PetFormSection(val title: String) {
@@ -108,7 +110,7 @@ fun NuevaMascotaScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFE8F6FA),
+                    containerColor = LightBlueBg,
                     titleContentColor = PrimaryTeal
                 )
             )
@@ -161,6 +163,7 @@ fun NuevaMascotaScreen(
                         PetFormSection.PHOTOS -> PhotosSection(viewModel, token, photoUrls)
                     }
                 }
+                Spacer(modifier = Modifier.height(80.dp)) // Espacio extra para el botón inferior
             }
         }
     }
@@ -172,40 +175,42 @@ fun NuevaMascotaScreen(
 
 @Composable
 fun BasicInfoSection(viewModel: NuevaMascotaViewModel) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text("Información Esencial", style = MaterialTheme.typography.titleMedium, color = PrimaryTeal)
 
         OutlinedTextField(
             value = viewModel.nombre,
             onValueChange = { viewModel.nombre = it },
             label = { Text("Nombre") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
         )
 
-        // Especie (Dropdown usando LookupItem)
-        LookupDropdownField(
+        // Especie (Dropdown mejorado)
+        LookupSelectField(
             label = "Especie",
             currentId = viewModel.especieId,
             options = viewModel.especies,
-            onIdChange = { viewModel.especieId = it }
+            onIdChange = { viewModel.onEspecieChanged(it) }
         )
 
-        // Raza (Dropdown usando LookupItem)
-        // Nota: Si Raza es un texto libre, usar OutlinedTextField. Si es catálogo, usar LookupDropdownField.
-        // Asumo que Raza es un catálogo que se llena en el ViewModel después de seleccionar Especie.
-        LookupDropdownField(
-            label = "Raza",
+        // Raza (Dropdown mejorado - Depende de Especie)
+        // Se deshabilita si no hay especie seleccionada
+        val isRazaEnabled = viewModel.especieId != null
+        LookupSelectField(
+            label = if (isRazaEnabled) "Raza" else "Selecciona una especie primero",
             currentId = viewModel.razaId,
             options = viewModel.razas,
-            onIdChange = { viewModel.razaId = it }
+            onIdChange = { viewModel.razaId = it },
+            enabled = isRazaEnabled
         )
 
-        // Género (Dropdown usando LookupItem)
-        LookupDropdownField(
+        // Género (Chips)
+        SingleSelectionChipGroup(
             label = "Género",
-            currentId = viewModel.generoId,
             options = viewModel.generos,
-            onIdChange = { viewModel.generoId = it }
+            selectedId = viewModel.generoId,
+            onSelectionChanged = { viewModel.generoId = it }
         )
 
         // Fecha de Nacimiento Aprox (String)
@@ -214,30 +219,39 @@ fun BasicInfoSection(viewModel: NuevaMascotaViewModel) {
             onValueChange = { viewModel.fechaNacimientoAprox = it },
             label = { Text("Fecha Nacimiento Aprox (YYYY-MM-DD)") },
             placeholder = { Text("Ej: 2023-01-15") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        // Estado de Adopción (Chips)
+        SingleSelectionChipGroup(
+            label = "Estado de Adopción",
+            options = viewModel.estadosAdopcion,
+            selectedId = viewModel.estadoAdopcionId,
+            onSelectionChanged = { viewModel.estadoAdopcionId = it }
         )
     }
 }
 
 @Composable
 fun FeaturesSection(viewModel: NuevaMascotaViewModel) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text("Características Físicas y Comportamentales", style = MaterialTheme.typography.titleMedium, color = PrimaryTeal)
 
-        // Tamaño (Dropdown usando LookupItem)
-        LookupDropdownField(
+        // Tamaño (Chips)
+        SingleSelectionChipGroup(
             label = "Tamaño",
-            currentId = viewModel.tamanoId,
             options = viewModel.tamanos,
-            onIdChange = { viewModel.tamanoId = it }
+            selectedId = viewModel.tamanoId,
+            onSelectionChanged = { viewModel.tamanoId = it }
         )
 
-        // Nivel de Energía (Dropdown usando LookupItem)
-        LookupDropdownField(
+        // Nivel de Energía (Chips)
+        SingleSelectionChipGroup(
             label = "Nivel de Energía",
-            currentId = viewModel.nivelEnergiaId,
             options = viewModel.nivelesEnergia,
-            onIdChange = { viewModel.nivelEnergiaId = it }
+            selectedId = viewModel.nivelEnergiaId,
+            onSelectionChanged = { viewModel.nivelEnergiaId = it }
         )
 
         // Descripción Personalidad (String - Multilínea)
@@ -246,7 +260,8 @@ fun FeaturesSection(viewModel: NuevaMascotaViewModel) {
             onValueChange = { viewModel.descripcionPersonalidad = it },
             label = { Text("Descripción de la Personalidad") },
             minLines = 4,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
         )
 
         // Temperamentos (Implementación con Checkbox Chips)
@@ -276,37 +291,40 @@ fun TemperamentosSection(viewModel: NuevaMascotaViewModel) {
 
 @Composable
 fun HealthSection(viewModel: NuevaMascotaViewModel) {
-    // ... (El contenido de HealthSection está correcto, solo necesita usar el nuevo LookupDropdownField si aplicara)
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Estado de Salud", style = MaterialTheme.typography.titleMedium, color = PrimaryTeal)
 
-        // Está Vacunado (Boolean)
-        BooleanToggle(
-            label = "Está Vacunado",
-            isChecked = viewModel.estaVacunado,
-            onCheckedChange = { viewModel.estaVacunado = it }
-        )
-
-        // Está Esterilizado (Boolean)
-        BooleanToggle(
-            label = "Está Esterilizado",
-            isChecked = viewModel.estaEsterilizado,
-            onCheckedChange = { viewModel.estaEsterilizado = it }
-        )
-
-        // Compatible con Niños (Boolean)
-        BooleanToggle(
-            label = "Compatible con Niños",
-            isChecked = viewModel.compatibleNinos,
-            onCheckedChange = { viewModel.compatibleNinos = it }
-        )
-
-        // Compatible con Otras Mascotas (Boolean)
-        BooleanToggle(
-            label = "Compatible con Otras Mascotas",
-            isChecked = viewModel.compatibleOtrasMascotas,
-            onCheckedChange = { viewModel.compatibleOtrasMascotas = it }
-        )
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                BooleanToggle(
+                    label = "Está Vacunado",
+                    isChecked = viewModel.estaVacunado,
+                    onCheckedChange = { viewModel.estaVacunado = it }
+                )
+                HorizontalDivider(color = LightBlueBg)
+                BooleanToggle(
+                    label = "Está Esterilizado",
+                    isChecked = viewModel.estaEsterilizado,
+                    onCheckedChange = { viewModel.estaEsterilizado = it }
+                )
+                HorizontalDivider(color = LightBlueBg)
+                BooleanToggle(
+                    label = "Compatible con Niños",
+                    isChecked = viewModel.compatibleNinos,
+                    onCheckedChange = { viewModel.compatibleNinos = it }
+                )
+                HorizontalDivider(color = LightBlueBg)
+                BooleanToggle(
+                    label = "Compatible con Otras Mascotas",
+                    isChecked = viewModel.compatibleOtrasMascotas,
+                    onCheckedChange = { viewModel.compatibleOtrasMascotas = it }
+                )
+            }
+        }
 
         // Historial Médico (String - Multilínea)
         OutlinedTextField(
@@ -314,7 +332,8 @@ fun HealthSection(viewModel: NuevaMascotaViewModel) {
             onValueChange = { viewModel.historialMedico = it },
             label = { Text("Historial Médico (Notas)") },
             minLines = 4,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
         )
 
         // Fecha Ingreso Refugio (String)
@@ -323,7 +342,8 @@ fun HealthSection(viewModel: NuevaMascotaViewModel) {
             onValueChange = { viewModel.fechaIngresoRefugio = it },
             label = { Text("Fecha Ingreso Refugio (YYYY-MM-DD)") },
             placeholder = { Text("Ej: 2024-05-20") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
         )
     }
 }
@@ -416,7 +436,8 @@ fun PhotoItem(url: String, isPrincipal: Boolean, onSetPrincipal: () -> Unit, onR
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .background(PrimaryTeal.copy(alpha = 0.7f))
-                    .padding(vertical = 4.dp)
+                    .padding(vertical = 4.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
 
@@ -436,7 +457,7 @@ fun PhotoItem(url: String, isPrincipal: Boolean, onSetPrincipal: () -> Unit, onR
 
 
 // -----------------------------------------------------------------------------
-// 🔑 COMPONENTES REUTILIZABLES CORREGIDOS
+// 🔑 COMPONENTES REUTILIZABLES CORREGIDOS Y MEJORADOS
 // -----------------------------------------------------------------------------
 
 @Composable
@@ -453,65 +474,60 @@ fun SectionTabs(current: PetFormSection, onSectionSelected: (PetFormSection) -> 
             Card(
                 shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected) PrimaryTeal else Color(0xFFE8F6FA)
-                )
+                    containerColor = if (isSelected) PrimaryTeal else LightBlueBg
+                ),
+                modifier = Modifier.clickable { onSectionSelected(section) }
             ) {
                 Text(
                     text = section.title,
                     color = if (isSelected) Color.White else PrimaryTeal,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
-                        .clickable { onSectionSelected(section) }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }
     }
-    Divider(color = PrimaryTeal.copy(alpha = 0.1f))
+    HorizontalDivider(color = PrimaryTeal.copy(alpha = 0.1f))
 }
 
-// 🔑 NUEVO DropdownField que maneja IDs (Int?) y LookupItem
+// 🔑 NUEVO: Grupo de Chips de Selección Única (Reemplaza Dropdowns pequeños)
 @Composable
-fun LookupDropdownField(
+fun SingleSelectionChipGroup(
     label: String,
-    currentId: Int?,
     options: List<LookupItem>,
-    onIdChange: (Int) -> Unit
+    selectedId: Int?,
+    onSelectionChanged: (Int) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(options) { item ->
+                val isSelected = item.id == selectedId
+                val backgroundColor = if (isSelected) PrimaryTeal else Color.White
+                val contentColor = if (isSelected) Color.White else PrimaryTeal
+                val borderColor = if (isSelected) PrimaryTeal else PrimaryTeal.copy(alpha = 0.5f)
 
-    // Buscar el nombre que corresponde al ID actual
-    val currentName = options.find { it.id == currentId }?.nombre ?: "Seleccionar..."
-
-    OutlinedTextField(
-        value = currentName,
-        onValueChange = { /* Solo cambia por el menú */ },
-        label = { Text(label) },
-        readOnly = true,
-        trailingIcon = {
-            Icon(
-                Icons.Filled.ChevronRight,
-                contentDescription = null,
-                Modifier.clickable { expanded = true }
-            )
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        options.forEach { option ->
-            DropdownMenuItem(
-                text = { Text(option.nombre) },
-                onClick = {
-                    onIdChange(option.id) // Llama a la función que actualiza el ViewModel con el ID (Int)
-                    expanded = false
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(backgroundColor)
+                        .border(1.dp, borderColor, RoundedCornerShape(50))
+                        .clickable { onSelectionChanged(item.id) }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = item.nombre,
+                        color = contentColor,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                    )
                 }
-            )
+            }
         }
     }
 }
+
 
 @Composable
 fun BooleanToggle(label: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
@@ -523,13 +539,15 @@ fun BooleanToggle(label: String, isChecked: Boolean, onCheckedChange: (Boolean) 
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = Color.DarkGray)
+        Text(label, color = Color.DarkGray, style = MaterialTheme.typography.bodyLarge)
         Switch(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = SalmonAccent,
-                checkedTrackColor = SalmonAccent.copy(alpha = 0.5f)
+                checkedTrackColor = SalmonAccent.copy(alpha = 0.5f),
+                uncheckedThumbColor = Color.Gray,
+                uncheckedTrackColor = Color.LightGray.copy(alpha = 0.5f)
             )
         )
     }
@@ -540,7 +558,7 @@ fun Chip(label: String, isSelected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(if (isSelected) PrimaryTeal else Color(0xFFE8F6FA))
+            .background(if (isSelected) PrimaryTeal else LightBlueBg)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
@@ -550,5 +568,76 @@ fun Chip(label: String, isSelected: Boolean, onClick: () -> Unit) {
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Medium
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LookupSelectField(
+    label: String,
+    currentId: Int?,
+    options: List<LookupItem>,
+    onIdChange: (Int) -> Unit,
+    enabled: Boolean = true
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val currentName = options.find { it.id == currentId }?.nombre ?: ""
+    
+    // Si el campo está deshabilitado, forzamos expanded a false
+    LaunchedEffect(enabled) {
+        if (!enabled) expanded = false
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded, 
+        onExpandedChange = { if (enabled) expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = if (expanded && query.isNotEmpty()) query else currentName,
+            onValueChange = { query = it },
+            label = { Text(label) },
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            readOnly = !expanded, // Permite escribir solo si está expandido para filtrar
+            enabled = enabled,
+            trailingIcon = { 
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PrimaryTeal,
+                unfocusedBorderColor = Color.Gray,
+                disabledBorderColor = Color.LightGray.copy(alpha = 0.5f)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        )
+        
+        if (expanded) {
+            val filtered = if (query.isBlank()) options else options.filter { it.nombre.contains(query, true) }
+            
+            ExposedDropdownMenu(
+                expanded = expanded, 
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(Color.White)
+            ) {
+                if (filtered.isEmpty()) {
+                    DropdownMenuItem(
+                        text = { Text("No se encontraron resultados", color = Color.Gray) },
+                        onClick = { }
+                    )
+                } else {
+                    filtered.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.nombre) },
+                            onClick = {
+                                onIdChange(option.id)
+                                query = ""
+                                expanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
+        }
     }
 }

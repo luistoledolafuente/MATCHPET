@@ -111,6 +111,20 @@ class NuevaMascotaViewModel(
         }
     }
 
+    fun onEspecieChanged(id: Int) {
+        especieId = id
+        viewModelScope.launch {
+            when (val result = animalRepository.getRazasPorEspecie(id)) {
+                is Resource.Success -> {
+                    razas = result.data ?: emptyList()
+                    razaId = null
+                }
+                is Resource.Error -> {}
+                else -> {}
+            }
+        }
+    }
+
     // LÓGICA DE CARGA DE DATOS PARA EDICIÓN
     fun loadAnimalDetails(token: String, animalIdString: String?) {
         if (animalIdString.isNullOrEmpty()) return

@@ -244,6 +244,21 @@ class AnimalRepository(
         }
     }
 
+    suspend fun getRazasPorEspecie(especieId: Int): Resource<List<LookupItem>> {
+        return try {
+            val response = apiService.getRazas()
+            if (response.isSuccessful && response.body() != null) {
+                val filtered = response.body()!!.filter { it.especie?.id == especieId }
+                val lookupItems = filtered.map { LookupItem(it.id, it.nombre) }
+                Resource.Success(lookupItems)
+            } else {
+                Resource.Error("Error al obtener razas por especie")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error de red: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun getTemperamentos(): Resource<List<LookupItem>> {
         return try {
             val response = apiService.getTemperamentos()
