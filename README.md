@@ -1,114 +1,86 @@
-<<<<<<< HEAD
-# 🐾 MatchPet - Plataforma de Adopción de Mascotas
+# MatchPet - Documentación de Despliegue
 
-Este proyecto gestiona la adopción de mascotas con una arquitectura **Backend Híbrida**.
-
----
-
-## ⚙️ Arquitectura del Proyecto
-
-| Módulo | Tecnología | Propósito |
-|--------|-------------|-----------|
-| **backend-admin/** | Django / DRF | Gestión de refugios, animales y especies |
-| **frontend-web/** | Por definir | Panel de administración |
-| **frontend-movil/** | Por definir | Interfaz para adoptantes |
+Este documento explica cómo desplegar la plataforma MatchPet en un servidor, cubriendo backend y frontend para los distintos módulos.
 
 ---
 
-## 🚀 Backend (backend-admin)
+## Requisitos Previos
 
-Desarrollado con **Django REST Framework**, encargado de la lógica y administración del sistema.
-
-### 🔑 Autenticación (Sprint 1)
-
-Se implementó login con **JWT** para Refugios/Administradores.
-
-| Endpoint | Método | Descripción |
-|-----------|---------|--------------|
-| `/api/admin/login/` | POST | Devuelve tokens `access` y `refresh` |
+- **Java 17+** (para Spring Boot)
+- **Maven** (opcional si usas `./mvnw`)
+- **Node.js** y **npm**
+- **Python 3** y **pip** (para Django)
+- **MySQL** configurado y activo
+- **Android Studio** (para app móvil, solo si se quiere compilar o desplegar)
 
 ---
 
-## 🛠️ Configuración con Docker
+## Configuración de Base de Datos
 
-### Requisitos
-- Docker Desktop / Engine  
-- Docker Compose  
+1. Crear una base de datos MySQL para la aplicación.
+2. Actualizar los datos de conexión (host, usuario, contraseña, nombre BD) en:
 
-### 1️⃣ Iniciar entorno
+   - `backend-admin/settings.py` (Django)
+   - `backend-user/src/main/resources/application.properties` (Spring Boot)
+
+---
+
+## Despliegue Backend Administrador (Django)
+
 ```bash
-docker compose up --build -d
+cd backend-admin
+python -m venv env
+source env/bin/activate   # Windows: env\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+````
+---
+
+## Despliegue Backend Usuario (Spring Boot)
+
+```bash
+cd backend-user
+./mvnw spring-boot:run  # o "mvn spring-boot:run" si Maven está instalado globalmente
 ```
 
-### 2️⃣ Crear superusuario
-``` bash
-docker compose exec backend_admin python manage.py createsuperuser
+---
+
+## Despliegue Frontend Web Administrador
+
+```bash
+cd frontend-web-admin
+npm install
+npm run dev
 ```
-### 🌐 Acceso
-API Principal: http://127.0.0.1:8000/
 
-Swagger UI: http://127.0.0.1:8000/api/schema/swagger-ui/
+---
 
-### 🛑 Detener entorno
-``` bash
-docker compose down
-``` 
-=======
-# MatchPet - Plataforma de Adopción de Mascotas
+## Despliegue Frontend Web Usuario
 
-Este repositorio contiene el código fuente de los diferentes módulos del proyecto MatchPet, siguiendo una arquitectura de *Backend* Híbrido.
+```bash
+cd frontend-web-user
+npm install
+npm run dev
+```
 
-## ⚙️ Arquitectura del Proyecto
+---
 
-| Módulo | Tecnología Principal | Propósito |
-| :--- | :--- | :--- |
-| **`backend-admin/`** | **Django / DRF** | Gestión de Refugios, Animales, Especies y Administración. |
-| **`frontend-web/`** | *Por definir* | Panel de administración y gestión de contenido. |
-| **`frontend-movil/`** | *Por definir* | Interfaz para Adoptantes (Usuarios). |
+## Despliegue App Móvil (Kotlin)
 
-***
+1. Abrir la carpeta `frontend-movil` en Android Studio.
+2. Configurar la URL base del backend en el código si es necesario.
+3. Compilar y generar APK para distribución o instalar en dispositivo/emulador.
 
-## 🚀 Módulo Backend - Administración (`backend-admin/`)
 
-Este módulo está desarrollado con Django REST Framework y es responsable de la lógica de gestión de contenido y administración de la plataforma.
+---
 
-### 🔑 Autenticación Implementada (Sprint-1)
+## Contacto
 
-Se implementó el sistema de **Login para Refugios/Administradores** utilizando **JSON Web Tokens (JWT)**.
+Para soporte o dudas sobre despliegue, contactar al equipo de desarrollo:
+- ailyn.medina@tecsup.edu.pe
+- luis.toledo.l@tecsup.edu.pe
+- maria.moya@tecsup.edu.pe
 
-| Endpoint | Método | Descripción |
-| :--- | :--- | :--- |
-| `/api/admin/login/` | `POST` | Autentica al Refugio y devuelve los tokens `access` y `refresh`. Requiere permisos `is_staff=True`. |
+---
 
-### 🛠️ Configuración y Ejecución
-
-Para iniciar el servidor de desarrollo, sigue estos pasos:
-
-1.  **Muévete al directorio del Backend:**
-    ```bash
-    cd backend-admin
-    ```
-
-2.  **Activa el Entorno Virtual:**
-    ```bash
-    source venv/Scripts/activate
-    ```
-    *(Ajusta el comando de activación si es necesario)*
-
-3.  **Instala las Dependencias:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Inicia el Servidor:**
-    ```bash
-    python manage.py runserver
-    ```
-    El API estará disponible en `http://127.0.0.1:8000/`.
-
-### 📚 Documentación de APIs
-
-La documentación interactiva (Swagger UI) para todos los *endpoints* está disponible en:
-
-👉 **[http://127.0.0.1:8000/api/schema/swagger-ui/](http://127.0.0.1:8000/api/schema/swagger-ui/)**
->>>>>>> Moya
